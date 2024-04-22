@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+    id 'org.springframework.boot' version '3.2.4'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'info.solidsoft.pitest' version '1.15.0'
+    id "com.dorongold.task-tree" version "1.5"
+}
+
+group = 'org.petrinet'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '21'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.register('buildFrontend', Exec) {
+    workingDir = file('frontend')
+    commandLine '/opt/homebrew/bin/yarn', 'build'
+}
+
+tasks.register('copyFrontendBuild', Copy) {
+    from 'frontend/build'
+    into 'src/main/resources/static'
+}
+
+processResources.dependsOn 'copyFrontendBuild'
+
+test {
+    useJUnitPlatform()
+}
+clean {
+    delete 'frontend/build'
+    delete fileTree(dir: 'src/main/resources/static', exclude: '.gitkeep')
+}
+
+
+pitest {
+    junit5PluginVersion = '1.2.1'
+    pitestVersion = '1.15.2'
+    verbose = true
+    targetClasses = ['org.petrinet.*']
+    targetTests = ['org.petrinet.*']
+    mutators = ['ALL']
+}
