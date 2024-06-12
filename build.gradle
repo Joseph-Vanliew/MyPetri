@@ -25,6 +25,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
+
+
 tasks.register('buildFrontend', Exec) {
     workingDir = file('frontend')
     commandLine '/opt/homebrew/bin/yarn', 'build'

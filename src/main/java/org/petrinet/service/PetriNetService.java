@@ -137,7 +137,7 @@ public class PetriNetService {
                     return new ArcDTO(arc.getId(), type, arc.getIncomingId(), arc.getOutgoingId());
                 })
                 .collect(Collectors.toList());
-        // Aggregate our return object
+        // Build return object
         PetriNetDTO updatedPetriNetDTO = new PetriNetDTO();
         updatedPetriNetDTO.setPlaces(placeDTOs);
         updatedPetriNetDTO.setTransitions(transitionDTOs);
