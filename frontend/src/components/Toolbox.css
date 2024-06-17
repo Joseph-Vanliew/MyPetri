@@ -1,0 +1,27 @@
+/* src/components/Toolbox.css */
+
+.toolbox {
+    width: 150px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    padding: 10px;
+}
+
+.toolbox-section {
+    margin-bottom: 20px;
+}
+
+.toolbox-item {
+    margin: 5px 0;
+    padding: 5px;
+    cursor: grab;
+    background: #fff;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.toolbox-item img,
+.toolbox-item svg {
+    width: 40px;
+    height: 40px;
+}
