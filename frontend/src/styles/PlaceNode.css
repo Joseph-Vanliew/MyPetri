@@ -1,0 +1,41 @@
+.place-node {
+    border-radius: 50%;
+    border: 2px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: transparent; /* No fill, just the outline */
+}
+
+.place-node-add,
+.place-node-remove {
+    position: absolute;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.place-node-add {
+    top: -10px;
+    right: -10px;
+}
+
+.place-node-remove {
+    bottom: -10px;
+    left: -10px;
+}
+
+.place-node-tokens {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.token {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #000;
+    margin: 2px;
+}

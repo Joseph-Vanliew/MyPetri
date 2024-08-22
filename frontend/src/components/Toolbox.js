@@ -1,61 +1,50 @@
-// src/components/Toolbox.js
+import React, { useState } from 'react';
+import PlaceNode from './PlaceNode';
+import TransitionNode from './TransitionNode';
+import Arc from './Arc';
+import '../styles/Toolbox.css';
 
-import React from 'react';
-import './Toolbox.css';
+const Toolbox = ({ onSelectTool }) => {
+    const [showArcDropdown, setShowArcDropdown] = useState(false);
 
-const Toolbox = () => {
-    const onDragStart = (event, nodeType) => {
-        event.dataTransfer.setData('application/reactflow', nodeType);
-        event.dataTransfer.effectAllowed = 'move';
+    const handleToolClick = (toolType) => {
+        onSelectTool(toolType);
     };
 
     return (
         <div className="toolbox">
-            <div className="toolbox-section">
-                <h3>Place Nodes</h3>
-                <div
-                    className="toolbox-item"
-                    onDragStart={(event) => onDragStart(event, 'place')}
-                    draggable
-                >
-                    <svg width="40" height="40">
-                        <circle cx="20" cy="20" r="15" stroke="black" strokeWidth="2" fill="none" />
-                    </svg>
+            <div className="toolbox-item" onClick={() => handleToolClick('PLACE')}>
+                <div className="toolbox-item-scale">
+                    <PlaceNode id="preview" />
                 </div>
+                <span>Place Node</span>
             </div>
-            <div className="toolbox-section">
-                <h3>Transitions</h3>
-                <div
-                    className="toolbox-item"
-                    onDragStart={(event) => onDragStart(event, 'transition-normal')}
-                    draggable
-                >
-                    <svg width="40" height="40">
-                        <line x1="10" y1="30" x2="30" y2="10" stroke="black" strokeWidth="2" />
-                        <polygon points="30,10 25,12 27,8" fill="black" />
-                    </svg>
+            <div className="toolbox-item" onClick={() => handleToolClick('TRANSITION')}>
+                <div className="toolbox-item-scale">
+                    <TransitionNode id="preview" initialEnabled={false} />
                 </div>
-                <div
-                    className="toolbox-item"
-                    onDragStart={(event) => onDragStart(event, 'transition-bidirectional')}
-                    draggable
-                >
-                    <svg width="40" height="40">
-                        <line x1="10" y1="30" x2="30" y2="10" stroke="black" strokeWidth="2" />
-                        <polygon points="30,10 25,12 27,8" fill="black" />
-                        <polygon points="10,30 15,28 13,32" fill="black" />
-                    </svg>
+                <span>Transition Node</span>
+            </div>
+            <div className="toolbox-item">
+                <div onClick={() => setShowArcDropdown(!showArcDropdown)}>
+                    <span>Arcs ▼</span>
                 </div>
-                <div
-                    className="toolbox-item"
-                    onDragStart={(event) => onDragStart(event, 'transition-inhibitor')}
-                    draggable
-                >
-                    <svg width="40" height="40">
-                        <line x1="10" y1="30" x2="30" y2="10" stroke="black" strokeWidth="2" />
-                        <circle cx="30" cy="10" r="3" stroke="black" strokeWidth="2" fill="none" />
-                    </svg>
-                </div>
+                {showArcDropdown && (
+                    <div className="arc-dropdown">
+                        <div className="toolbox-item-scale" onClick={() => handleToolClick('REGULAR')}>
+                            <Arc id="preview" initialType="REGULAR" />
+                            <span>Regular Arc</span>
+                        </div>
+                        <div className="toolbox-item-scale" onClick={() => handleToolClick('INHIBITOR')}>
+                            <Arc id="preview" initialType="INHIBITOR" />
+                            <span>Inhibitor Arc</span>
+                        </div>
+                        <div className="toolbox-item-scale" onClick={() => handleToolClick('BIDIRECTIONAL')}>
+                            <Arc id="preview" initialType="BIDIRECTIONAL" />
+                            <span>Bidirectional Arc</span>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
