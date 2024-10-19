@@ -1,4 +1,4 @@
-# PATS (Place and Transition Simulator) 
+# PATS (Petri Net Place and Transition Simulator) 
 
 <**This is an ongoing project projected to be completed spring 2025**>
 
