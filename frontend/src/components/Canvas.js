@@ -14,7 +14,7 @@ const Canvas = () => {
         accept: [ItemTypes.PLACE, ItemTypes.TRANSITION, ItemTypes.ARC],
         drop: (item, monitor) => {
             const delta = monitor.getClientOffset();
-            const gridSize = 20; // grid size
+            const gridSize = 40; // grid size
             const left = Math.round(delta.x / gridSize) * gridSize;
             const top = Math.round(delta.y / gridSize) * gridSize;
 

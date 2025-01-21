@@ -18,13 +18,12 @@ public class PetriNetController {
         this.petriNetService = petriNetService;
     }
 
-    @PostMapping("/api/petrinet")
+    @PostMapping("/api/process")
     public ResponseEntity<?> processPetriNet(@RequestBody PetriNetDTO petriNetDTO) {
         try {
             PetriNetDTO updatedPetriNetDTO = petriNetService.processPetriNet(petriNetDTO);
             return ResponseEntity.ok(updatedPetriNetDTO);
         } catch (Exception e) {
-            // Handle specific exceptions here as needed
             return ResponseEntity.badRequest().body("Error processing Petri net: " + e.getMessage());
         }
     }

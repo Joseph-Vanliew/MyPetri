@@ -11,6 +11,14 @@ const Toolbox = ({ onSelectTool }) => {
         onSelectTool(toolType);
     };
 
+    // Expected drag drop context
+    // add a drag and drop method here.
+
+    const onDrag = ({}) => {
+    //link to canvas component
+    };
+
+
     return (
         <div className="toolbox">
             <div className="toolbox-item" onClick={() => handleToolClick('PLACE')}>
