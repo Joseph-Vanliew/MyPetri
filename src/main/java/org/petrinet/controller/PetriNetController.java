@@ -18,7 +18,7 @@ public class PetriNetController {
         this.petriNetService = petriNetService;
     }
 
-    @PostMapping("/api/petrinet")
+    @PostMapping("/api/process")
     public ResponseEntity<?> processPetriNet(@RequestBody PetriNetDTO petriNetDTO) {
         try {
             PetriNetDTO updatedPetriNetDTO = petriNetService.processPetriNet(petriNetDTO);
