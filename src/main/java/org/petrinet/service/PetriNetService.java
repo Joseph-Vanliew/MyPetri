@@ -120,11 +120,16 @@ public class PetriNetService {
     private PetriNetDTO convertDomainModelsToDTO(Map<String, Place> placesMap, List<Transition> transitions,
                                                  Map<String, Arc> arcsMap) {
         List<PlaceDTO> placeDTOs = placesMap.values().stream()
-                .map(place -> new PlaceDTO(place.getId(), place.getTokens()))
+                .map(place -> new PlaceDTO(
+                        place.getId(),
+                        place.getTokens()))
                 .collect(Collectors.toList());
         //These should really be in the mapper class
         List<TransitionDTO> transitionDTOs = transitions.stream()
-                .map(transition -> new TransitionDTO(transition.getId(), transition.getEnabled(), transition.getArcIds()))
+                .map(transition -> new TransitionDTO(
+                        transition.getId(),
+                        transition.getEnabled(),
+                        transition.getArcIds()))
                 .collect(Collectors.toList());
 
         List<ArcDTO> arcDTOs = arcsMap.values().stream().filter(Objects::nonNull)
