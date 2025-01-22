@@ -138,6 +138,7 @@ public class PetriNetService {
                 })
                 .collect(Collectors.toList());
 
+
         return new PetriNetDTO(placeDTOs, transitionDTOs, arcDTOs);
     }
 }

@@ -27,5 +27,4 @@ public class PetriNetController {
             return ResponseEntity.badRequest().body("Error processing Petri net: " + e.getMessage());
         }
     }
-
 }
