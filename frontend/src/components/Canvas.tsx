@@ -1,5 +1,6 @@
 // src/components/Canvas.tsx
 import { UIPlace, UITransition, UIArc } from '../types';
+import { GRID_CELL_SIZE } from '../types';
 
 interface CanvasProps {
     places: UIPlace[];
@@ -16,7 +17,6 @@ export const Canvas = ({
                            selectedElements,
                            onCanvasClick,
                        }: CanvasProps) => {
-    // Helper to get element position by ID
     const getElementPosition = (id: string) => {
         const place = places.find(p => p.id === id);
         if (place) return { x: place.x, y: place.y };
@@ -25,6 +25,44 @@ export const Canvas = ({
         if (transition) return { x: transition.x, y: transition.y };
 
         return null;
+    };
+
+    const renderGrid = () => {
+        const lines = [];
+        const width = 800;
+        const height = 600;
+
+        // Vertical lines
+        for (let x = 0; x <= width; x += GRID_CELL_SIZE) {
+            lines.push(
+                <line
+                    key={`vline_${x}`}
+                    x1={x}
+                    y1={0}
+                    x2={x}
+                    y2={height}
+                    stroke="#e0e0e0"
+                    strokeWidth={1}
+                />
+            );
+        }
+
+        // Horizontal lines
+        for (let y = 0; y <= height; y += GRID_CELL_SIZE) {
+            lines.push(
+                <line
+                    key={`hline_${y}`}
+                    x1={0}
+                    y1={y}
+                    x2={width}
+                    y2={y}
+                    stroke="#e0e0e0"
+                    strokeWidth={1}
+                />
+            );
+        }
+
+        return lines;
     };
 
     return (
@@ -36,6 +74,9 @@ export const Canvas = ({
             }}
         >
             <svg className="canvas-svg" width="800" height="600">
+                {/* Grid System */}
+                {renderGrid()}
+
                 {/* Render Arcs */}
                 {arcs.map(arc => {
                     const sourcePos = getElementPosition(arc.incomingId);
@@ -84,6 +125,18 @@ export const Canvas = ({
                         markerHeight="6"
                     >
                         <circle cx="5" cy="5" r="4" fill="#ff0000" />
+                    </marker>
+
+                    <marker
+                        id="bidirectional"
+                        viewBox="0 0 10 10"
+                        refX="8"
+                        refY="5"
+                        markerWidth="6"
+                        markerHeight="6"
+                        orient="auto-start-reverse"
+                    >
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#000" />
                     </marker>
                 </defs>
             </svg>

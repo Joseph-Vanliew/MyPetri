@@ -6,10 +6,16 @@
   border: 2px solid #ccc;
   margin: 20px;
 }
-
 .canvas-svg {
   position: absolute;
+  background-color: #f8f8f8;
   pointer-events: none;
+}
+
+
+.grid-line {
+  stroke: #e0e0e0;
+  stroke-width: 1;
 }
 
 .place {
@@ -21,8 +27,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: move;
   border: 2px solid transparent;
+  ;
+  transition: all 0.1s ease;
 }
 
 .place.selected {
@@ -40,6 +48,7 @@
   background: #FFA07A;
   cursor: pointer;
   border: 2px solid transparent;
+  transition: all 0.1s ease;
 }
 
 .transition.enabled {

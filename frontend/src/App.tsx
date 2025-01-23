@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
-import { PetriNetDTO, UIPlace, UITransition, UIArc } from './types';
+import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE} from './types';
 
 export default function App() {
     // State management
@@ -79,17 +79,19 @@ export default function App() {
 
     // Find clicked element helper
     const findClickedElement = (x: number, y: number) => {
-        const elementRadius = 20;
+        // Snap to grid first
+        const gridX = Math.round(x / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        const gridY = Math.round(y / GRID_CELL_SIZE) * GRID_CELL_SIZE;
 
-        // Check places
+        // Check places (use grid-aligned positions)
         const place = places.find(p =>
-            Math.sqrt((p.x - x) ** 2 + (p.y - y) ** 2) < elementRadius
+            p.x === gridX && p.y === gridY
         );
         if (place) return place;
 
         // Check transitions
         const transition = transitions.find(t =>
-            Math.abs(t.x - x) < 30 && Math.abs(t.y - y) < 15
+            t.x === gridX && t.y === gridY
         );
         if (transition) return transition;
 
