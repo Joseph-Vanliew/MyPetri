@@ -1,8 +1,8 @@
 /* src/App.css */
 .canvas-container {
   position: relative;
-  width: 800px;
-  height: 600px;
+  width: 1200px;
+  height: 1000px;
   border: 2px solid #ccc;
   margin: 20px;
 }

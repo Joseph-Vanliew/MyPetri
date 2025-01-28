@@ -17,6 +17,7 @@ export default function App() {
     const handleCanvasClick = useCallback((x: number, y: number) => {
         if (selectedTool === 'PLACE') {
             const newPlace: UIPlace = {
+                name:'',
                 id: `place_${Date.now()}`,
                 tokens: 1,
                 x,
@@ -25,6 +26,7 @@ export default function App() {
             setPlaces(prev => [...prev, newPlace]);
         } else if (selectedTool === 'TRANSITION') {
             const newTransition: UITransition = {
+                name: '',
                 id: `trans_${Date.now()}`,
                 enabled: false,
                 arcIds: [],
@@ -109,7 +111,7 @@ export default function App() {
         return (isSourcePlace && isTargetTrans) || (isSourceTrans && isTargetPlace);
     };
 
-    // Simulation handler
+    // Builds Backend Request and Send
     const handleSimulate = async () => {
         const requestBody: PetriNetDTO = {
             places: places.map(p => ({ id: p.id, tokens: p.tokens })),
@@ -153,6 +155,11 @@ export default function App() {
         }
     };
 
+    const handleReset = async () => {
+        //tbd
+    }
+
+
     return (
         <div className="app">
             <Toolbar
@@ -172,7 +179,10 @@ export default function App() {
 
             <div className="controls">
                 <button onClick={handleSimulate} className="simulate-button">
-                    Run Simulation
+                    Next State
+                </button>
+                <button onClick={handleReset} className="reset-button">
+                    Reset
                 </button>
             </div>
         </div>

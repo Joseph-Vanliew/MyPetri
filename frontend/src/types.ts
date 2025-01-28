@@ -4,7 +4,7 @@
 // API Request/Response Types (Mirror Java DTOs)
 // --------------------------
 
-export const GRID_CELL_SIZE = 50; // Pixels per grid cell
+export const GRID_CELL_SIZE = 50; // Pixels per grid cell for aspect rations ranging from 16:9 to 21:9
 export type GridPosition = { gridX: number; gridY: number };
 
 export interface PetriNetDTO {
@@ -27,23 +27,25 @@ export interface TransitionDTO {
 export interface ArcDTO {
     id: string;
     type: "REGULAR" | "INHIBITOR" | "BIDIRECTIONAL";
-    incomingId: string; // Matches Java field name
-    outgoingId: string; // Matches Java field name
+    incomingId: string;
+    outgoingId: string;
 }
 
 // --------------------------
 // UI State Types (Additional frontend-only fields)
 // --------------------------
 export interface UIPlace extends PlaceDTO {
-    x: number;  // Canvas position (not sent to backend)
+    name: string,
+    x: number;
     y: number;
 }
 
 export interface UITransition extends TransitionDTO {
-    x: number;  // Canvas position (not sent to backend)
+    name: string,
+    x: number;
     y: number;
 }
 
 export interface UIArc extends ArcDTO {
-    // No extra fields needed, but could add UI-specific props later
+
 }
