@@ -94,3 +94,13 @@
   border: none;
   cursor: pointer;
 }
+
+.petri-element.place circle {
+  stroke: #0f0f0f;
+  transition: fill 0.2s ease;
+}
+
+.petri-element.place:hover circle {
+  stroke-width: 4;
+  transform: 0.2s ease;
+}

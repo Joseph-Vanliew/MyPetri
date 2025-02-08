@@ -38,12 +38,15 @@ export interface UIPlace extends PlaceDTO {
     name: string,
     x: number;
     y: number;
+    radius: number;
 }
 
 export interface UITransition extends TransitionDTO {
     name: string,
     x: number;
     y: number;
+    width: number;
+    height: number;
 }
 
 export interface UIArc extends ArcDTO {
