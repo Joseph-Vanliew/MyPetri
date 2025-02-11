@@ -36,7 +36,7 @@ export const Canvas = (props: CanvasProps) => {
     };
 
     const handleMouseUp = (e: React.MouseEvent<SVGSVGElement>) => {
-
+        console.log(`Mouse released at (${e.clientX}, ${e.clientY})`);
         setIsPanning(false);
     };
 
