@@ -1,5 +1,5 @@
 import { PetriNetDTO } from '../types';
-import { useRef } from 'react';
+import React, { useRef } from 'react';
 
 interface JSONViewerProps {
     data: PetriNetDTO;

@@ -14,6 +14,9 @@ interface CanvasProps {
     onUpdatePlaceSize: (id: string, newRadius: number) => void;
     onUpdateTransitionSize: (id: string, height: number, width: number) => void;
     onUpdateElementPosition: (id: string, newX: number, newY: number) => void;
+    onArcPortClick:(id: string)=> void;
+    selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';  // New prop
+    arcType: UIArc['type'];  // New prop
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -162,15 +165,6 @@ export const Canvas = (props: CanvasProps) => {
 
     };
 
-    /* */
-    const getElementPosition = (id: string) => {
-        const place = props.places.find(p => p.id === id);
-        if (place) return { x: place.x, y: place.y };
-
-        const transition = props.transitions.find(t => t.id === id);
-        if (transition) return { x: transition.x, y: transition.y };
-        return null;
-    };
 
     const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
         e.preventDefault();
@@ -229,18 +223,23 @@ export const Canvas = (props: CanvasProps) => {
             {/* Arcs Layer */}
             <g className="arcs-layer">
                 {props.arcs.map(arc => {
-                    const sourcePos = getElementPosition(arc.incomingId);
-                    const targetPos = getElementPosition(arc.outgoingId);
+                    const sourceElement =
+                        props.places.find(p => p.id === arc.incomingId) ||
+                        props.transitions.find(t => t.id === arc.incomingId);
+                    const targetElement =
+                        props.places.find(p => p.id === arc.outgoingId) ||
+                        props.transitions.find(t => t.id === arc.outgoingId);
 
-                    return sourcePos && targetPos ? (
+                    return sourceElement && targetElement ? (
                         <Arc
                             key={arc.id}
                             id={arc.id}
                             type={arc.type}
                             incomingId={arc.incomingId}
                             outgoingId={arc.outgoingId}
-                            sourcePos={sourcePos}
-                            targetPos={targetPos}
+                            source={sourceElement}
+                            target={targetElement}
+                            isSelected={props.selectedElements.includes(arc.id)}
                         />
                     ) : null;
                 })}
@@ -261,6 +260,9 @@ export const Canvas = (props: CanvasProps) => {
                         onSelect={props.onSelectElement}
                         onUpdateSize={props.onUpdatePlaceSize}
                         onUpdatePosition={props.onUpdateElementPosition}
+                        arcMode={props.selectedTool === 'ARC'}
+                        arcType={props.arcType}
+                        onArcPortClick={props.onArcPortClick}
                     />
                 ))}
 
@@ -279,6 +281,9 @@ export const Canvas = (props: CanvasProps) => {
                         onSelect={props.onSelectElement}
                         onUpdateSize={props.onUpdateTransitionSize}
                         onUpdatePosition={props.onUpdateElementPosition}
+                        arcMode={props.selectedTool === 'ARC'}
+                        arcType={props.arcType}
+                        onArcPortClick={props.onArcPortClick}
 
                     />
                 ))}
@@ -295,7 +300,7 @@ export const Canvas = (props: CanvasProps) => {
                     markerHeight="6"
                     orient="auto-start-reverse"
                 >
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#262626" />
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
                 </marker>
 
                 <marker
@@ -306,7 +311,7 @@ export const Canvas = (props: CanvasProps) => {
                     markerWidth="6"
                     markerHeight="6"
                 >
-                    <circle cx="5" cy="5" r="4" fill="#ff4d4f" />
+                    <circle cx="5" cy="5" r="4" fill="#ff0000" />
                 </marker>
 
                 <marker
@@ -318,7 +323,7 @@ export const Canvas = (props: CanvasProps) => {
                     markerHeight="6"
                     orient="auto-start-reverse"
                 >
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#262626" />
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
                 </marker>
             </defs>
         </svg>

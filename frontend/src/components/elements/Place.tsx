@@ -1,12 +1,15 @@
 // src/components/elements/Place.tsx
 import React, { useRef, useState, useEffect } from 'react';
-import type { UIPlace } from '../../types';
+import type {UIArc, UIPlace} from '../../types';
 
 interface PlaceProps extends UIPlace {
     isSelected: boolean;
     onSelect: (id: string) => void;
     onUpdatePosition: (id: string, x: number, y: number) => void;
     onUpdateSize: (id: string, newRadius: number) => void;
+    onArcPortClick: (id:string) => void;
+    arcMode?: boolean;
+    arcType?: UIArc['type'];
 }
 
 export const Place = (props : PlaceProps) => {
@@ -19,9 +22,12 @@ export const Place = (props : PlaceProps) => {
     //Makes sure we're clicking on a place
     const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
 
+    const [isHovered, setIsHovered] = useState(false);
+
     /* helper function for the dragging useState */
     const handleDragStart = (e: React.MouseEvent<SVGGElement>) => {
         // Only start dragging if no resize handle is active.
+        if (props.arcMode) return;
         if (activeHandle) return;
         e.stopPropagation();
         setIsDragging(true);
@@ -153,6 +159,9 @@ export const Place = (props : PlaceProps) => {
                 props.onSelect(props.id);
             }}
             onMouseDown={handleDragStart}
+
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
             {/* Original Circle */}
             <circle
@@ -175,7 +184,7 @@ export const Place = (props : PlaceProps) => {
             </text>
 
             {/* Handle Resizing and render bounding box*/}
-            {props.isSelected && (
+            {props.isSelected && !props.arcMode && (
                 <>
                     {/* Dashed bounding box */}
                     <rect
@@ -234,6 +243,22 @@ export const Place = (props : PlaceProps) => {
                         }}
                     />
                 </>
+            )}
+
+            {/* When in arc mode, render a port marker on the boundary */}
+            {props.arcMode && isHovered &&  (
+                <circle
+                    cx={props.radius}  // right edge of the circle
+                    cy={0}
+                    r={4}
+                    fill="green"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // trigger arc creation:
+                        props.onArcPortClick(props.id);
+                    }}
+                />
             )}
         </g>
     );

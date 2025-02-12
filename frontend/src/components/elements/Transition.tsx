@@ -1,11 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react';
-import type { UITransition } from '../../types';
+import type {UIArc, UITransition} from '../../types';
 
 interface TransitionProps extends UITransition {
     isSelected: boolean;
     onSelect: (id: string) => void;
     onUpdatePosition: (id: string, x: number, y: number) => void;
     onUpdateSize: (id: string, newWidth: number, newHeight: number) => void;
+    arcMode?: boolean;
+    arcType?: UIArc['type'];
+    onArcPortClick: (id:string) => void;
 }
 
 export const Transition = (props: TransitionProps) => {
@@ -23,10 +26,13 @@ export const Transition = (props: TransitionProps) => {
     const [originalHeight, setOriginalHeight] = useState(props.height);
     const [aspectRatio, setAspectRatio] = useState(props.height === 0 ? 1 : props.width / props.height);
 
+    const [isHovered, setIsHovered] = useState(false);
+
     // -----------------------------------
     // DRAGGING / REPOSITIONING
     // -----------------------------------
     const handleDragStart = (e: React.MouseEvent<SVGGElement>) => {
+        if (props.arcMode) return;
         if (activeHandle) return; // skip drag if resizing
         e.stopPropagation();
         setIsDragging(true);
@@ -168,7 +174,11 @@ export const Transition = (props: TransitionProps) => {
                 e.stopPropagation();
                 props.onSelect(props.id);
             }}
+
             onMouseDown={handleDragStart}
+
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
             {/* Main rectangle */}
             <rect
@@ -194,7 +204,7 @@ export const Transition = (props: TransitionProps) => {
             </text>
 
             {/* If selected, show bounding box + corner handles */}
-            {props.isSelected && (
+            {props.isSelected && !props.arcMode && (
                 <>
                     <rect
                         x={-props.width / 2}
@@ -239,6 +249,21 @@ export const Transition = (props: TransitionProps) => {
                         onMouseDown={(e) => handleResizeStart('bottom-right', e)}
                     />
                 </>
+            )}
+            {/* When in arc mode and if arcType is not INHIBITOR, render a port marker */}
+            {props.arcMode && isHovered && (
+                <circle
+                    cx={props.width / 2} // Right edge of the rectangle
+                    cy={0}
+                    r={4}
+                    fill="green"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // Call onSelect to mark this transition for arc creation
+                        props.onArcPortClick(props.id);
+                    }}
+                />
             )}
         </g>
     );

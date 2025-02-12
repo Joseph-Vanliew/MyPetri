@@ -91,6 +91,39 @@ export default function App() {
         setSelectedElements([id]);
     };
 
+    const handleArcPortClick = (clickedId: string) => {
+        if (selectedElements.length === 0) {
+            setSelectedElements([clickedId]);
+        } else {
+            const sourceId = selectedElements[0];
+            const targetId = clickedId;
+            if (isValidArcConnection(sourceId, targetId, arcType)) {
+                const newArc: UIArc = {
+                    id: `arc_${Date.now()}`,
+                    type: arcType,
+                    incomingId: sourceId,
+                    outgoingId: targetId,
+                };
+                setArcs(prev => [...prev, newArc]);
+
+                // Optionally, update transitions if needed:
+                if (sourceId.startsWith('trans')) {
+                    setTransitions(prev => prev.map(t =>
+                        t.id === sourceId ? { ...t, arcIds: [...t.arcIds, newArc.id] } : t
+                    ));
+                }
+                if (targetId.startsWith('trans')) {
+                    setTransitions(prev => prev.map(t =>
+                        t.id === targetId ? { ...t, arcIds: [...t.arcIds, newArc.id] } : t
+                    ));
+                }
+            } else {
+                console.warn('Invalid arc connection');
+            }
+            setSelectedElements([]);
+        }
+    };
+
     // Arc creation and binding
     const handleArcCreation = (x: number, y: number) => {
         const clickedElement = findClickedElement(x, y);
@@ -326,7 +359,7 @@ export default function App() {
                 setArcType={setArcType}
             />
 
-            {/* Main area: Canvas on the left, JSON on the right */}
+            {/* Main area*/}
             <div style={{ display: 'flex', alignItems: 'flex-start' }}>
                 {/* Canvas */}
                 <div style={{ width: '800px', height: '600px' }}>
@@ -340,6 +373,9 @@ export default function App() {
                         onUpdateTransitionSize={updateTransitionSize}
                         onUpdateElementPosition={updateElementPosition}
                         onSelectElement={handleSelectElement}
+                        selectedTool={selectedTool}
+                        onArcPortClick={handleArcPortClick}
+                        arcType={arcType}
                     />
                 </div>
 
@@ -349,7 +385,7 @@ export default function App() {
                 </div>
             </div>
 
-            {/* Controls at the bottom */}
+            {/* Simulate and reset buttons */}
             <div className="controls" style={{ marginTop: '1rem' }}>
                 <button onClick={handleSimulate} className="simulate-button">
                     Next State
