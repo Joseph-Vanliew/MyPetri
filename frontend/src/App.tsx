@@ -13,15 +13,22 @@ export default function App() {
     const [selectedTool, setSelectedTool] = useState<'NONE' |'PLACE' | 'TRANSITION' | 'ARC'>('NONE');
     const [selectedElements, setSelectedElements] = useState<string[]>([]);
     const [arcType, setArcType] = useState<UIArc['type']>('REGULAR');
+    const [isTyping, setIsTyping] = useState(false);
 
 
-    // Listen for Escape or Delete keys
+    const handleTypingChange = (typing: boolean) => {
+        setIsTyping(typing);
+    };
+
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
+            if (isTyping) return; // ✅ Prevent deletion while typing
+
             if (e.key === 'Escape') {
                 setSelectedTool('NONE');
                 return;
             }
+
             if (e.key === 'Delete' || e.key === 'Backspace') {
                 handleDelete();
             }
@@ -31,7 +38,7 @@ export default function App() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [selectedElements, places, transitions, arcs]);
+    }, [selectedElements, places, transitions, arcs, isTyping]);
 
     const petriNetDTO: PetriNetDTO = {
         places: places.map((p) => ({ id: p.id, tokens: p.tokens })),
@@ -241,6 +248,8 @@ export default function App() {
             }))
         };
 
+        console.log("Sending request:", requestBody);
+
         try {
             const response = await fetch('http://localhost:8080/api/process', {
                 method: 'POST',
@@ -248,20 +257,27 @@ export default function App() {
                 body: JSON.stringify(requestBody)
             });
 
-            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-
             const responseData: PetriNetDTO = await response.json();
+            console.log("Received response:", responseData);
 
-            // Update state with backend response... replace with update token counts and call animations.
-            setPlaces(prev => prev.map(p => {
+            // Log previous and new state
+            console.log("Previous places state:", places);
+            const newPlaces = places.map(p => {
                 const updated = responseData.places.find(rp => rp.id === p.id);
                 return updated ? { ...p, tokens: updated.tokens } : p;
-            }));
+            });
 
-            setTransitions(prev => prev.map(t => {
+            console.log("Updated places state:", newPlaces);
+            setPlaces([...newPlaces]); // new reference for rendering token counts
+
+            console.log("Previous transitions state:", transitions);
+            const newTransitions = transitions.map(t => {
                 const updated = responseData.transitions.find(rt => rt.id === t.id);
                 return updated ? { ...t, enabled: updated.enabled } : t;
-            }));
+            });
+
+            console.log("Updated transitions state:", newTransitions);
+            setTransitions([...newTransitions]); // new reference to update transition enabled boolean
 
         } catch (error) {
             console.error('Simulation error:', error);
@@ -276,45 +292,30 @@ export default function App() {
         setSelectedElements([]);
     }
 
-    //clears map of selected element
     function handleDelete() {
         if (selectedElements.length === 0) return;
 
-        // We'll remove arcs that reference any selected ID
-        // and remove the selected places/transitions from their arrays.
+        // Getting the arc id of the arc selected
+        const arcsToDelete = arcs
+            .filter((arc) => selectedElements.includes(arc.id)) // Only delete explicitly selected arcs
+            .map((arc) => arc.id); // Extract their IDs
 
-        setArcs((prevArcs) =>
-            prevArcs.filter(
-                (arc) =>
-                    !selectedElements.includes(arc.incomingId) &&
-                    !selectedElements.includes(arc.outgoingId)
-            )
-        );
+        // removing selected arc from arcs array
+        setArcs((prevArcs) => prevArcs.filter((arc) => !arcsToDelete.includes(arc.id)));
 
-        setPlaces((prevPlaces) =>
-            prevPlaces.filter((p) => !selectedElements.includes(p.id))
-        );
-
+        // updating connected transition to exclude arc id
         setTransitions((prevTransitions) =>
             prevTransitions.map((t) => ({
                 ...t,
-                // remove arcs from arcIds if they're referencing a deleted place/transition
-                arcIds: t.arcIds.filter((aid) => {
-                    // We still want to keep arc if it's not referencing a soon-deleted ID
-                    // But we actually removed the arc from arcs array, so it might be moot
-                    // This just ensures we don't keep stray references
-                    const arc = arcs.find((arc) => arc.id === aid);
-                    if (!arc) return false; // If arc was already removed, skip
-                    return !(selectedElements.includes(arc.incomingId) ||
-                        selectedElements.includes(arc.outgoingId));
-
-                }),
+                arcIds: t.arcIds.filter((arcId) => !arcsToDelete.includes(arcId)), // Remove deleted arc IDs
             }))
-                // Also filter out transitions themselves that are selected
-                .filter((t) => !selectedElements.includes(t.id))
         );
 
-        // Clear the selection after deletion
+        // deleting the other two selected elements
+        setPlaces((prevPlaces) => prevPlaces.filter((p) => !selectedElements.includes(p.id)));
+        setTransitions((prevTransitions) => prevTransitions.filter((t) => !selectedElements.includes(t.id)));
+
+        // Step 5: Clear the selection
         setSelectedElements([]);
     }
 
@@ -343,6 +344,14 @@ export default function App() {
         setTransitions((prevTransitions) =>
             prevTransitions.map((t) =>
                 t.id === id ? { ...t, x: newX, y: newY } : t
+            )
+        );
+    };
+
+    const handleTokenUpdate = (id: string, newTokens: number) => {
+        setPlaces(prevPlaces =>
+            prevPlaces.map(place =>
+                place.id === id ? { ...place, tokens: newTokens } : place
             )
         );
     };
@@ -376,6 +385,8 @@ export default function App() {
                         selectedTool={selectedTool}
                         onArcPortClick={handleArcPortClick}
                         arcType={arcType}
+                        onUpdateToken={handleTokenUpdate}
+                        onTypingChange={handleTypingChange}
                     />
                 </div>
 

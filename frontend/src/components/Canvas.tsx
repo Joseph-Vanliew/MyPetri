@@ -15,8 +15,10 @@ interface CanvasProps {
     onUpdateTransitionSize: (id: string, height: number, width: number) => void;
     onUpdateElementPosition: (id: string, newX: number, newY: number) => void;
     onArcPortClick:(id: string)=> void;
-    selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';  // New prop
-    arcType: UIArc['type'];  // New prop
+    selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';
+    arcType: UIArc['type'];
+    onUpdateToken: (id: string, newTokens: number) => void;
+    onTypingChange: (isTyping: boolean) => void;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -132,7 +134,7 @@ export const Canvas = (props: CanvasProps) => {
 
     /* for zooming in and out; potential for resizing objects */
     const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
-        //e.nativeEvent.preventDefault();
+        e.preventDefault();
 
         // zoom aggressiveness:
         const zoomFactor = 0.05;
@@ -240,6 +242,7 @@ export const Canvas = (props: CanvasProps) => {
                             source={sourceElement}
                             target={targetElement}
                             isSelected={props.selectedElements.includes(arc.id)}
+                            onSelect={props.onSelectElement}
                         />
                     ) : null;
                 })}
@@ -263,6 +266,8 @@ export const Canvas = (props: CanvasProps) => {
                         arcMode={props.selectedTool === 'ARC'}
                         arcType={props.arcType}
                         onArcPortClick={props.onArcPortClick}
+                        onUpdateTokens={props.onUpdateToken}
+                        onTypingChange={props.onTypingChange}
                     />
                 ))}
 

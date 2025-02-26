@@ -7,9 +7,11 @@ interface PlaceProps extends UIPlace {
     onSelect: (id: string) => void;
     onUpdatePosition: (id: string, x: number, y: number) => void;
     onUpdateSize: (id: string, newRadius: number) => void;
+    onUpdateTokens: (id: string, newTokens: number) => void;
     onArcPortClick: (id:string) => void;
     arcMode?: boolean;
     arcType?: UIArc['type'];
+    onTypingChange: (isTyping: boolean) => void;
 }
 
 export const Place = (props : PlaceProps) => {
@@ -23,6 +25,41 @@ export const Place = (props : PlaceProps) => {
     const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
 
     const [isHovered, setIsHovered] = useState(false);
+
+
+    const [tokenCount, setTokenCount] = useState<number>(props.tokens);
+    const [tempTokenCount, setTempTokenCount] = useState<string>(props.tokens.toString());
+    const [, setIsTyping] = useState(false);
+
+    const handleFocus = () => {
+        setIsTyping(true);
+        setTempTokenCount("");
+        props.onTypingChange(true);
+    };
+
+    const handleBlur = () => {
+        setIsTyping(false);
+        props.onTypingChange(false);
+        setTempTokenCount(tokenCount.toString());
+    };
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setTempTokenCount(event.target.value);
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            let newTokenCount = parseInt(tempTokenCount, 10);
+
+            if (isNaN(newTokenCount) || newTokenCount < 0) {
+                newTokenCount = 0; // Ensure a non-negative number
+            }
+
+            setTokenCount(newTokenCount);
+            props.onUpdateTokens(props.id, newTokenCount);
+            setIsTyping(false);
+        }
+    };
 
     /* helper function for the dragging useState */
     const handleDragStart = (e: React.MouseEvent<SVGGElement>) => {
@@ -163,6 +200,7 @@ export const Place = (props : PlaceProps) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
+
             {/* Original Circle */}
             <circle
                 r={props.radius}
@@ -171,6 +209,32 @@ export const Place = (props : PlaceProps) => {
                 strokeWidth="1"
             >
             </circle>
+
+            {/* Token Count Display */}
+            <text x="0" y="5" textAnchor="middle" className="token-count" fill="white">
+                {tokenCount}
+            </text>
+
+            {/*Token Input - Only renders when selected */}
+            {props.isSelected && !props.arcMode && (
+                <foreignObject x="-15" y="25" width="30" height="20">
+                    <input
+                        type="number"
+                        value={tempTokenCount}
+                        onChange={handleInputChange}
+                        className="token-input"
+                        min="0"
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        onKeyDown={handleKeyDown} // ✅ Update tokens only on Enter
+                    />
+                </foreignObject>
+            )}
+
+            {/* Label Below */}
+            <text x="0" y={props.radius + 10} textAnchor="middle" dominantBaseline="middle" className="token-count">
+                {props.name}
+            </text>
 
             {/* Text label below the circle */}
             <text
@@ -203,7 +267,7 @@ export const Place = (props : PlaceProps) => {
                         cy={-props.radius}
                         r={4}
                         fill="#007bff"
-                        style={{ cursor: 'nwse-resize' }}
+                        style={{cursor: 'nwse-resize'}}
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('top-left');
@@ -214,7 +278,7 @@ export const Place = (props : PlaceProps) => {
                         cy={-props.radius}
                         r={4}
                         fill="#007bff"
-                        style={{ cursor: 'nesw-resize' }}
+                        style={{cursor: 'nesw-resize'}}
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('top-right');
@@ -225,7 +289,7 @@ export const Place = (props : PlaceProps) => {
                         cy={props.radius}
                         r={4}
                         fill="#007bff"
-                        style={{ cursor: 'nesw-resize' }}
+                        style={{cursor: 'nesw-resize'}}
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('bottom-left');
@@ -236,7 +300,7 @@ export const Place = (props : PlaceProps) => {
                         cy={props.radius}
                         r={4}
                         fill="#007bff"
-                        style={{ cursor: 'nwse-resize' }}
+                        style={{cursor: 'nwse-resize'}}
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('bottom-right');
@@ -246,13 +310,13 @@ export const Place = (props : PlaceProps) => {
             )}
 
             {/* When in arc mode, render a port marker on the boundary */}
-            {props.arcMode && isHovered &&  (
+            {props.arcMode && isHovered && (
                 <circle
                     cx={props.radius}  // right edge of the circle
                     cy={0}
                     r={4}
                     fill="green"
-                    style={{ cursor: 'pointer' }}
+                    style={{cursor: 'pointer'}}
                     onClick={(e) => {
                         e.stopPropagation();
                         // trigger arc creation:
