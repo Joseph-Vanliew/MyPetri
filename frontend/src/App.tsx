@@ -20,6 +20,8 @@ export default function App() {
         setIsTyping(typing);
     };
 
+    
+
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (isTyping) return; // Prevent deletion while typing
@@ -257,27 +259,38 @@ export default function App() {
                 body: JSON.stringify(requestBody)
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
             const responseData: PetriNetDTO = await response.json();
             console.log("Received response:", responseData);
 
-            // Log previous and new state
-            console.log("Previous places state:", places);
-            const newPlaces = places.map(p => {
-                const updated = responseData.places.find(rp => rp.id === p.id);
-                return updated ? { ...p, tokens: updated.tokens } : p;
+            // Update places with new token values
+            const newPlaces = places.map(place => {
+                const updatedPlace = responseData.places.find(p => p.id === place.id);
+                if (updatedPlace) {
+                    return {
+                        ...place,
+                        tokens: updatedPlace.tokens
+                    };
+                }
+                return place;
             });
+            setPlaces(newPlaces);
 
-            console.log("Updated places state:", newPlaces);
-            setPlaces([...newPlaces]); // new reference for rendering token counts
-
-            console.log("Previous transitions state:", transitions);
-            const newTransitions = transitions.map(t => {
-                const updated = responseData.transitions.find(rt => rt.id === t.id);
-                return updated ? { ...t, enabled: updated.enabled } : t;
+            // Update transitions with new enabled status
+            const newTransitions = transitions.map(transition => {
+                const updatedTransition = responseData.transitions.find(t => t.id === transition.id);
+                if (updatedTransition) {
+                    return {
+                        ...transition,
+                        enabled: updatedTransition.enabled
+                    };
+                }
+                return transition;
             });
-
-            console.log("Updated transitions state:", newTransitions);
-            setTransitions([...newTransitions]); // new reference to update transition enabled boolean
+            setTransitions(newTransitions);
 
         } catch (error) {
             console.error('Simulation error:', error);
@@ -295,27 +308,31 @@ export default function App() {
     function handleDelete() {
         if (selectedElements.length === 0) return;
 
-        // Getting the arc id of the arc selected
-        const arcsToDelete = arcs
-            .filter((arc) => selectedElements.includes(arc.id)) // Only delete explicitly selected arcs
-            .map((arc) => arc.id); // Extract their IDs
+        // Find all arcs that need to be deleted:
+        // 1. Explicitly selected arcs
+        // 2. Arcs connected to selected places or transitions
+        const arcsToDelete = arcs.filter((arc) => 
+            selectedElements.includes(arc.id) || // Explicitly selected arcs
+            selectedElements.includes(arc.incomingId) || // Arcs where selected element is source
+            selectedElements.includes(arc.outgoingId) // Arcs where selected element is target
+        ).map((arc) => arc.id);
 
-        // removing selected arc from arcs array
+        // removing selected arcs from arcs array
         setArcs((prevArcs) => prevArcs.filter((arc) => !arcsToDelete.includes(arc.id)));
 
-        // updating connected transition to exclude arc id
+        // updating connected transitions to exclude deleted arc ids
         setTransitions((prevTransitions) =>
             prevTransitions.map((t) => ({
                 ...t,
-                arcIds: t.arcIds.filter((arcId) => !arcsToDelete.includes(arcId)), // Remove deleted arc IDs
+                arcIds: t.arcIds.filter((arcId) => !arcsToDelete.includes(arcId)),
             }))
         );
 
-        // deleting the other two selected elements
+        // deleting the selected places and transitions
         setPlaces((prevPlaces) => prevPlaces.filter((p) => !selectedElements.includes(p.id)));
         setTransitions((prevTransitions) => prevTransitions.filter((t) => !selectedElements.includes(t.id)));
 
-        // Step 5: Clear the selection
+        // Clear the selection
         setSelectedElements([]);
     }
 

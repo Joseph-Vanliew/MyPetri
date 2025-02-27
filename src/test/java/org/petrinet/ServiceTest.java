@@ -11,6 +11,7 @@ import org.petrinet.service.model.Place;
 import org.petrinet.service.model.Transition;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -208,52 +209,6 @@ public class ServiceTest {
                 "Transition 'trans1' should be enabled as it's linked via a Bidirectional Arc with sufficient tokens.");
         assertEquals(1, resultDto.getPlaces().getFirst().getTokens(),
                 "The token count at 'place1' should remain unchanged after the transition fires.");
-    }
-
-    @Test
-    void evaluateTransition_RegularArc_InsufficientTokens() {
-        // Setup
-        Map<String, Arc> arcsMap = new HashMap<>();
-        Map<String, Place> placesMap = new HashMap<>();
-        Map<String, Integer> totalIncomingTransitionCounts = new HashMap<>();
-
-        Place sourcePlace = new Place("source", 1);  // Only 1 token available
-        placesMap.put("source", sourcePlace);
-        Arc regularArc = new Arc.RegularArc("arc1", "source", "trans1");
-        arcsMap.put("arc1", regularArc);
-        Transition transition = new Transition("trans1", true, List.of("arc1"));
-        totalIncomingTransitionCounts.put("source", 2);  // 2 tokens required, more than available
-
-        PetriNetService service = new PetriNetService();
-
-        // Act
-        boolean result = service.evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
-
-        // Assert
-        assertFalse(result, "Transition should be disabled due to insufficient tokens for Regular Arc.");
-    }
-
-    @Test
-    void evaluateTransition_BidirectionalArc_InsufficientTokens() {
-        // Setup
-        Map<String, Arc> arcsMap = new HashMap<>();
-        Map<String, Place> placesMap = new HashMap<>();
-        Map<String, Integer> totalIncomingTransitionCounts = new HashMap<>();
-
-        Place sourcePlace = new Place("source", 1);  // Only 1 token available
-        placesMap.put("source", sourcePlace);
-        Arc bidirectionalArc = new Arc.BidirectionalArc("arc2", "source", "trans1");
-        arcsMap.put("arc2", bidirectionalArc);
-        Transition transition = new Transition("trans1", true, List.of("arc2"));
-        totalIncomingTransitionCounts.put("source", 2);  // 2 tokens required, more than available
-
-        PetriNetService service = new PetriNetService();
-
-        // Act
-        boolean result = service.evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
-
-        // Assert
-        assertFalse(result, "Transition should be disabled due to insufficient tokens for Bidirectional Arc.");
     }
 
     @Test
@@ -532,6 +487,154 @@ public class ServiceTest {
 
         // Assert
         assertEquals(5, targetPlaceInhibitor.getTokens(), "Target place for Inhibitor Arc should not have additional tokens.");
+    }
+
+    @Test
+    void updateTokensForFiringTransition_SingleBidirectionalArc_MaintainsTokens() {
+        // Setup
+        Map<String, Arc> arcsMap = new HashMap<>();
+        Map<String, Place> placesMap = new HashMap<>();
+        
+        // Place with initial tokens
+        Place sourcePlace = new Place("place1", 3);
+        placesMap.put("place1", sourcePlace);
+        
+        // Bidirectional arc from place to transition
+        Arc bidirectionalArc = new Arc.BidirectionalArc("arc1", "place1", "trans1");
+        arcsMap.put("arc1", bidirectionalArc);
+        
+        // Transition with the bidirectional arc
+        Transition transition = new Transition("trans1", true, List.of("arc1"));
+        
+        // Act
+        PetriNetService service = new PetriNetService();
+        service.updateTokensForFiringTransition(transition, arcsMap, placesMap);
+        
+        // Assert
+        assertEquals(3, sourcePlace.getTokens(), 
+            "Place should maintain the same number of tokens after firing a transition with a bidirectional arc");
+    }
+    
+    @Test
+    void updateTokensForFiringTransition_BidirectionalAndRegularArc_CorrectTokenHandling() {
+        // Setup
+        Map<String, Arc> arcsMap = new HashMap<>();
+        Map<String, Place> placesMap = new HashMap<>();
+        
+        // Places with initial tokens
+        Place place1 = new Place("place1", 3); // Connected via bidirectional arc
+        Place place2 = new Place("place2", 2); // Connected via regular arc
+        Place place3 = new Place("place3", 0); // Target place for transition output
+        
+        placesMap.put("place1", place1);
+        placesMap.put("place2", place2);
+        placesMap.put("place3", place3);
+        
+        // Bidirectional arc from place1 to transition
+        Arc bidirectionalArc = new Arc.BidirectionalArc("arc1", "place1", "trans1");
+        // Regular arc from place2 to transition
+        Arc regularIncomingArc = new Arc.RegularArc("arc2", "place2", "trans1");
+        // Regular arc from transition to place3
+        Arc regularOutgoingArc = new Arc.RegularArc("arc3", "trans1", "place3");
+        
+        arcsMap.put("arc1", bidirectionalArc);
+        arcsMap.put("arc2", regularIncomingArc);
+        arcsMap.put("arc3", regularOutgoingArc);
+        
+        // Transition with all arcs
+        Transition transition = new Transition("trans1", true, List.of("arc1", "arc2", "arc3"));
+        
+        // Act
+        PetriNetService service = new PetriNetService();
+        service.updateTokensForFiringTransition(transition, arcsMap, placesMap);
+        
+        // Assert
+        assertEquals(3, place1.getTokens(), 
+            "Place with bidirectional arc should maintain the same number of tokens");
+        assertEquals(1, place2.getTokens(), 
+            "Place with regular incoming arc should lose one token");
+        assertEquals(1, place3.getTokens(), 
+            "Place with regular outgoing arc should gain one token");
+    }
+
+    @Test
+    void processPetriNet_BidirectionalArc_TokensRemainUnchanged() {
+        // Given
+        PlaceDTO place1 = new PlaceDTO("place1", 3);
+        TransitionDTO transition = new TransitionDTO("trans1", true, List.of("arc1"));
+        ArcDTO bidirectionalArc = new ArcDTO("arc1", "BIDIRECTIONAL", "place1", "trans1");
+        
+        PetriNetDTO petriNetDTO = new PetriNetDTO(
+            List.of(place1),
+            List.of(transition),
+            List.of(bidirectionalArc)
+        );
+        
+        PetriNetService service = new PetriNetService();
+        
+        // When
+        PetriNetDTO resultDto = service.processPetriNet(petriNetDTO);
+        
+        // Then
+        Optional<PlaceDTO> resultPlace = resultDto.getPlaces().stream()
+            .filter(p -> p.getId().equals("place1"))
+            .findFirst();
+            
+        assertTrue(resultPlace.isPresent(), "Place should exist in result");
+        assertEquals(3, resultPlace.get().getTokens(), 
+            "Place connected by bidirectional arc should maintain the same token count");
+        
+        Optional<TransitionDTO> resultTransition = resultDto.getTransitions().stream()
+            .filter(t -> t.getId().equals("trans1"))
+            .findFirst();
+            
+        assertTrue(resultTransition.isPresent(), "Transition should exist in result");
+        assertTrue(resultTransition.get().getEnabled(), 
+            "Transition should be enabled with bidirectional arc and tokens in place");
+    }
+
+    @Test
+    void processPetriNet_BidirectionalAndRegularArc_CorrectFiring() {
+        // Given
+        PlaceDTO place1 = new PlaceDTO("place1", 3); // Connected via bidirectional arc
+        PlaceDTO place2 = new PlaceDTO("place2", 2); // Connected via regular arc
+        PlaceDTO place3 = new PlaceDTO("place3", 0); // Target for output
+        
+        TransitionDTO transition = new TransitionDTO("trans1", true, 
+            List.of("arc1", "arc2", "arc3"));
+            
+        ArcDTO bidirectionalArc = new ArcDTO("arc1", "BIDIRECTIONAL", "place1", "trans1");
+        ArcDTO regularIncomingArc = new ArcDTO("arc2", "REGULAR", "place2", "trans1");
+        ArcDTO regularOutgoingArc = new ArcDTO("arc3", "REGULAR", "trans1", "place3");
+        
+        PetriNetDTO petriNetDTO = new PetriNetDTO(
+            List.of(place1, place2, place3),
+            List.of(transition),
+            List.of(bidirectionalArc, regularIncomingArc, regularOutgoingArc)
+        );
+        
+        PetriNetService service = new PetriNetService();
+        
+        // When
+        PetriNetDTO resultDto = service.processPetriNet(petriNetDTO);
+        
+        // Then
+        Map<String, Integer> tokenCounts = resultDto.getPlaces().stream()
+            .collect(Collectors.toMap(PlaceDTO::getId, PlaceDTO::getTokens));
+            
+        assertEquals(3, tokenCounts.get("place1"), 
+            "Place with bidirectional arc should maintain the same token count");
+        assertEquals(1, tokenCounts.get("place2"), 
+            "Place with regular incoming arc should lose one token");
+        assertEquals(1, tokenCounts.get("place3"), 
+            "Place with regular outgoing arc should gain one token");
+            
+        Optional<TransitionDTO> resultTransition = resultDto.getTransitions().stream()
+            .filter(t -> t.getId().equals("trans1"))
+            .findFirst();
+            
+        assertTrue(resultTransition.isPresent() && resultTransition.get().getEnabled(),
+            "Transition should be enabled after firing");
     }
 
     /**

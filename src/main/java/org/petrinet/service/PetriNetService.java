@@ -95,14 +95,26 @@ public class PetriNetService {
             return true; // the transition can fire unconditionally or only has inhibitor arcs that are satisfied
         }
 
-        // Evaluate regular and bidirectional arcs
+        // Count required tokens per place
+        Map<String, Integer> requiredTokensPerPlace = new HashMap<>();
+        
+        // Count how many tokens are needed from each place
         for (Arc arc : incomingArcs) {
             if (arc instanceof Arc.RegularArc || arc instanceof Arc.BidirectionalArc) {
-                Place sourcePlace = placesMap.get(arc.getIncomingId());
-                if (sourcePlace == null || sourcePlace.getTokens() < 1) {
-                    transition.setEnabled(false);
-                    return false; // Not enough tokens available
-                }
+                String placeId = arc.getIncomingId();
+                requiredTokensPerPlace.merge(placeId, 1, Integer::sum);
+            }
+        }
+        
+        // Check if each place has enough tokens
+        for (Map.Entry<String, Integer> entry : requiredTokensPerPlace.entrySet()) {
+            String placeId = entry.getKey();
+            int requiredTokens = entry.getValue();
+            
+            Place place = placesMap.get(placeId);
+            if (place == null || place.getTokens() < requiredTokens) {
+                transition.setEnabled(false);
+                return false; // Not enough tokens available
             }
         }
         
@@ -112,6 +124,15 @@ public class PetriNetService {
 
     public void updateTokensForFiringTransition(Transition transition, Map<String, Arc> arcsMap,
                                                 Map<String, Place> placesMap) {
+        // First, collect all places that need to be replenished due to bidirectional arcs
+        Set<String> placesToReplenish = new HashSet<>();
+        
+        // Identify places connected to bidirectional arcs that will lose tokens
+        transition.getArcIds().stream()
+                .map(arcsMap::get)
+                .filter(arc -> arc instanceof Arc.BidirectionalArc && arc.getOutgoingId().equals(transition.getId()))
+                .forEach(arc -> placesToReplenish.add(arc.getIncomingId()));
+        
         // First, handle token consumption (incoming arcs)
         transition.getArcIds().stream()
                 .map(arcsMap::get)
@@ -139,6 +160,14 @@ public class PetriNetService {
                     }
                     // Note: Inhibitor arcs don't produce tokens
                 });
+        
+        // Finally, replenish tokens for places connected to bidirectional arcs
+        for (String placeId : placesToReplenish) {
+            Place place = placesMap.get(placeId);
+            if (place != null) {
+                place.addToken();
+            }
+        }
     }
 
     private PetriNetDTO convertDomainModelsToDTO(Map<String, Place> placesMap, List<Transition> transitions,

@@ -31,6 +31,12 @@ export const Place = (props : PlaceProps) => {
     const [tempTokenCount, setTempTokenCount] = useState<string>(props.tokens.toString());
     const [, setIsTyping] = useState(false);
 
+    // Add this useEffect to sync the local state with props
+    useEffect(() => {
+        setTokenCount(props.tokens);
+        setTempTokenCount(props.tokens.toString());
+    }, [props.tokens]);
+
     const handleFocus = () => {
         setIsTyping(true);
         setTempTokenCount("");

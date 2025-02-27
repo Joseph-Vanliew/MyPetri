@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import { Place } from './elements/Place';
 import { Transition } from './elements/Transition';
 import { Arc } from './elements/Arc';
@@ -134,10 +134,8 @@ export const Canvas = (props: CanvasProps) => {
 
     /* for zooming in and out; potential for resizing objects */
     const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
-        e.preventDefault();
-
         // zoom aggressiveness:
-        const zoomFactor = 0.05;
+        const zoomFactor = 0.04;
 
         // If deltaY < 0, user is scrolling up => zoom in (decrease w/h).
         // If deltaY > 0, user is scrolling down => zoom out (increase w/h).
@@ -164,9 +162,25 @@ export const Canvas = (props: CanvasProps) => {
 
         const newY = viewBox.y + yOffset - (yOffset * newH) / viewBox.h;
         setViewBox({ x: newX, y: newY, w: newW, h: newH });
-
     };
 
+    // non-passive wheel event listener because react is too slow
+    useEffect(() => {
+        const svgElement = document.querySelector('.petri-canvas');
+        if (!svgElement) return;
+        
+        // handle wheel event without passive: true
+        const handleWheelNonPassive = (e: Event) => {
+            e.preventDefault();
+            // rest of zoom logic is still in handleWheel
+        };
+        
+        svgElement.addEventListener('wheel', handleWheelNonPassive, { passive: false });
+        
+        return () => {
+            svgElement.removeEventListener('wheel', handleWheelNonPassive);
+        };
+    }, []);
 
     const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
         e.preventDefault();
