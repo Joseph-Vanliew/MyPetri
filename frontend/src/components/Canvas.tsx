@@ -12,7 +12,7 @@ interface CanvasProps {
     onCanvasClick: (x: number, y: number) => void;
     onSelectElement: (id: string) => void;
     onUpdatePlaceSize: (id: string, newRadius: number) => void;
-    onUpdateTransitionSize: (id: string, height: number, width: number) => void;
+    onUpdateTransitionSize: (id: string, width: number, height: number) => void;
     onUpdateElementPosition: (id: string, newX: number, newY: number) => void;
     onArcPortClick:(id: string)=> void;
     selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';
