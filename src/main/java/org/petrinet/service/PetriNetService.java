@@ -25,16 +25,33 @@ public class PetriNetService {
         // Calculate the total incoming transition counts for each transition
         Map<String, Integer> totalIncomingTransitionCounts = calculateTotalIncomingTransitionCounts(transitions, arcsMap);
 
-        // Evaluate each transition
-        List<Transition> evaluatedTransitions = new ArrayList<>();
-        for (Transition transition : transitions) {
-            boolean canFire = evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
-            transition.setEnabled(canFire);
-            evaluatedTransitions.add(transition);
-            if (canFire) {
-                updateTokensForFiringTransition(transition, arcsMap, placesMap);
-            }
+        // First evaluate all transitions
+        List<Transition> evaluatedTransitions = transitions.stream()
+            .map(transition -> {
+                boolean canFire = evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
+                transition.setEnabled(canFire);
+                return transition;
+            })
+            .collect(Collectors.toList());
+
+        // Get all enabled transitions
+        List<Transition> enabledTransitions = evaluatedTransitions.stream()
+            .filter(Transition::getEnabled)
+            .collect(Collectors.toList());
+
+        // Randomly select one enabled transition (if any exist) and update its tokens
+        if (!enabledTransitions.isEmpty()) {
+            Random random = new Random();
+            Transition selectedTransition = enabledTransitions.get(random.nextInt(enabledTransitions.size()));
+            
+            // Disable all transitions except the selected one
+            evaluatedTransitions.forEach(transition -> 
+                transition.setEnabled(transition.getId().equals(selectedTransition.getId())));
+            
+            // Update tokens only for the selected transition
+            updateTokensForFiringTransition(selectedTransition, arcsMap, placesMap);
         }
+
         return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap);
     }
 
@@ -54,59 +71,65 @@ public class PetriNetService {
     }
 
     public boolean evaluateTransition(
-            Transition transition,  Map<String, Arc> arcsMap,
+            Transition transition, Map<String, Arc> arcsMap,
             Map<String, Place> placesMap, Map<String, Integer> totalIncomingTransitionCounts) {
 
         List<Arc> incomingArcs = arcsMap.values().stream()
                 .filter(arc -> transition.getArcIds().contains(arc.getId())
                         && arc.getOutgoingId().equals(transition.getId()))
                 .toList();
-        boolean allConditionsMet = true;
-
-        if (incomingArcs.isEmpty()) {
-            transition.setEnabled(true);
-            return true; // the transition can fire unconditionally
-        }
-
-        // Evaluate the transition based on the total incoming transition count and available tokens
+        
+        // Check inhibitor arcs first
         for (Arc arc : incomingArcs) {
-            Place sourcePlace = placesMap.get(arc.getIncomingId());
-
-            int availableTokens = sourcePlace.getTokens();
-            int requiredTokens = totalIncomingTransitionCounts.getOrDefault(arc.getIncomingId(), 0);
-
             if (arc instanceof Arc.InhibitorArc) {
-                if (availableTokens != 0) {
+                Place sourcePlace = placesMap.get(arc.getIncomingId());
+                if (sourcePlace != null && sourcePlace.getTokens() > 0) {
                     transition.setEnabled(false);
                     return false; // Inhibitor arc requires zero tokens to enable transition
                 }
-            } else if (availableTokens < requiredTokens) {
-                transition.setEnabled(false);
-                return false; // Not enough tokens available to satisfy all incoming transitions
             }
         }
-        transition.setEnabled(allConditionsMet);
-        return allConditionsMet;
+        
+        if (incomingArcs.isEmpty() || incomingArcs.stream().allMatch(arc -> arc instanceof Arc.InhibitorArc)) {
+            transition.setEnabled(true);
+            return true; // the transition can fire unconditionally or only has inhibitor arcs that are satisfied
+        }
+
+        // Evaluate regular and bidirectional arcs
+        for (Arc arc : incomingArcs) {
+            if (arc instanceof Arc.RegularArc || arc instanceof Arc.BidirectionalArc) {
+                Place sourcePlace = placesMap.get(arc.getIncomingId());
+                if (sourcePlace == null || sourcePlace.getTokens() < 1) {
+                    transition.setEnabled(false);
+                    return false; // Not enough tokens available
+                }
+            }
+        }
+        
+        transition.setEnabled(true);
+        return true;
     }
 
     public void updateTokensForFiringTransition(Transition transition, Map<String, Arc> arcsMap,
                                                 Map<String, Place> placesMap) {
-        //process incoming arcs: transition consumes token via incoming regular arc from originating place
+        // First, handle token consumption (incoming arcs)
         transition.getArcIds().stream()
                 .map(arcsMap::get)
                 .filter(arc -> arc != null && arc.getOutgoingId().equals(transition.getId())) // Confirm arc is incoming to transition
                 .forEach(arc -> {
-                    if (arc instanceof Arc.RegularArc) {
+                    if (arc instanceof Arc.RegularArc || arc instanceof Arc.BidirectionalArc) {
                         Place sourcePlace = placesMap.get(arc.getIncomingId());
                         if (sourcePlace != null && sourcePlace.getTokens() > 0) {
                             sourcePlace.removeTokens();
                         }
                     }
+                    // Note: Inhibitor arcs don't consume tokens
                 });
-        // Process outgoing arcs: add a token to target places of outgoing regular arcs and bidirectional arcs
+        
+        // Then, handle token production (outgoing arcs)
         transition.getArcIds().stream()
                 .map(arcsMap::get)
-                .filter(arc -> arc != null && arc.getIncomingId().equals(transition.getId()))
+                .filter(arc -> arc != null && arc.getIncomingId().equals(transition.getId())) // Confirm arc is outgoing from transition
                 .forEach(arc -> {
                     if (arc instanceof Arc.RegularArc || arc instanceof Arc.BidirectionalArc) {
                         Place targetPlace = placesMap.get(arc.getOutgoingId());
@@ -114,6 +137,7 @@ public class PetriNetService {
                             targetPlace.addToken();
                         }
                     }
+                    // Note: Inhibitor arcs don't produce tokens
                 });
     }
 

@@ -8,6 +8,7 @@ public class PatsApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PatsApplication.class, args);
+        System.out.println("PatsApplication started");
     }
 
 }
