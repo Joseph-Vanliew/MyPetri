@@ -22,7 +22,7 @@ export default function App() {
 
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
-            if (isTyping) return; // ✅ Prevent deletion while typing
+            if (isTyping) return; // Prevent deletion while typing
 
             if (e.key === 'Escape') {
                 setSelectedTool('NONE');
@@ -327,9 +327,18 @@ export default function App() {
     };
 
     //resizes Transition nodes when selected
-    const updateTransitionSize = (id: string, newHeight: number, newWidth: number) => {
+    const updateTransitionSize = (id: string, newWidth: number, newHeight: number) => {
+        console.log('App: Updating size to:', newWidth, newHeight);
         setTransitions((prevTransitions) =>
-            prevTransitions.map((t) => (t.id === id ? { ...t, height: newHeight, width: newWidth } : t))
+            prevTransitions.map((t) => {
+                if (t.id === id) {
+                    console.log('App: Before update:', t.width, t.height);
+                    const updated = { ...t, width: newWidth, height: newHeight };
+                    console.log('App: After update:', updated.width, updated.height);
+                    return updated;
+                }
+                return t;
+            })
         );
     };
 

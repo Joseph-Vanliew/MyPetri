@@ -91,7 +91,7 @@ export const Transition = (props: TransitionProps) => {
     // RESIZING
     // -----------------------------------
     const handleResizeStart = (handle: string, e: React.MouseEvent) => {
-        e.stopPropagation(); // don’t start drag
+        e.stopPropagation(); // don't start drag
         setActiveHandle(handle);
         setOriginalWidth(props.width);
         setOriginalHeight(props.height);
@@ -114,27 +114,50 @@ export const Transition = (props: TransitionProps) => {
             if (!inverseCTM) return;
             const localPoint = pt.matrixTransform(inverseCTM);
 
-            // We'll preserve aspect ratio by scaling width + height together
-            let newWidth: number;
-            let newHeight: number;
-
-            // Distance from center in X + Y
+            // Calculate new dimensions based on which handle is being dragged
+            let newWidth = originalWidth;
+            let newHeight = originalHeight;
+            
+            // Calculate distance from center to mouse position
             const dx = localPoint.x;
             const dy = localPoint.y;
-
-            // We'll measure how much bigger/smaller the user has dragged
-            // relative to the original half-width/half-height
-            const halfW = originalWidth / 2;
-            const halfH = originalHeight / 2;
-
-            const scaleX = halfW === 0 ? 1 : Math.abs(dx) / halfW;
-            const scaleY = halfH === 0 ? 1 : Math.abs(dy) / halfH;
-            const scale = Math.max(scaleX, scaleY);
-
-            newWidth = originalWidth * scale;
+            
+            // Determine scale factor based on which corner is being dragged
+            // and the direction of movement
+            let scaleX = 1;
+            let scaleY = 1;
+            
+            if (activeHandle === 'top-left') {
+                scaleX = -dx / (originalWidth / 2);
+                scaleY = -dy / (originalHeight / 2);
+            } else if (activeHandle === 'top-right') {
+                scaleX = dx / (originalWidth / 2);
+                scaleY = -dy / (originalHeight / 2);
+            } else if (activeHandle === 'bottom-left') {
+                scaleX = -dx / (originalWidth / 2);
+                scaleY = dy / (originalHeight / 2);
+            } else if (activeHandle === 'bottom-right') {
+                scaleX = dx / (originalWidth / 2);
+                scaleY = dy / (originalHeight / 2);
+            }
+            
+            // Use the absolute larger scale factor to maintain aspect ratio
+            // but preserve the sign from the original scale factor
+            const absScaleX = Math.abs(scaleX);
+            const absScaleY = Math.abs(scaleY);
+            let scale;
+            
+            if (absScaleX > absScaleY) {
+                scale = scaleX; // Use X scale with its original sign
+            } else {
+                scale = scaleY; // Use Y scale with its original sign
+            }
+            
+            // Apply the scale while maintaining aspect ratio
+            newWidth = originalWidth * Math.abs(scale);
             newHeight = newWidth / aspectRatio;
-
-            // clamp to min size
+            
+            // Ensure minimum size
             if (newWidth < 20) {
                 newWidth = 20;
                 newHeight = 20 / aspectRatio;
@@ -143,7 +166,7 @@ export const Transition = (props: TransitionProps) => {
                 newHeight = 20;
                 newWidth = 20 * aspectRatio;
             }
-
+            
             props.onUpdateSize(props.id, newWidth, newHeight);
         };
 
