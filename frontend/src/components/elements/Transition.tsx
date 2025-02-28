@@ -9,28 +9,72 @@ interface TransitionProps extends UITransition {
     arcMode?: boolean;
     arcType?: UIArc['type'];
     onArcPortClick: (id:string) => void;
+    onUpdateName?: (id: string, newName: string) => void;
+    onTypingChange?: (isTyping: boolean) => void;
 }
 
 export const Transition = (props: TransitionProps) => {
+    // ===== REFS =====
     const groupRef = useRef<SVGGElement>(null);
 
-    // Which resize handle is active? (e.g. "top-left", etc.)
+    // ===== STATE =====
+    // Interaction states
     const [activeHandle, setActiveHandle] = useState<string | null>(null);
-
-    // Dragging
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
-
-    // preserve shape on drag
+    const [isHovered, setIsHovered] = useState(false);
+    
+    // Size states
     const [originalWidth, setOriginalWidth] = useState(props.width);
     const [originalHeight, setOriginalHeight] = useState(props.height);
     const [aspectRatio, setAspectRatio] = useState(props.height === 0 ? 1 : props.width / props.height);
+    
+    // Name editing states
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState(props.name || '');
 
-    const [isHovered, setIsHovered] = useState(false);
+    // ===== EVENT HANDLERS =====
+    // Name editing handlers
+    const handleDoubleClick = (e: React.MouseEvent) => {
+        if (props.arcMode) return; // Don't allow editing in arc mode
+        e.stopPropagation();
+        setIsEditingName(true);
+        if (props.onTypingChange) {
+            props.onTypingChange(true);
+        }
+    };
+    
+    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setTempName(event.target.value);
+    };
+    
+    const handleNameKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            finishNameEdit();
+        } else if (event.key === "Escape") {
+            cancelNameEdit();
+        }
+    };
+    
+    const finishNameEdit = () => {
+        setIsEditingName(false);
+        if (props.onTypingChange) {
+            props.onTypingChange(false);
+        }
+        if (props.onUpdateName) {
+            props.onUpdateName(props.id, tempName);
+        }
+    };
+    
+    const cancelNameEdit = () => {
+        setIsEditingName(false);
+        if (props.onTypingChange) {
+            props.onTypingChange(false);
+        }
+        setTempName(props.name || '');
+    };
 
-    // -----------------------------------
-    // DRAGGING / REPOSITIONING
-    // -----------------------------------
+    // Drag handlers
     const handleDragStart = (e: React.MouseEvent<SVGGElement>) => {
         if (props.arcMode) return;
         if (activeHandle) return; // skip drag if resizing
@@ -50,6 +94,24 @@ export const Transition = (props: TransitionProps) => {
         setDragOffset({ dx: localPoint.x, dy: localPoint.y });
     };
 
+    // Resize handlers
+    const handleResizeStart = (handle: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // don't start drag
+        setActiveHandle(handle);
+        setOriginalWidth(props.width);
+        setOriginalHeight(props.height);
+        setAspectRatio(
+            props.height === 0 ? 1 : props.width / props.height
+        );
+    };
+
+    // ===== EFFECTS =====
+    // Sync name with props
+    useEffect(() => {
+        setTempName(props.name || '');
+    }, [props.name]);
+
+    // Handle dragging
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isDragging || !groupRef.current) return;
@@ -87,19 +149,7 @@ export const Transition = (props: TransitionProps) => {
         };
     }, [isDragging, dragOffset, props, props.x, props.y]);
 
-    // -----------------------------------
-    // RESIZING
-    // -----------------------------------
-    const handleResizeStart = (handle: string, e: React.MouseEvent) => {
-        e.stopPropagation(); // don't start drag
-        setActiveHandle(handle);
-        setOriginalWidth(props.width);
-        setOriginalHeight(props.height);
-        setAspectRatio(
-            props.height === 0 ? 1 : props.width / props.height
-        );
-    };
-
+    // Handle resizing
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!activeHandle || !groupRef.current) return;
@@ -187,7 +237,7 @@ export const Transition = (props: TransitionProps) => {
         };
     }, [activeHandle, props, originalWidth, originalHeight, aspectRatio]);
 
-
+    // ===== RENDER =====
     return (
         <g
             ref={groupRef}
@@ -195,14 +245,35 @@ export const Transition = (props: TransitionProps) => {
             className="petri-element transition"
             onClick={(e) => {
                 e.stopPropagation();
-                props.onSelect(props.id);
+                
+                // If in arc mode and hovered, trigger arc creation
+                if (props.arcMode && isHovered ) {
+                    props.onArcPortClick(props.id);
+                } else {
+                    props.onSelect(props.id);
+                }
             }}
-
+            onDoubleClick={handleDoubleClick}
             onMouseDown={handleDragStart}
-
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            style={props.arcMode && isHovered ? {cursor: 'pointer'} : undefined}
         >
+            {/* Arc mode highlight - renders a light green rectangle around the transition when hovered */}
+            {props.arcMode && isHovered && (
+                <rect
+                    x={-props.width / 2 - 3}
+                    y={-props.height / 2 - 3}
+                    width={props.width + 6}
+                    height={props.height + 6}
+                    rx={6}
+                    fill="none"
+                    stroke="rgba(0, 255, 0, 0.5)"
+                    strokeWidth="3"
+                    style={{cursor: 'pointer'}}
+                />
+            )}
+
             {/* Main rectangle */}
             <rect
                 x={-props.width / 2}
@@ -215,16 +286,46 @@ export const Transition = (props: TransitionProps) => {
                 strokeWidth="1"
             />
 
-            {/* Optional label */}
-            <text
-                x="0"
-                y="0"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="#fff"
-            >
-                {props.name}
-            </text>
+            {/* Optional label - Only show when not editing */}
+            {!isEditingName && (
+                <text
+                    x="0"
+                    y="0"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#fff"
+                >
+                    {props.name}
+                </text>
+            )}
+            
+            {/* Name editing input - Only show when editing name */}
+            {isEditingName && (
+                <foreignObject 
+                    x={-50} 
+                    y={-10} 
+                    width="100" 
+                    height="20"
+                >
+                    <input
+                        type="text"
+                        value={tempName}
+                        onChange={handleNameChange}
+                        className="name-input"
+                        style={{
+                            width: '100%',
+                            textAlign: 'center',
+                            backgroundColor: '#333',
+                            color: 'white',
+                            border: '1px solid #555',
+                            borderRadius: '3px'
+                        }}
+                        autoFocus
+                        onBlur={finishNameEdit}
+                        onKeyDown={handleNameKeyDown}
+                    />
+                </foreignObject>
+            )}
 
             {/* If selected, show bounding box + corner handles */}
             {props.isSelected && !props.arcMode && (
@@ -272,21 +373,6 @@ export const Transition = (props: TransitionProps) => {
                         onMouseDown={(e) => handleResizeStart('bottom-right', e)}
                     />
                 </>
-            )}
-            {/* When in arc mode and if arcType is not INHIBITOR, render a port marker */}
-            {props.arcMode && isHovered && (
-                <circle
-                    cx={props.width / 2} // Right edge of the rectangle
-                    cy={0}
-                    r={4}
-                    fill="green"
-                    style={{ cursor: 'pointer' }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // Call onSelect to mark this transition for arc creation
-                        props.onArcPortClick(props.id);
-                    }}
-                />
             )}
         </g>
     );

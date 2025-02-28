@@ -6,7 +6,7 @@ import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE} from './types
 import {JSONViewer} from "./components/JSONViewer.tsx";
 
 export default function App() {
-    // State management
+    // ===== STATE MANAGEMENT =====
     const [places, setPlaces] = useState<UIPlace[]>([]);
     const [transitions, setTransitions] = useState<UITransition[]>([]);
     const [arcs, setArcs] = useState<UIArc[]>([]);
@@ -15,13 +15,28 @@ export default function App() {
     const [arcType, setArcType] = useState<UIArc['type']>('REGULAR');
     const [isTyping, setIsTyping] = useState(false);
 
+    // ===== DERIVED STATE / CONSTANTS =====
+    const petriNetDTO: PetriNetDTO = {
+        places: places.map((p) => ({ id: p.id, tokens: p.tokens })),
+        transitions: transitions.map((t) => ({
+            id: t.id,
+            enabled: t.enabled,
+            arcIds: t.arcIds,
+        })),
+        arcs: arcs.map((a) => ({
+            id: a.id,
+            type: a.type,
+            incomingId: a.incomingId,
+            outgoingId: a.outgoingId,
+        })),
+    };
 
+    // ===== EVENT HANDLERS =====
     const handleTypingChange = (typing: boolean) => {
         setIsTyping(typing);
     };
 
-    
-
+    // ===== EFFECTS =====
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (isTyping) return; // Prevent deletion while typing
@@ -42,22 +57,7 @@ export default function App() {
         };
     }, [selectedElements, places, transitions, arcs, isTyping]);
 
-    const petriNetDTO: PetriNetDTO = {
-        places: places.map((p) => ({ id: p.id, tokens: p.tokens })),
-        transitions: transitions.map((t) => ({
-            id: t.id,
-            enabled: t.enabled,
-            arcIds: t.arcIds,
-        })),
-        arcs: arcs.map((a) => ({
-            id: a.id,
-            type: a.type,
-            incomingId: a.incomingId,
-            outgoingId: a.outgoingId,
-        })),
-    };
-
-    // Placing elements
+    // ===== ELEMENT CREATION & SELECTION =====
     const handleCanvasClick = useCallback((x: number, y: number) => {
         if (selectedTool === 'NONE') {
             // Clears the selection if no tool is active.
@@ -100,6 +100,7 @@ export default function App() {
         setSelectedElements([id]);
     };
 
+    // ===== ARC MANAGEMENT =====
     const handleArcPortClick = (clickedId: string) => {
         if (selectedElements.length === 0) {
             setSelectedElements([clickedId]);
@@ -133,7 +134,6 @@ export default function App() {
         }
     };
 
-    // Arc creation and binding
     const handleArcCreation = (x: number, y: number) => {
         const clickedElement = findClickedElement(x, y);
 
@@ -186,7 +186,7 @@ export default function App() {
         }
     };
 
-    // Find clicked element helper
+    // ===== HELPER FUNCTIONS =====
     const findClickedElement = (x: number, y: number) => {
         // Snap to grid first
         const gridX = Math.round(x / GRID_CELL_SIZE) * GRID_CELL_SIZE;
@@ -207,7 +207,6 @@ export default function App() {
         return null;
     };
 
-    // Validate arc connections
     function isValidArcConnection(sourceId: string, targetId: string, arcType: UIArc['type']): boolean {
         // Disallow self-loop (same node for source & target)
         if (sourceId === targetId) {
@@ -233,7 +232,7 @@ export default function App() {
         }
     }
 
-    // Builds backend request and Sends
+    // ===== SIMULATION CONTROLS =====
     const handleSimulate = async () => {
         const requestBody: PetriNetDTO = {
             places: places.map(p => ({ id: p.id, tokens: p.tokens })),
@@ -250,7 +249,7 @@ export default function App() {
             }))
         };
 
-        console.log("Sending request:", requestBody);
+        console.log("Sending PetriNet Request for simulation", requestBody);
 
         try {
             const response = await fetch('http://localhost:8080/api/process', {
@@ -259,45 +258,30 @@ export default function App() {
                 body: JSON.stringify(requestBody)
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
             const responseData: PetriNetDTO = await response.json();
-            console.log("Received response:", responseData);
+            console.log("Received new state response:", responseData);
 
-            // Update places with new token values
-            const newPlaces = places.map(place => {
-                const updatedPlace = responseData.places.find(p => p.id === place.id);
-                if (updatedPlace) {
-                    return {
-                        ...place,
-                        tokens: updatedPlace.tokens
-                    };
-                }
-                return place;
+            const newPlaces = places.map(p => {
+                const updated = responseData.places.find(rp => rp.id === p.id);
+                return updated ? { ...p, tokens: updated.tokens } : p;
             });
-            setPlaces(newPlaces);
 
-            // Update transitions with new enabled status
-            const newTransitions = transitions.map(transition => {
-                const updatedTransition = responseData.transitions.find(t => t.id === transition.id);
-                if (updatedTransition) {
-                    return {
-                        ...transition,
-                        enabled: updatedTransition.enabled
-                    };
-                }
-                return transition;
+            console.log("Updated places state:", newPlaces);
+            setPlaces([...newPlaces]); // new reference for rendering token counts
+
+            const newTransitions = transitions.map(t => {
+                const updated = responseData.transitions.find(rt => rt.id === t.id);
+                return updated ? { ...t, enabled: updated.enabled } : t;
             });
-            setTransitions(newTransitions);
+
+            console.log("Updated transitions state:", newTransitions);
+            setTransitions([...newTransitions]); // new reference to update transition enabled boolean
 
         } catch (error) {
             console.error('Simulation error:', error);
         }
     };
 
-    // resets PetriNet
     const handleReset = async () => {
         setPlaces([]);
         setTransitions([]);
@@ -305,6 +289,7 @@ export default function App() {
         setSelectedElements([]);
     }
 
+    // ===== ELEMENT MANIPULATION =====
     function handleDelete() {
         if (selectedElements.length === 0) return;
 
@@ -336,14 +321,12 @@ export default function App() {
         setSelectedElements([]);
     }
 
-    //resizes Place nodes when selected
     const updatePlaceSize = (id: string, newRadius: number) => {
         setPlaces((prevPlaces) =>
             prevPlaces.map((p) => (p.id === id ? { ...p, radius: newRadius } : p))
         );
     };
 
-    //resizes Transition nodes when selected
     const updateTransitionSize = (id: string, newWidth: number, newHeight: number) => {
         console.log('App: Updating size to:', newWidth, newHeight);
         setTransitions((prevTransitions) =>
@@ -359,7 +342,6 @@ export default function App() {
         );
     };
 
-    //repositions selected element
     const updateElementPosition = (id: string, newX: number, newY: number) => {
         setPlaces((prevPlaces) =>
             prevPlaces.map((p) =>
@@ -382,8 +364,23 @@ export default function App() {
         );
     };
 
+    const handleNameUpdate = (id: string, newName: string) => {
+        // Update place names
+        setPlaces(prevPlaces =>
+            prevPlaces.map(place =>
+                place.id === id ? { ...place, name: newName } : place
+            )
+        );
+        
+        // Update transition names
+        setTransitions(prevTransitions =>
+            prevTransitions.map(transition =>
+                transition.id === id ? { ...transition, name: newName } : transition
+            )
+        );
+    };
 
-
+    // ===== RENDER =====
     return (
         <div className="app">
             {/* Toolbar at the top */}
@@ -413,6 +410,7 @@ export default function App() {
                         arcType={arcType}
                         onUpdateToken={handleTokenUpdate}
                         onTypingChange={handleTypingChange}
+                        onUpdateName={handleNameUpdate}
                     />
                 </div>
 

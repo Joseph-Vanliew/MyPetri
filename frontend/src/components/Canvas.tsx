@@ -19,17 +19,98 @@ interface CanvasProps {
     arcType: UIArc['type'];
     onUpdateToken: (id: string, newTokens: number) => void;
     onTypingChange: (isTyping: boolean) => void;
+    onUpdateName?: (id: string, newName: string) => void;
 }
 
 export const Canvas = (props: CanvasProps) => {
-
+    // ===== STATE =====
     /* starting bounds for the canvas grid and element rendering, *adjust later when polishing */
     const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: 800, h: 600 });
-
     const [isPanning, setIsPanning] = useState(false);
     const [lastMouseX, setLastMouseX] = useState(0);
     const [lastMouseY, setLastMouseY] = useState(0);
 
+    // ===== EFFECTS =====
+    // non-passive wheel event listener because react is too slow
+    useEffect(() => {
+        const svgElement = document.querySelector('.petri-canvas');
+        if (!svgElement) return;
+        
+        // handle wheel event without passive: true
+        const handleWheelNonPassive = (e: Event) => {
+            e.preventDefault();
+        };
+        
+        svgElement.addEventListener('wheel', handleWheelNonPassive, { passive: false });
+        
+        return () => {
+            svgElement.removeEventListener('wheel', handleWheelNonPassive);
+        };
+    }, []);
+
+    // ===== GRID RENDERING =====
+    const renderGrid = useCallback((vBox: { x: number; y: number; w: number; h: number }) => {
+        const lines = [];
+
+        // Using Math.floor/ceil to ensure lines snap to grid multiples.
+        const startX = Math.floor(vBox.x / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        const endX   = Math.ceil((vBox.x + vBox.w) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+
+        // Generate vertical lines / math for resizing
+        for (let xVal = startX; xVal <= endX; xVal += GRID_CELL_SIZE) {
+            lines.push(
+                <line
+                    key={`v-${xVal}`}
+                    x1={xVal}
+                    y1={vBox.y}
+                    x2={xVal}
+                    y2={vBox.y + vBox.h}
+                    stroke="#e9ecef"
+                    opacity="0.4"
+                    strokeWidth="0.5"
+                />
+            );
+        }
+
+        const startY = Math.floor(vBox.y / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        const endY   = Math.ceil((vBox.y + vBox.h) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+
+        // Generate horizontal lines and math for resizing
+        for (let yVal = startY; yVal <= endY; yVal += GRID_CELL_SIZE) {
+            lines.push(
+                <line
+                    key={`h-${yVal}`}
+                    x1={vBox.x}
+                    y1={yVal}
+                    x2={vBox.x + vBox.w}
+                    y2={yVal}
+                    stroke="#e9ecef"
+                    opacity="0.4"
+                    strokeWidth="0.5"
+                />
+            );
+        }
+
+        return lines;
+    }, []);
+
+    // ===== COORDINATE CONVERSION =====
+    /* Convert from screen coords to the current viewBox coords */
+    const screenToViewBox = (e: React.DragEvent<SVGSVGElement>) => {
+        const svgRect = e.currentTarget.getBoundingClientRect();
+        const dropX = e.clientX - svgRect.left;
+        const dropY = e.clientY - svgRect.top;
+
+        const scaleX = viewBox.w / svgRect.width;
+        const scaleY = viewBox.h / svgRect.height;
+
+        const xInViewBox = viewBox.x + dropX * scaleX;
+        const yInViewBox = viewBox.y + dropY * scaleY;
+
+        return { xInViewBox, yInViewBox };
+    };
+
+    // ===== MOUSE EVENT HANDLERS =====
     const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
         // If user clicked directly on the <svg> background:
         if (e.target === e.currentTarget) {
@@ -71,66 +152,26 @@ export const Canvas = (props: CanvasProps) => {
         setLastMouseY(e.clientY);
     };
 
-    /* Convert from screen coords to the current viewBox coords */
-    const screenToViewBox = (e: React.DragEvent<SVGSVGElement>) => {
-        const svgRect = e.currentTarget.getBoundingClientRect();
-        const dropX = e.clientX - svgRect.left;
-        const dropY = e.clientY - svgRect.top;
+    // ===== CANVAS INTERACTION HANDLERS =====
+    const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
+        e.preventDefault();
 
-        const scaleX = viewBox.w / svgRect.width;
-        const scaleY = viewBox.h / svgRect.height;
+        const rect = e.currentTarget.getBoundingClientRect();
 
-        const xInViewBox = viewBox.x + dropX * scaleX;
-        const yInViewBox = viewBox.y + dropY * scaleY;
+        // Mouse position in *screen* pixels
+        const mousePx = e.clientX - rect.left;
+        const mousePy = e.clientY - rect.top;
 
-        return { xInViewBox, yInViewBox };
+        // The ratio between the physical <svg> size and the "virtual" viewBox size
+        const scaleX = viewBox.w / rect.width;
+        const scaleY = viewBox.h / rect.height;
+
+        // Convert screen px => your current viewBox coordinates
+        const xInViewBox = viewBox.x + mousePx * scaleX;
+        const yInViewBox = viewBox.y + mousePy * scaleY;
+
+        props.onCanvasClick(xInViewBox, yInViewBox);
     };
-
-    const renderGrid = useCallback((vBox: { x: number; y: number; w: number; h: number }) => {
-            const lines = [];
-
-
-            // Using Math.floor/ceil to ensure lines snap to grid multiples.
-            const startX = Math.floor(vBox.x / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-            const endX   = Math.ceil((vBox.x + vBox.w) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-
-            // Generate vertical lines / math for resizing
-            for (let xVal = startX; xVal <= endX; xVal += GRID_CELL_SIZE) {
-                lines.push(
-                    <line
-                        key={`v-${xVal}`}
-                        x1={xVal}
-                        y1={vBox.y}
-                        x2={xVal}
-                        y2={vBox.y + vBox.h}
-                        stroke="#e9ecef"
-                        opacity="0.4"
-                        strokeWidth="0.5"
-                    />
-                );
-            }
-
-            const startY = Math.floor(vBox.y / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-            const endY   = Math.ceil((vBox.y + vBox.h) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-
-            // Generate horizontal lines and math for resizing
-            for (let yVal = startY; yVal <= endY; yVal += GRID_CELL_SIZE) {
-                lines.push(
-                    <line
-                        key={`h-${yVal}`}
-                        x1={vBox.x}
-                        y1={yVal}
-                        x2={vBox.x + vBox.w}
-                        y2={yVal}
-                        stroke="#e9ecef"
-                        opacity="0.4"
-                        strokeWidth="0.5"
-                    />
-                );
-            }
-
-            return lines;
-        }, []);
 
     /* for zooming in and out; potential for resizing objects */
     const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
@@ -164,44 +205,7 @@ export const Canvas = (props: CanvasProps) => {
         setViewBox({ x: newX, y: newY, w: newW, h: newH });
     };
 
-    // non-passive wheel event listener because react is too slow
-    useEffect(() => {
-        const svgElement = document.querySelector('.petri-canvas');
-        if (!svgElement) return;
-        
-        // handle wheel event without passive: true
-        const handleWheelNonPassive = (e: Event) => {
-            e.preventDefault();
-            // rest of zoom logic is still in handleWheel
-        };
-        
-        svgElement.addEventListener('wheel', handleWheelNonPassive, { passive: false });
-        
-        return () => {
-            svgElement.removeEventListener('wheel', handleWheelNonPassive);
-        };
-    }, []);
-
-    const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
-        e.preventDefault();
-
-        const rect = e.currentTarget.getBoundingClientRect();
-
-        // Mouse position in *screen* pixels
-        const mousePx = e.clientX - rect.left;
-        const mousePy = e.clientY - rect.top;
-
-        // The ratio between the physical <svg> size and the "virtual" viewBox size
-        const scaleX = viewBox.w / rect.width;
-        const scaleY = viewBox.h / rect.height;
-
-        // Convert screen px => your current viewBox coordinates
-        const xInViewBox = viewBox.x + mousePx * scaleX;
-        const yInViewBox = viewBox.y + mousePy * scaleY;
-
-        props.onCanvasClick(xInViewBox, yInViewBox);
-    };
-
+    // ===== DRAG & DROP HANDLERS =====
     const handleDrop = (e: React.DragEvent<SVGSVGElement>) => {
         e.preventDefault();
         const type = e.dataTransfer.getData("application/petri-item");
@@ -216,6 +220,7 @@ export const Canvas = (props: CanvasProps) => {
         e.preventDefault();
     };
 
+    // ===== RENDER =====
     return (
         <svg
             className="petri-canvas"
@@ -282,6 +287,7 @@ export const Canvas = (props: CanvasProps) => {
                         onArcPortClick={props.onArcPortClick}
                         onUpdateTokens={props.onUpdateToken}
                         onTypingChange={props.onTypingChange}
+                        onUpdateName={props.onUpdateName}
                     />
                 ))}
 
@@ -303,7 +309,8 @@ export const Canvas = (props: CanvasProps) => {
                         arcMode={props.selectedTool === 'ARC'}
                         arcType={props.arcType}
                         onArcPortClick={props.onArcPortClick}
-
+                        onUpdateName={props.onUpdateName}
+                        onTypingChange={props.onTypingChange}
                     />
                 ))}
             </g>
