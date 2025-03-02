@@ -63,7 +63,7 @@ export const Arc = ( props: ArcProps) => {
     return (
         <g onClick={(e) => {
             e.stopPropagation();
-            props.onSelect(props.id);  // ✅ Select arc when clicked
+            props.onSelect(props.id);  // Select arc when clicked
         }}>
             {/* Invisible stroke for easier selection */}
             <line
@@ -100,9 +100,9 @@ export const Arc = ( props: ArcProps) => {
                     y1={sourceAnchor.y}
                     x2={targetAnchor.x}
                     y2={targetAnchor.y}
-                    stroke="#007bff"  // ✅ Blue color for selection
+                    stroke="#007bff"  // Blue color for selection
                     strokeWidth="1.5"  // Slightly thicker to stand out
-                    strokeDasharray="5,5"  // ✅ Dashed effect
+                    strokeDasharray="5,5"  // Dashed effect
                 />
             )}
         </g>
