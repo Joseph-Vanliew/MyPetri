@@ -19,6 +19,10 @@ public class Place {
         return tokens;
     }
 
+    public void setTokens(int tokens) {
+        this.tokens = Math.max(0, tokens); // Ensure tokens can't be negative
+    }
+
     public void addToken () {
         this.tokens++;
     }

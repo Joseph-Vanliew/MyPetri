@@ -1,0 +1,106 @@
+/* src/App.css */
+.canvas-container {
+  position: relative;
+  width: 1200px;
+  height: 1000px;
+  border: 2px solid #ccc;
+  margin: 20px;
+}
+.canvas-svg {
+  position: absolute;
+  background-color: #f8f8f8;
+  pointer-events: none;
+}
+
+
+.grid-line {
+  stroke: #e0e0e0;
+  stroke-width: 1;
+}
+
+.place {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #87CEEB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: move;
+  border: 2px solid transparent;
+  ;
+  transition: all 0.1s ease;
+}
+
+.place.selected {
+  border-color: #000;
+}
+
+.tokens {
+  font-weight: bold;
+}
+
+.transition {
+  position: absolute;
+  width: 60px;
+  height: 30px;
+  background: #FFA07A;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.1s ease;
+}
+
+.transition.enabled {
+  background: #90EE90;
+}
+
+.transition.selected {
+  border-color: #000;
+}
+
+.toolbar {
+  padding: 10px;
+  background: #f0f0f0;
+  display: flex;
+  gap: 10px;
+}
+
+.toolbar button {
+  padding: 8px 16px;
+  cursor: pointer;
+  border: 1px solid #999;
+  background: white;
+}
+
+.toolbar button.active {
+  background: #ddd;
+}
+
+.arc-tools {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.controls {
+  margin: 20px;
+}
+
+.simulate-button {
+  padding: 12px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.petri-element.place circle {
+  stroke: #0f0f0f;
+  transition: fill 0.2s ease;
+}
+
+.petri-element.place:hover circle {
+  stroke-width: 4;
+  transform: 0.2s ease;
+}
