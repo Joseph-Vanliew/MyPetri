@@ -8,9 +8,32 @@ export const GRID_CELL_SIZE = 50; // Pixels per grid cell for aspect rations ran
 export type GridPosition = { gridX: number; gridY: number };
 
 export interface PetriNetDTO {
-    places: PlaceDTO[];
-    transitions: TransitionDTO[];
-    arcs: ArcDTO[];
+    places: {
+        id: string;
+        tokens: number;
+        name?: string;
+        x?: number;
+        y?: number;
+        radius?: number;
+    }[];
+    transitions: {
+        id: string;
+        enabled: boolean;
+        arcIds: string[];
+        name?: string;
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+    }[];
+    arcs: {
+        id: string;
+        type: 'REGULAR' | 'INHIBITOR' | 'BIDIRECTIONAL';
+        incomingId: string;
+        outgoingId: string;
+    }[];
+    deterministicMode?: boolean;
+    selectedTransitionId?: string;
 }
 
 export interface PlaceDTO {

@@ -20,6 +20,9 @@ interface CanvasProps {
     onUpdateToken: (id: string, newTokens: number) => void;
     onTypingChange: (isTyping: boolean) => void;
     onUpdateName?: (id: string, newName: string) => void;
+    conflictResolutionMode?: boolean;
+    conflictingTransitions?: string[];
+    onConflictingTransitionSelect?: (id: string) => void;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -112,7 +115,7 @@ export const Canvas = (props: CanvasProps) => {
 
     // ===== MOUSE EVENT HANDLERS =====
     const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
-        // If user clicked directly on the <svg> background:
+        // If user clicked directly on the background:
         if (e.target === e.currentTarget) {
             e.stopPropagation();
             setIsPanning(true);
@@ -144,7 +147,7 @@ export const Canvas = (props: CanvasProps) => {
         setViewBox((v) => ({
             ...v,
             x: v.x - moveX, // minus because dragging left moves the viewBox "right"
-            y: v.y - moveY,
+            y: v.y - moveY, //reverse of above
         }));
 
         // Store the new lastMouse coords for next move
@@ -155,6 +158,14 @@ export const Canvas = (props: CanvasProps) => {
     // ===== CANVAS INTERACTION HANDLERS =====
     const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
         e.preventDefault();
+
+        // If click directly on the canvas (not on an element), selection should be cleared
+        if (e.target === e.currentTarget) {
+            // Clear selection if the user clicked on the empty canvas
+            if (props.selectedElements.length > 0) {
+                props.onSelectElement('');
+            }
+        }
 
         const rect = e.currentTarget.getBoundingClientRect();
 
@@ -173,9 +184,9 @@ export const Canvas = (props: CanvasProps) => {
         props.onCanvasClick(xInViewBox, yInViewBox);
     };
 
-    /* for zooming in and out; potential for resizing objects */
+    /* for zooming canvas in and out*/
     const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
-        // zoom aggressiveness:
+        // zoom aggressiveness
         const zoomFactor = 0.04;
 
         // If deltaY < 0, user is scrolling up => zoom in (decrease w/h).
@@ -185,6 +196,15 @@ export const Canvas = (props: CanvasProps) => {
         // Calculate new width/height
         const newW = viewBox.w * (1 + direction * zoomFactor);
         const newH = viewBox.h * (1 + direction * zoomFactor);
+
+        // zoom limits
+        const minZoom = 200; // smallest viewBox
+        const maxZoom = 3000; //largest viewBox
+        
+        // / Don't allow zooming beyond limits
+        if (newW < minZoom || newH < minZoom || newW > maxZoom || newH > maxZoom) {
+            return;
+        }
 
         // 1. Convert mouse coords to SVG coords
         const svgRect = e.currentTarget.getBoundingClientRect();
@@ -311,6 +331,9 @@ export const Canvas = (props: CanvasProps) => {
                         onArcPortClick={props.onArcPortClick}
                         onUpdateName={props.onUpdateName}
                         onTypingChange={props.onTypingChange}
+                        isConflicting={props.conflictResolutionMode && props.conflictingTransitions?.includes(transition.id)}
+                        onConflictingTransitionSelect={props.onConflictingTransitionSelect}
+                        conflictResolutionMode={props.conflictResolutionMode}
                     />
                 ))}
             </g>

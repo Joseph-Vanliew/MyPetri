@@ -4,7 +4,7 @@ import { UIArc } from '../types';
 
 interface ToolbarProps {
     selectedTool: 'PLACE' | 'TRANSITION' | 'ARC'| 'NONE';
-    setSelectedTool: (tool: 'PLACE' | 'TRANSITION' | 'ARC') => void;
+    setSelectedTool: (tool: 'PLACE' | 'TRANSITION' | 'ARC' | 'NONE') => void;
     arcType: UIArc['type'];
     setArcType: (type: UIArc['type']) => void;
 }
@@ -16,7 +16,17 @@ export const Toolbar = ({
                             setArcType,
                         }: ToolbarProps) => {
     return (
-        <div className="toolbar">
+        <div className="toolbar" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            padding: '10px', 
+            backgroundColor: '#1a1a1a', 
+            borderBottom: '1px solid #333' 
+        }}>
+            <div className="elements-label" style={{ marginRight: '10px', fontWeight: 'bold' }}>
+                Elements:
+            </div>
+
             {/* Draggable "Place" */}
             <button
                 className={selectedTool === 'PLACE' ? 'active' : ''}
@@ -48,9 +58,8 @@ export const Toolbar = ({
                     onClick={() => setSelectedTool('ARC')}
                     draggable
                     onDragStart={(e) => {
-                        // We'll store 'ARC' plus the subtype if you want
+                        // Store 'ARC' and the arc type in dataTransfer
                         e.dataTransfer.setData('application/petri-item', 'ARC');
-                        // Also store the arc type if needed:
                         e.dataTransfer.setData('application/petri-arctype', arcType);
                     }}
                 >

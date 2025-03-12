@@ -11,6 +11,9 @@ interface TransitionProps extends UITransition {
     onArcPortClick: (id:string) => void;
     onUpdateName?: (id: string, newName: string) => void;
     onTypingChange?: (isTyping: boolean) => void;
+    isConflicting?: boolean;
+    onConflictingTransitionSelect?: (id: string) => void;
+    conflictResolutionMode?: boolean;
 }
 
 export const Transition = (props: TransitionProps) => {
@@ -32,6 +35,9 @@ export const Transition = (props: TransitionProps) => {
     // Name editing states
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(props.name || '');
+
+    // Add state to track if a conflicting transition is selected
+    const [isConflictSelected, setIsConflictSelected] = useState(false);
 
     // ===== EVENT HANDLERS =====
     // Name editing handlers
@@ -103,6 +109,15 @@ export const Transition = (props: TransitionProps) => {
         setAspectRatio(
             props.height === 0 ? 1 : props.width / props.height
         );
+    };
+
+    // Handle transition selection in conflict resolution mode
+    const handleConflictSelect = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (props.isConflicting && props.onConflictingTransitionSelect) {
+            setIsConflictSelected(true);
+            props.onConflictingTransitionSelect(props.id);
+        }
     };
 
     // ===== EFFECTS =====
@@ -246,8 +261,14 @@ export const Transition = (props: TransitionProps) => {
             onClick={(e) => {
                 e.stopPropagation();
                 
-                // If in arc mode and hovered, trigger arc creation
-                if (props.arcMode && isHovered ) {
+                // If in conflict resolution mode and this is a conflicting transition
+                if (props.conflictResolutionMode && props.isConflicting) {
+                    handleConflictSelect(e);
+                    return;
+                }
+                
+                // Original click behavior
+                if (props.arcMode && isHovered) {
                     props.onArcPortClick(props.id);
                 } else {
                     props.onSelect(props.id);
@@ -257,7 +278,13 @@ export const Transition = (props: TransitionProps) => {
             onMouseDown={handleDragStart}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            style={props.arcMode && isHovered ? {cursor: 'pointer'} : undefined}
+            style={
+                props.isConflicting 
+                    ? {cursor: 'pointer'} 
+                    : props.arcMode && isHovered 
+                        ? {cursor: 'pointer'} 
+                        : undefined
+            }
         >
             {/* Arc mode highlight - renders a light green rectangle around the transition when hovered */}
             {props.arcMode && isHovered && (
@@ -266,14 +293,28 @@ export const Transition = (props: TransitionProps) => {
                     y={-props.height / 2 - 3}
                     width={props.width + 6}
                     height={props.height + 6}
-                    rx={6}
+                    rx={5}
                     fill="none"
                     stroke="rgba(0, 255, 0, 0.5)"
                     strokeWidth="3"
                     style={{cursor: 'pointer'}}
                 />
             )}
-
+            
+            {/* Conflict highlight - for transitions in conflict resolution mode */}
+            {props.isConflicting && (
+                <rect
+                    x={-props.width / 2 - 4}
+                    y={-props.height / 2 - 4}
+                    width={props.width + 8}
+                    height={props.height + 8}
+                    rx={6}
+                    fill="none"
+                    stroke={isConflictSelected ? "rgba(0, 255, 0, 0.7)" : "rgba(255, 0, 0, 0.7)"}
+                    strokeWidth="3"
+                />
+            )}
+            
             {/* Main rectangle */}
             <rect
                 x={-props.width / 2}
@@ -281,7 +322,9 @@ export const Transition = (props: TransitionProps) => {
                 width={props.width}
                 height={props.height}
                 rx={4}
-                fill="#0f0f0f"
+                fill={props.isConflicting 
+                    ? (isConflictSelected ? "#0f3f0f" : "#3f0f0f") 
+                    : "#0f0f0f"}
                 stroke={props.isSelected ? "#ffffff" : "#ffffff"}
                 strokeWidth="1"
             />

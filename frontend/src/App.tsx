@@ -4,6 +4,7 @@ import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
 import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE} from './types';
 import {JSONViewer} from "./components/JSONViewer.tsx";
+import { MenuBar } from './components/MenuBar';
 
 export default function App() {
     // ===== STATE MANAGEMENT =====
@@ -14,14 +15,31 @@ export default function App() {
     const [selectedElements, setSelectedElements] = useState<string[]>([]);
     const [arcType, setArcType] = useState<UIArc['type']>('REGULAR');
     const [isTyping, setIsTyping] = useState(false);
+    const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
+    const [currentMode, setCurrentMode] = useState('select');
+    const [deterministicMode, setDeterministicMode] = useState(false);
+    const [conflictResolutionMode, setConflictResolutionMode] = useState(false);
+    const [conflictingTransitions, setConflictingTransitions] = useState<string[]>([]);
 
     // ===== DERIVED STATE / CONSTANTS =====
     const petriNetDTO: PetriNetDTO = {
-        places: places.map((p) => ({ id: p.id, tokens: p.tokens })),
+        places: places.map((p) => ({ 
+            id: p.id, 
+            tokens: p.tokens,
+            name: p.name,
+            x: p.x,
+            y: p.y,
+            radius: p.radius
+        })),
         transitions: transitions.map((t) => ({
             id: t.id,
             enabled: t.enabled,
             arcIds: t.arcIds,
+            name: t.name,
+            x: t.x,
+            y: t.y,
+            width: t.width,
+            height: t.height
         })),
         arcs: arcs.map((a) => ({
             id: a.id,
@@ -56,6 +74,18 @@ export default function App() {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [selectedElements, places, transitions, arcs, isTyping]);
+
+    useEffect(() => {
+        if (selectedTool === 'ARC') {
+            setCurrentMode('arc');
+        } else if (selectedTool === 'PLACE') {
+            setCurrentMode('place');
+        } else if (selectedTool === 'TRANSITION') {
+            setCurrentMode('transition');
+        } else {
+            setCurrentMode('select');
+        }
+    }, [selectedTool]);
 
     // ===== ELEMENT CREATION & SELECTION =====
     const handleCanvasClick = useCallback((x: number, y: number) => {
@@ -234,6 +264,8 @@ export default function App() {
 
     // ===== SIMULATION CONTROLS =====
     const handleSimulate = async () => {
+        console.log("Current deterministic mode state:", deterministicMode);
+        
         const requestBody: PetriNetDTO = {
             places: places.map(p => ({ id: p.id, tokens: p.tokens })),
             transitions: transitions.map(t => ({
@@ -246,7 +278,8 @@ export default function App() {
                 type: a.type,
                 incomingId: a.incomingId,
                 outgoingId: a.outgoingId
-            }))
+            })),
+            deterministicMode: deterministicMode
         };
 
         console.log("Sending PetriNet Request for simulation", requestBody);
@@ -261,6 +294,36 @@ export default function App() {
             const responseData: PetriNetDTO = await response.json();
             console.log("Received new state response:", responseData);
 
+            // In deterministic mode, handle potentially multiple enabled transitions
+            if (deterministicMode) {
+                const enabledTransitions = responseData.transitions
+                    .filter(t => t.enabled)
+                    .map(t => t.id);
+                
+                if (enabledTransitions.length > 1) {
+                    // Multiple enabled transitions - enter conflict resolution mode
+                    setConflictingTransitions(enabledTransitions);
+                    setConflictResolutionMode(true);
+                    
+                    // Update places state
+                    const newPlaces = places.map(p => {
+                        const updated = responseData.places.find(rp => rp.id === p.id);
+                        return updated ? { ...p, tokens: updated.tokens } : p;
+                    });
+                    setPlaces([...newPlaces]);
+                    
+                    // Mark transitions as enabled based on response
+                    const newTransitions = transitions.map(t => {
+                        const updated = responseData.transitions.find(rt => rt.id === t.id);
+                        return updated ? { ...t, enabled: updated.enabled } : t;
+                    });
+                    setTransitions([...newTransitions]);
+                    
+                    return; // Wait for user selection
+                }
+            }
+            
+            // Normal flow (non-deterministic or deterministic with single enabled transition)
             const newPlaces = places.map(p => {
                 const updated = responseData.places.find(rp => rp.id === p.id);
                 return updated ? { ...p, tokens: updated.tokens } : p;
@@ -380,10 +443,82 @@ export default function App() {
         );
     };
 
+    // ===== MENU HANDLERS =====
+    const handleImport = (importedData: PetriNetDTO) => {
+        // Convert imported places to UIPlace objects
+        const importedPlaces = importedData.places.map(place => ({
+            id: place.id,
+            name: place.name || '',
+            tokens: place.tokens,
+            x: place.x || 100, // Default position if not provided
+            y: place.y || 100,
+            radius: place.radius || 23
+        }));
+        
+        // Convert imported transitions to UITransition objects
+        const importedTransitions = importedData.transitions.map(transition => ({
+            id: transition.id,
+            name: transition.name || '',
+            enabled: transition.enabled,
+            arcIds: transition.arcIds,
+            x: transition.x || 200, // Default position if not provided
+            y: transition.y || 200,
+            width: transition.width || 60,
+            height: transition.height || 27
+        }));
+        
+        // Set the imported data
+        setPlaces(importedPlaces);
+        setTransitions(importedTransitions);
+        setArcs(importedData.arcs);
+    };
+
+    const continueSimulation = async (selectedTransitionId: string) => {
+        const requestBody = {
+            ...petriNetDTO,
+            selectedTransitionId
+        };
+        
+        try {
+            const response = await fetch('http://localhost:8080/api/process/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+            
+            const responseData = await response.json() as PetriNetDTO;
+            
+            // Update places state
+            const newPlaces = places.map(p => {
+                const updated = responseData.places.find((rp: { id: string; tokens: number }) => rp.id === p.id);
+                return updated ? { ...p, tokens: updated.tokens } : p;
+            });
+            setPlaces([...newPlaces]);
+            
+            // Update transitions state
+            const newTransitions = transitions.map(t => {
+                const updated = responseData.transitions.find((rt: { id: string; enabled: boolean }) => rt.id === t.id);
+                return updated ? { ...t, enabled: updated.enabled } : t;
+            });
+            setTransitions([...newTransitions]);
+            
+            setConflictResolutionMode(false);
+            setConflictingTransitions([]);
+        } catch (error) {
+            console.error('Error resolving conflict:', error);
+        }
+    };
+
     // ===== RENDER =====
     return (
         <div className="app">
-            {/* Toolbar at the top */}
+            {/* Menu Bar at the very top */}
+            <MenuBar
+                petriNetData={petriNetDTO}
+                onImport={handleImport}
+            />
+
+            {/* Toolbar for editing tools below the menu bar */}
             <Toolbar
                 selectedTool={selectedTool}
                 setSelectedTool={setSelectedTool}
@@ -411,12 +546,23 @@ export default function App() {
                         onUpdateToken={handleTokenUpdate}
                         onTypingChange={handleTypingChange}
                         onUpdateName={handleNameUpdate}
+                        conflictResolutionMode={conflictResolutionMode}
+                        conflictingTransitions={conflictingTransitions}
+                        onConflictingTransitionSelect={continueSimulation}
                     />
                 </div>
 
                 {/* JSON Viewer */}
                 <div style={{ marginLeft: '1rem' }}>
-                    <JSONViewer data={petriNetDTO} width={400} height={600} />
+                    <JSONViewer 
+                        data={petriNetDTO} 
+                        width={400} 
+                        height={600} 
+                        selectedElements={selectedElements} 
+                        autoScrollEnabled={autoScrollEnabled}
+                        onAutoScrollToggle={setAutoScrollEnabled}
+                        currentMode={currentMode}
+                    />
                 </div>
             </div>
 
@@ -428,6 +574,24 @@ export default function App() {
                 <button onClick={handleReset} className="reset-button">
                     Reset
                 </button>
+                <div style={{ marginLeft: '1rem', display: 'inline-flex', alignItems: 'center' }}>
+                    <input
+                        type="checkbox"
+                        id="deterministic-mode"
+                        checked={deterministicMode}
+                        onChange={(e) => {
+                            console.log("Setting deterministic mode to:", e.target.checked);
+                            setDeterministicMode(e.target.checked);
+                        }}
+                        style={{ marginRight: '5px' }}
+                    />
+                    <label htmlFor="deterministic-mode">Deterministic Mode</label>
+                </div>
+                {conflictResolutionMode && (
+                    <div style={{ marginLeft: '1rem', color: '#ff4d4d' }}>
+                        Select one transition to fire
+                    </div>
+                )}
             </div>
         </div>
     );
