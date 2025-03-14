@@ -32,6 +32,48 @@ export default function App() {
             titleRef.current.startEditing();
         }
     };
+    
+    // Add history state for undo functionality
+    const [history, setHistory] = useState<{
+        places: UIPlace[][],
+        transitions: UITransition[][],
+        arcs: UIArc[][]
+    }>({
+        places: [],
+        transitions: [],
+        arcs: []
+    });
+    
+    // Function to save current state to history
+    const saveToHistory = useCallback(() => {
+        setHistory(prev => ({
+            places: [...prev.places, JSON.parse(JSON.stringify(places))],
+            transitions: [...prev.transitions, JSON.parse(JSON.stringify(transitions))],
+            arcs: [...prev.arcs, JSON.parse(JSON.stringify(arcs))]
+        }));
+    }, [places, transitions, arcs]);
+    
+    // Function to handle undo
+    const handleUndo = useCallback(() => {
+        if (history.places.length === 0) return; // Nothing to undo
+        
+        // Get the previous state
+        const prevPlaces = history.places[history.places.length - 1];
+        const prevTransitions = history.transitions[history.transitions.length - 1];
+        const prevArcs = history.arcs[history.arcs.length - 1];
+        
+        // Restore previous state
+        setPlaces(prevPlaces);
+        setTransitions(prevTransitions);
+        setArcs(prevArcs);
+        
+        // Remove the used history entry
+        setHistory(prev => ({
+            places: prev.places.slice(0, -1),
+            transitions: prev.transitions.slice(0, -1),
+            arcs: prev.arcs.slice(0, -1)
+        }));
+    }, [history]);
 
     // ===== DERIVED STATE / CONSTANTS =====
     const petriNetDTO: PetriNetDTO = {
@@ -69,14 +111,23 @@ export default function App() {
     // ===== EFFECTS =====
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
-            if (isTyping) return; // Prevent deletion while typing
-
+            if (isTyping) return; // Prevent actions while typing
+            
             if (e.key === 'Escape') {
                 setSelectedTool('NONE');
                 return;
             }
+            
+            // Handle undo with CMD+Z (Mac) or CTRL+Z (Windows)
+            if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                e.preventDefault(); // Prevent browser's default undo
+                handleUndo();
+                return;
+            }
 
             if (e.key === 'Delete' || e.key === 'Backspace') {
+                // Save current state before deletion
+                saveToHistory();
                 handleDelete();
             }
         }
@@ -85,7 +136,7 @@ export default function App() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [selectedElements, places, transitions, arcs, isTyping]);
+    }, [selectedElements, places, transitions, arcs, isTyping, handleUndo, saveToHistory]);
 
     useEffect(() => {
         if (selectedTool === 'ARC') {
@@ -106,6 +157,9 @@ export default function App() {
             setSelectedElements([]);
             return;
         }
+
+        // Save current state 
+        saveToHistory();
 
         if (selectedTool === 'PLACE') {
             const newPlace: UIPlace = {
@@ -136,7 +190,7 @@ export default function App() {
             setSelectedTool('NONE')
         }
 
-    }, [selectedTool, places, transitions]);
+    }, [selectedTool, places, transitions, saveToHistory]);
 
     const handleSelectElement = (id: string) => {
         setSelectedElements([id]);
@@ -150,6 +204,9 @@ export default function App() {
             const sourceId = selectedElements[0];
             const targetId = clickedId;
             if (isValidArcConnection(sourceId, targetId, arcType)) {
+                // Save current state before adding arc
+                saveToHistory();
+                
                 const newArc: UIArc = {
                     id: `arc_${Date.now()}`,
                     type: arcType,
@@ -195,6 +252,9 @@ export default function App() {
 
             // Use isValidArcConnection with the arcType
             if (isValidArcConnection(sourceId, targetId, arcType)) {
+                // Save current state before adding arc
+                saveToHistory();
+                
                 const newArc: UIArc = {
                     id: `arc_${Date.now()}`,
                     type: arcType,
@@ -358,6 +418,9 @@ export default function App() {
     };
 
     const handleReset = async () => {
+        // Save current state before reset
+        saveToHistory();
+        
         setPlaces([]);
         setTransitions([]);
         setArcs([]);
@@ -397,6 +460,9 @@ export default function App() {
     }
 
     const updatePlaceSize = (id: string, newRadius: number) => {
+        // Save current state before updating size
+        saveToHistory();
+        
         setPlaces((prevPlaces) =>
             prevPlaces.map((p) => (p.id === id ? { ...p, radius: newRadius } : p))
         );
@@ -404,6 +470,9 @@ export default function App() {
 
     const updateTransitionSize = (id: string, newWidth: number, newHeight: number) => {
         console.log('App: Updating size to:', newWidth, newHeight);
+        // Save current state before updating size
+        saveToHistory();
+        
         setTransitions((prevTransitions) =>
             prevTransitions.map((t) => {
                 if (t.id === id) {
@@ -417,7 +486,14 @@ export default function App() {
         );
     };
 
-    const updateElementPosition = (id: string, newX: number, newY: number) => {
+    const updateElementPosition = (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end' = 'end') => {
+        // If this is the start of dragging, save the current state to history
+        if (dragState === 'start') {
+            // Save the current state to history
+            saveToHistory();
+        }
+        
+        // Update the position (this happens for all position updates)
         setPlaces((prevPlaces) =>
             prevPlaces.map((p) =>
                 p.id === id ? { ...p, x: newX, y: newY } : p
@@ -432,6 +508,9 @@ export default function App() {
     };
 
     const handleTokenUpdate = (id: string, newTokens: number) => {
+        // Save current state before updating tokens
+        saveToHistory();
+        
         setPlaces(prevPlaces =>
             prevPlaces.map(place =>
                 place.id === id ? { ...place, tokens: newTokens } : place
@@ -440,6 +519,9 @@ export default function App() {
     };
 
     const handleNameUpdate = (id: string, newName: string) => {
+        // Save current state before updating names
+        saveToHistory();
+        
         // Update place names
         setPlaces(prevPlaces =>
             prevPlaces.map(place =>
@@ -531,7 +613,8 @@ export default function App() {
         <div className="app" style={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            height: '100vh'
+            height: '100vh',
+            overflow: 'hidden' // Prevent scrolling at the app level
         }}>
             {/* Use the EditableTitle component */}
             <EditableTitle 
@@ -551,7 +634,12 @@ export default function App() {
             />
 
             {/* Main content area */}
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+            <div style={{ 
+                display: 'flex', 
+                flex: 1, 
+                overflow: 'hidden',
+                position: 'relative' // Ensure children are positioned relative to this
+            }}>
                 {/* Left sidebar for tools */}
                 <div style={{ 
                     width: '200px', 
@@ -559,10 +647,11 @@ export default function App() {
                     padding: '10px',
                     flexShrink: 0, // Prevent sidebar from shrinking
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    overflow: 'hidden' // Prevent scrolling in the sidebar
                 }}>
                     {/* Toolbar section */}
-                    <div style={{ flex: 'none' }}>
+                    <div style={{ flex: 'none', overflow: 'hidden' }}>
                         <Toolbar
                             selectedTool={selectedTool}
                             setSelectedTool={setSelectedTool}
@@ -578,7 +667,8 @@ export default function App() {
                         flexDirection: 'column', 
                         gap: '10px',
                         padding: '10px',
-                        borderTop: '1px solid #2a2a2a'
+                        borderTop: '1px solid #2a2a2a',
+                        overflow: 'hidden' // Prevent scrolling in controls
                     }}>
                         {/* Deterministic Mode checkbox with hover effect */}
                         <div 
@@ -754,14 +844,15 @@ export default function App() {
 
                 {/* Right sidebar for JSON viewer */}
                 <div style={{ 
-                    width: '400px', 
+                    width: '390px', 
                     borderLeft: '1px solid #2a2a2a',
                     overflow: 'auto',
-                    flexShrink: 0 // Prevent shrinking
+                    flexShrink: 0, // Prevent shrinking
+                    marginRight: '2px' // Add a small margin to ensure scrollbar is visible
                 }}>
                     <JSONViewer 
                         data={petriNetDTO} 
-                        width={400} 
+                        width={390} 
                         height="100%" 
                         selectedElements={selectedElements} 
                         autoScrollEnabled={autoScrollEnabled}

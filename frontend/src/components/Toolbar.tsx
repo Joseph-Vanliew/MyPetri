@@ -22,7 +22,8 @@ export const Toolbar = ({
             padding: '10px', 
             backgroundColor: '#1a1a1a', 
             borderBottom: '1px solid #333',
-            gap: '15px'
+            gap: '15px',
+            overflow: 'hidden'
         }}>
             <div className="elements-label" style={{ marginBottom: '5px', fontWeight: 'bold' }}>
                 Node Elements:

@@ -105,8 +105,9 @@ export function JSONViewer({
     const arcsRef = useRef<HTMLPreElement>(null);
     const lastScrolledIdRef = useRef<string | null>(null);
 
-    const scrollToSection = (ref: React.RefObject<HTMLPreElement>) => {
-        if (ref.current && containerRef.current) {
+    // Helper function to scroll to a specific section
+    const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
+        if (ref.current) {
             ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
@@ -200,10 +201,6 @@ export function JSONViewer({
                 gap: '10px',
                 alignItems: 'center'
             }}>
-                <span style={{fontWeight: 'bold', color: '#ddd'}}>Go To:</span>
-                <button onClick={() => scrollToSection(placesRef)}>Places</button>
-                <button onClick={() => scrollToSection(transitionsRef)}>Transitions</button>
-                <button onClick={() => scrollToSection(arcsRef)}>Arcs</button>
             </div>
 
             {/* Container for JSON Viewer */}

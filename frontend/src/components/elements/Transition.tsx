@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import type {UIArc, UITransition} from '../../types';
 
 interface TransitionProps extends UITransition {
     isSelected: boolean;
     onSelect: (id: string) => void;
-    onUpdatePosition: (id: string, x: number, y: number) => void;
+    onUpdatePosition: (id: string, x: number, y: number, dragState?: 'start' | 'dragging' | 'end') => void;
     onUpdateSize: (id: string, newWidth: number, newHeight: number) => void;
     arcMode?: boolean;
     arcType?: UIArc['type'];
@@ -27,6 +27,9 @@ export const Transition = (props: TransitionProps) => {
     const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
     const [isHovered, setIsHovered] = useState(false);
     
+    // Add local position state to track position during dragging
+    const [localPosition, setLocalPosition] = useState({ x: props.x, y: props.y });
+    
     // Size states
     const [originalWidth, setOriginalWidth] = useState(props.width);
     const [originalHeight, setOriginalHeight] = useState(props.height);
@@ -38,6 +41,9 @@ export const Transition = (props: TransitionProps) => {
 
     // Add state to track if a conflicting transition is selected
     const [isConflictSelected, setIsConflictSelected] = useState(false);
+
+    // Compute the current visual position (either from local state during dragging or from props)
+    const visualPosition = isDragging ? localPosition : { x: props.x, y: props.y };
 
     // ===== EVENT HANDLERS =====
     // Name editing handlers
@@ -81,24 +87,35 @@ export const Transition = (props: TransitionProps) => {
     };
 
     // Drag handlers
-    const handleDragStart = (e: React.MouseEvent<SVGGElement>) => {
+    const handleDragStart = useCallback((e: React.MouseEvent<SVGGElement>) => {
         if (props.arcMode) return;
         if (activeHandle) return; // skip drag if resizing
         e.stopPropagation();
-        setIsDragging(true);
-
+        
         const svg = groupRef.current?.ownerSVGElement;
         if (!svg || !groupRef.current) return;
 
+        // Get current mouse position in SVG coordinates
         const pt = svg.createSVGPoint();
         pt.x = e.clientX;
         pt.y = e.clientY;
-        const inverseCTM = groupRef.current.getScreenCTM()?.inverse();
-        if (!inverseCTM) return;
-
-        const localPoint = pt.matrixTransform(inverseCTM);
-        setDragOffset({ dx: localPoint.x, dy: localPoint.y });
-    };
+        const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+        
+        // Calculate offset between mouse position and element position
+        const offsetX = svgP.x - props.x;
+        const offsetY = svgP.y - props.y;
+        
+        // Store this offset for use during dragging
+        setDragOffset({ dx: offsetX, dy: offsetY });
+        
+        // Initialize local position to current props position
+        setLocalPosition({ x: props.x, y: props.y });
+        
+        setIsDragging(true);
+        
+        // Notify parent that dragging has started
+        props.onUpdatePosition(props.id, props.x, props.y, 'start');
+    }, [activeHandle, props.arcMode, props.id, props.onUpdatePosition, props.x, props.y]);
 
     // Resize handlers
     const handleResizeStart = (handle: string, e: React.MouseEvent) => {
@@ -125,44 +142,53 @@ export const Transition = (props: TransitionProps) => {
     useEffect(() => {
         setTempName(props.name || '');
     }, [props.name]);
+    
+    // Sync local position with props
+    useEffect(() => {
+        setLocalPosition({ x: props.x, y: props.y });
+    }, [props.x, props.y]);
 
     // Handle dragging
     useEffect(() => {
+        if (!isDragging) return;
+        
         const handleMouseMove = (e: MouseEvent) => {
-            if (!isDragging || !groupRef.current) return;
-
+            if (!groupRef.current) return;
             const svg = groupRef.current.ownerSVGElement;
             if (!svg) return;
 
+            // Get the current mouse position in SVG coordinates
             const pt = svg.createSVGPoint();
             pt.x = e.clientX;
             pt.y = e.clientY;
-            const inverseCTM = groupRef.current.getScreenCTM()?.inverse();
-            if (!inverseCTM) return;
-
-            const localPoint = pt.matrixTransform(inverseCTM);
-            const newX = props.x + (localPoint.x - dragOffset.dx);
-            const newY = props.y + (localPoint.y - dragOffset.dy);
-
-            props.onUpdatePosition(props.id, newX, newY);
+            const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+            
+            // Calculate new position by applying the initial offset
+            const newX = svgP.x - dragOffset.dx;
+            const newY = svgP.y - dragOffset.dy;
+            
+            // Update local position
+            setLocalPosition({ x: newX, y: newY });
+            
+            // Update parent component in real-time to make arcs follow
+            props.onUpdatePosition(props.id, newX, newY, 'dragging');
         };
 
         const handleMouseUp = () => {
+            // Notify parent that dragging has ended
+            props.onUpdatePosition(props.id, localPosition.x, localPosition.y, 'end');
+            
             setIsDragging(false);
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
         };
 
-        if (isDragging) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-        }
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isDragging, dragOffset, props, props.x, props.y]);
+    }, [isDragging, dragOffset, localPosition, props]);
 
     // Handle resizing
     useEffect(() => {
@@ -252,11 +278,20 @@ export const Transition = (props: TransitionProps) => {
         };
     }, [activeHandle, props, originalWidth, originalHeight, aspectRatio]);
 
+    // Make visualPosition available as a property on the component instance
+    useEffect(() => {
+        if (groupRef.current) {
+            // Store the visual position as a property on the DOM element
+            (groupRef.current as any).visualPosition = visualPosition;
+        }
+    }, [visualPosition]);
+
     // ===== RENDER =====
     return (
         <g
             ref={groupRef}
-            transform={`translate(${props.x},${props.y})`}
+            data-id={props.id}
+            transform={`translate(${visualPosition.x},${visualPosition.y})`}
             className="petri-element transition"
             onClick={(e) => {
                 e.stopPropagation();
@@ -358,7 +393,7 @@ export const Transition = (props: TransitionProps) => {
                         onChange={handleNameChange}
                         className="name-input"
                         style={{
-                            width: '100%',
+                            width: '90%',
                             textAlign: 'center',
                             backgroundColor: '#333',
                             color: 'white',

@@ -1,4 +1,5 @@
 // src/components/elements/Arc.tsx
+import { useEffect, useState } from 'react';
 import type { UIArc, UIPlace, UITransition } from '../../types';
 
 interface ArcProps extends UIArc {
@@ -9,7 +10,7 @@ interface ArcProps extends UIArc {
 }
 
 // Deciding which helper to use based on the element type.
-function getElementAnchorPoint( element: UIPlace | UITransition, otherCenter: { x: number; y: number }) {
+function getElementAnchorPoint(element: UIPlace | UITransition, otherCenter: { x: number; y: number }) {
     const center = { x: element.x, y: element.y };
     if (element.id.startsWith('place')) {
         // For a place, use its radius.
@@ -50,14 +51,26 @@ function getRectAnchorPoint(center: { x: number; y: number }, width: number, hei
     };
 }
 
-export const Arc = ( props: ArcProps ) => {
-    // Compute centers of source and target nodes.
-    const sourceCenter = { x: props.source.x, y: props.source.y };
-    const targetCenter = { x: props.target.x, y: props.target.y };
-
-    // Compute anchor points on the boundaries.
-    const sourceAnchor = getElementAnchorPoint(props.source, targetCenter);
-    const targetAnchor = getElementAnchorPoint(props.target, sourceCenter);
+export const Arc = (props: ArcProps) => {
+    // Use state to track the current positions
+    const [sourcePos, setSourcePos] = useState({ x: props.source.x, y: props.source.y });
+    const [targetPos, setTargetPos] = useState({ x: props.target.x, y: props.target.y });
+    
+    // Update positions when props change
+    useEffect(() => {
+        setSourcePos({ x: props.source.x, y: props.source.y });
+        setTargetPos({ x: props.target.x, y: props.target.y });
+    }, [props.source.x, props.source.y, props.target.x, props.target.y]);
+    
+    // Compute anchor points using the current positions
+    const sourceAnchor = getElementAnchorPoint(
+        { ...props.source, x: sourcePos.x, y: sourcePos.y } as UIPlace | UITransition, 
+        targetPos
+    );
+    const targetAnchor = getElementAnchorPoint(
+        { ...props.target, x: targetPos.x, y: targetPos.y } as UIPlace | UITransition, 
+        sourcePos
+    );
 
     // For all arc types, we need to adjust the line slightly to accommodate markers
     let adjustedSourceX = sourceAnchor.x;

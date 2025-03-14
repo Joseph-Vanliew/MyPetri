@@ -51,6 +51,9 @@ export const Canvas = (props: CanvasProps) => {
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
 
+    // Add a new state to store refs to elements
+    const [elementRefs, setElementRefs] = useState<{[id: string]: React.RefObject<SVGGElement>}>({});
+
     // ===== EFFECTS =====
     // non-passive wheel event listener because react is too slow
     useEffect(() => {
@@ -293,7 +296,7 @@ export const Canvas = (props: CanvasProps) => {
                         const targetElement =
                             props.places.find(p => p.id === arc.outgoingId) ||
                             props.transitions.find(t => t.id === arc.outgoingId);
-
+                        
                         return sourceElement && targetElement ? (
                             <Arc
                                 key={arc.id}
@@ -312,53 +315,67 @@ export const Canvas = (props: CanvasProps) => {
 
                 {/* Elements Layer */}
                 <g className="elements-layer">
-                    {props.places.map(place => (
-                        <Place
-                            key={place.id}
-                            id={place.id}
-                            name={place.name}
-                            x={place.x}
-                            y={place.y}
-                            tokens={place.tokens}
-                            radius={place.radius}
-                            isSelected={props.selectedElements.includes(place.id)}
-                            onSelect={props.onSelectElement}
-                            onUpdateSize={props.onUpdatePlaceSize}
-                            onUpdatePosition={props.onUpdateElementPosition}
-                            arcMode={props.selectedTool === 'ARC'}
-                            arcType={props.arcType}
-                            onArcPortClick={props.onArcPortClick}
-                            onUpdateTokens={props.onUpdateToken}
-                            onTypingChange={props.onTypingChange}
-                            onUpdateName={props.onUpdateName}
-                        />
-                    ))}
+                    {props.places.map(place => {
+                        // Create a ref for this place if it doesn't exist
+                        if (!elementRefs[place.id]) {
+                            setElementRefs(prev => ({...prev, [place.id]: React.createRef()}));
+                        }
+                        
+                        return (
+                            <Place
+                                key={place.id}
+                                id={place.id}
+                                name={place.name}
+                                x={place.x}
+                                y={place.y}
+                                tokens={place.tokens}
+                                radius={place.radius}
+                                isSelected={props.selectedElements.includes(place.id)}
+                                onSelect={props.onSelectElement}
+                                onUpdateSize={props.onUpdatePlaceSize}
+                                onUpdatePosition={props.onUpdateElementPosition}
+                                arcMode={props.selectedTool === 'ARC'}
+                                arcType={props.arcType}
+                                onArcPortClick={props.onArcPortClick}
+                                onUpdateTokens={props.onUpdateToken}
+                                onTypingChange={props.onTypingChange}
+                                onUpdateName={props.onUpdateName}
+                            />
+                        );
+                    })}
 
-                    {props.transitions.map(transition => (
-                        <Transition
-                            name={transition.name}
-                            key={transition.id}
-                            id={transition.id}
-                            arcIds={transition.arcIds}
-                            x={transition.x}
-                            y={transition.y}
-                            width={transition.width}
-                            height={transition.height}
-                            enabled={transition.enabled}
-                            isSelected={props.selectedElements.includes(transition.id)}
-                            onSelect={props.onSelectElement}
-                            onUpdateSize={props.onUpdateTransitionSize}
-                            onUpdatePosition={props.onUpdateElementPosition}
-                            arcMode={props.selectedTool === 'ARC'}
-                            arcType={props.arcType}
-                            onArcPortClick={props.onArcPortClick}
-                            onUpdateName={props.onUpdateName}
-                            onTypingChange={props.onTypingChange}
-                            isConflicting={props.conflictResolutionMode && props.conflictingTransitions?.includes(transition.id)}
-                            onConflictingTransitionSelect={props.onConflictingTransitionSelect}
-                            conflictResolutionMode={props.conflictResolutionMode}
-                        />
-                    ))}
+                    {props.transitions.map(transition => {
+                        // Create a ref for this transition if it doesn't exist
+                        if (!elementRefs[transition.id]) {
+                            setElementRefs(prev => ({...prev, [transition.id]: React.createRef()}));
+                        }
+                        
+                        return (
+                            <Transition
+                                key={transition.id}
+                                id={transition.id}
+                                name={transition.name}
+                                arcIds={transition.arcIds}
+                                x={transition.x}
+                                y={transition.y}
+                                width={transition.width}
+                                height={transition.height}
+                                enabled={transition.enabled}
+                                isSelected={props.selectedElements.includes(transition.id)}
+                                onSelect={props.onSelectElement}
+                                onUpdateSize={props.onUpdateTransitionSize}
+                                onUpdatePosition={props.onUpdateElementPosition}
+                                arcMode={props.selectedTool === 'ARC'}
+                                arcType={props.arcType}
+                                onArcPortClick={props.onArcPortClick}
+                                onUpdateName={props.onUpdateName}
+                                onTypingChange={props.onTypingChange}
+                                isConflicting={props.conflictResolutionMode && props.conflictingTransitions?.includes(transition.id)}
+                                onConflictingTransitionSelect={props.onConflictingTransitionSelect}
+                                conflictResolutionMode={props.conflictResolutionMode}
+                            />
+                        );
+                    })}
                 </g>
 
                 {/* Marker definitions - adjusted to be more proportional */}

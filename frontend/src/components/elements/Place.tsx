@@ -1,11 +1,11 @@
 // src/components/elements/Place.tsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import type {UIArc, UIPlace} from '../../types';
 
 interface PlaceProps extends UIPlace {
     isSelected: boolean;
     onSelect: (id: string) => void;
-    onUpdatePosition: (id: string, x: number, y: number) => void;
+    onUpdatePosition: (id: string, x: number, y: number, dragState?: 'start' | 'dragging' | 'end') => void;
     onUpdateSize: (id: string, newRadius: number) => void;
     onUpdateTokens: (id: string, newTokens: number) => void;
     onArcPortClick: (id:string) => void;
@@ -26,6 +26,9 @@ export const Place = (props : PlaceProps) => {
     const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
     const [isHovered, setIsHovered] = useState(false);
     
+    // Add local position state to track position during dragging
+    const [localPosition, setLocalPosition] = useState({ x: props.x, y: props.y });
+    
     // Token states
     const [tokenCount, setTokenCount] = useState<number>(props.tokens);
     const [tempTokenCount, setTempTokenCount] = useState<string>(props.tokens.toString());
@@ -35,6 +38,9 @@ export const Place = (props : PlaceProps) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(props.name || '');
 
+    // Compute the current visual position (either from local state during dragging or from props)
+    const visualPosition = isDragging ? localPosition : { x: props.x, y: props.y };
+    
     // ===== EFFECTS =====
     // Sync token count with props
     useEffect(() => {
@@ -46,6 +52,19 @@ export const Place = (props : PlaceProps) => {
     useEffect(() => {
         setTempName(props.name || '');
     }, [props.name]);
+    
+    // Sync local position with props
+    useEffect(() => {
+        setLocalPosition({ x: props.x, y: props.y });
+    }, [props.x, props.y]);
+
+    // Make visualPosition available as a property on the component instance
+    useEffect(() => {
+        if (groupRef.current) {
+            // Store the visual position as a property on the DOM element
+            (groupRef.current as any).visualPosition = visualPosition;
+        }
+    }, [visualPosition]);
 
     // Handle resizing
     useEffect(() => {
@@ -109,42 +128,78 @@ export const Place = (props : PlaceProps) => {
     }, [activeHandle, props.id, props.onUpdateSize, props.radius]);
 
     // Handle dragging
+    const handleDragStart = useCallback((e: React.MouseEvent<SVGGElement>) => {
+        // Only start dragging if no resize handle is active.
+        if (props.arcMode) return;
+        if (activeHandle) return;
+        e.stopPropagation();
+        
+        // Get the SVG element
+        const svg = groupRef.current?.ownerSVGElement;
+        if (!svg || !groupRef.current) return;
+
+        // Get current mouse position in SVG coordinates
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+        
+        // Calculate offset between mouse position and element position
+        const offsetX = svgP.x - props.x;
+        const offsetY = svgP.y - props.y;
+        
+        // Store this offset for use during dragging
+        setDragOffset({ dx: offsetX, dy: offsetY });
+        
+        // Initialize local position to current props position
+        setLocalPosition({ x: props.x, y: props.y });
+        
+        setIsDragging(true);
+        
+        // Notify parent that dragging has started
+        props.onUpdatePosition(props.id, props.x, props.y, 'start');
+    }, [activeHandle, props.arcMode, props.id, props.onUpdatePosition, props.x, props.y]);
+
     useEffect(() => {
+        if (!isDragging) return;
+        
         const handleMouseMove = (e: MouseEvent) => {
-            if (!isDragging || !groupRef.current) return;
+            if (!groupRef.current) return;
             const svg = groupRef.current.ownerSVGElement;
             if (!svg) return;
 
+            // Get the current mouse position in SVG coordinates
             const pt = svg.createSVGPoint();
             pt.x = e.clientX;
             pt.y = e.clientY;
-            const inverseCTM = groupRef.current.getScreenCTM()?.inverse();
-            if (!inverseCTM) return;
-            const localPoint = pt.matrixTransform(inverseCTM);
-
-            // Calculate new position:
-            const newX = props.x + (localPoint.x - dragOffset.dx);
-            const newY = props.y + (localPoint.y - dragOffset.dy);
-
-            props.onUpdatePosition(props.id, newX, newY);
+            const svgP = pt.matrixTransform(svg.getScreenCTM()?.inverse());
+            
+            // Calculate new position by applying the initial offset
+            const newX = svgP.x - dragOffset.dx;
+            const newY = svgP.y - dragOffset.dy;
+            
+            // Update local position
+            setLocalPosition({ x: newX, y: newY });
+            
+            // Update parent component in real-time to make arcs follow
+            props.onUpdatePosition(props.id, newX, newY, 'dragging');
         };
 
         const handleMouseUp = () => {
+            // Notify parent that dragging has ended
+            props.onUpdatePosition(props.id, localPosition.x, localPosition.y, 'end');
+            
             setIsDragging(false);
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
         };
 
-        if (isDragging) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-        }
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isDragging, dragOffset, props.id, props.onUpdatePosition, props.x, props.y]);
+    }, [isDragging, dragOffset, localPosition, props]);
 
     // ===== EVENT HANDLERS =====
     // Token input handlers
@@ -222,35 +277,12 @@ export const Place = (props : PlaceProps) => {
         setTempName(props.name || '');
     };
 
-    // Drag handlers
-    const handleDragStart = (e: React.MouseEvent<SVGGElement>) => {
-        // Only start dragging if no resize handle is active.
-        if (props.arcMode) return;
-        if (activeHandle) return;
-        e.stopPropagation();
-        setIsDragging(true);
-
-        // Get the SVG element
-        const svg = groupRef.current?.ownerSVGElement;
-        if (!svg || !groupRef.current) return;
-
-        // Convert the mouse position to the group's local coordinates.
-        const pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
-        const inverseCTM = groupRef.current.getScreenCTM()?.inverse();
-        if (!inverseCTM) return;
-        const localPoint = pt.matrixTransform(inverseCTM);
-
-        // Save the offset from the element's center (assumed to be at 0,0).
-        setDragOffset({ dx: localPoint.x, dy: localPoint.y });
-    };
-
     // ===== RENDER =====
     return (
         <g
             ref={groupRef}
-            transform={`translate(${props.x},${props.y})`}
+            data-id={props.id}
+            transform={`translate(${visualPosition.x},${visualPosition.y})`}
             className="petri-element place"
             onClick={(e) => {
                 // Stop propagation so that this click doesn't trigger other canvas clicks.
