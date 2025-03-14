@@ -1,7 +1,6 @@
 // src/components/Toolbar.tsx
 
 import { UIArc } from '../types';
-import React from 'react';
 
 interface ToolbarProps {
     selectedTool: 'PLACE' | 'TRANSITION' | 'ARC'| 'NONE';
