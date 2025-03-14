@@ -158,7 +158,7 @@ export default function App() {
                 };
                 setArcs(prev => [...prev, newArc]);
 
-                // Optionally, update transitions if needed:
+                // Update transitions:
                 if (sourceId.startsWith('trans')) {
                     setTransitions(prev => prev.map(t =>
                         t.id === sourceId ? { ...t, arcIds: [...t.arcIds, newArc.id] } : t
@@ -557,14 +557,19 @@ export default function App() {
                     width: '200px', 
                     borderRight: '1px solid #2a2a2a', // Lighter grey border
                     padding: '10px',
-                    flexShrink: 0 // Prevent sidebar from shrinking
+                    flexShrink: 0, // Prevent sidebar from shrinking
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}>
-            <Toolbar
-                selectedTool={selectedTool}
-                setSelectedTool={setSelectedTool}
-                arcType={arcType}
-                setArcType={setArcType}
-            />
+                    {/* Toolbar section */}
+                    <div style={{ flex: 'none' }}>
+                        <Toolbar
+                            selectedTool={selectedTool}
+                            setSelectedTool={setSelectedTool}
+                            arcType={arcType}
+                            setArcType={setArcType}
+                        />
+                    </div>
 
                     {/* Simulation controls */}
                     <div className="controls" style={{ 
@@ -592,7 +597,11 @@ export default function App() {
                             onMouseOut={(e) => {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                             }}
-                            onClick={() => setDeterministicMode(!deterministicMode)}
+                            onClick={() => {
+                                const newValue = !deterministicMode;
+                                console.log("Setting deterministic mode to:", newValue);
+                                setDeterministicMode(newValue);
+                            }}
                             title="When enabled, you can choose which transition to fire when multiple are enabled"
                         >
                             <input
@@ -600,12 +609,28 @@ export default function App() {
                                 id="deterministic-mode"
                                 checked={deterministicMode}
                                 onChange={(e) => {
+                                    // This handler is now redundant since the parent div handles the click,
+                                    // keeping it for accessibility and direct checkbox interactions
                                     console.log("Setting deterministic mode to:", e.target.checked);
                                     setDeterministicMode(e.target.checked);
                                 }}
                                 style={{ marginRight: '5px', cursor: 'pointer' }}
+                                onClick={(e) => {
+                                    // Stop propagation to prevent double-toggling
+                                    e.stopPropagation();
+                                }}
                             />
-                            <label htmlFor="deterministic-mode" style={{ cursor: 'pointer' }}>Deterministic Mode</label>
+                            <label 
+                                htmlFor="deterministic-mode" 
+                                style={{ cursor: 'pointer' }}
+                                onClick={(e) => {
+                                    // Stop propagation to prevent double-toggling
+                                    // since clicking the label already triggers the checkbox
+                                    e.stopPropagation();
+                                }}
+                            >
+                                Deterministic Mode
+                            </label>
                         </div>
                         
                         {/* Next State button with hover effect */}
@@ -632,18 +657,35 @@ export default function App() {
                             Next State
                         </button>
                         
-                        {/* Reset button with hover effect */}
+                        {conflictResolutionMode && (
+                            <div style={{ marginTop: '10px', color: '#ff4d4d' }}>
+                                Select one transition to fire
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Spacer to push reset button to bottom */}
+                    <div style={{ flex: '1' }}></div>
+                    
+                    {/* Reset button at the bottom of sidebar */}
+                    <div style={{ 
+                        marginTop: '10px', 
+                        borderTop: '1px solid #2a2a2a',
+                        paddingTop: '10px'
+                    }}>
                         <button 
                             onClick={handleReset} 
                             className="reset-button"
                             style={{
+                                width: '100%',
                                 padding: '8px 12px',
                                 backgroundColor: '#822c2c',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '4px',
                                 cursor: 'pointer',
-                                transition: 'background-color 0.2s ease'
+                                transition: 'background-color 0.2s ease',
+                                fontWeight: 'bold'
                             }}
                             onMouseOver={(e) => {
                                 e.currentTarget.style.backgroundColor = '#a43a3a';
@@ -653,14 +695,8 @@ export default function App() {
                             }}
                             title="Clear all elements from the canvas"
                         >
-                            Reset
+                            Reset Canvas
                         </button>
-                        
-                        {conflictResolutionMode && (
-                            <div style={{ marginTop: '10px', color: '#ff4d4d' }}>
-                                Select one transition to fire
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -706,11 +742,12 @@ export default function App() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: '#1a1a1a'
+                        backgroundColor: '#1a1a1a',
+                        padding: '0 15px'
                     }}>
-                        {/* Page Navigation Placeholder */}
+                        {/* Page Navigation */}
                         <div style={{ color: '#777', fontSize: '14px' }}>
-                            Page navigation placeholder (Under Construction)
+                            Page navigation (Under Construction)
                         </div>
                     </div>
                 </div>

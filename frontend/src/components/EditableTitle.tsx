@@ -17,6 +17,9 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
     const [showNotification, setShowNotification] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     
+    // Default title constant
+    const DEFAULT_TITLE = "Untitled Petri Net";
+    
     // Timer for notification
     const notificationTimerRef = useRef<number | null>(null);
 
@@ -40,7 +43,7 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
         // Reset hover background when entering edit mode
         setHoverBackground('transparent');
         // Show notification when prompted to edit the title
-        if (title === "Untitled Petri Net") {
+        if (title === DEFAULT_TITLE) {
             setShowNotification(true);
             // Hide notification after 3 seconds
             if (notificationTimerRef.current) {
@@ -66,7 +69,10 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
 
     const finishEditing = () => {
         setIsEditing(false);
-        onTitleChange(tempTitle);
+        // If the title is empty, revert to the default title
+        const finalTitle = tempTitle.trim() === '' ? DEFAULT_TITLE : tempTitle;
+        onTitleChange(finalTitle);
+        setTempTitle(finalTitle);
         setShowNotification(false);
     };
 
@@ -127,6 +133,7 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
                             height: '40px',
                             boxSizing: 'border-box'
                         }}
+                        placeholder={DEFAULT_TITLE}
                     />
                 ) : (
                     // View mode
@@ -147,7 +154,6 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
                             opacity: 0.6,
                             verticalAlign: 'middle'
                         }}>
-                            (click to edit)
                         </span>
                     </h2>
                 )}
