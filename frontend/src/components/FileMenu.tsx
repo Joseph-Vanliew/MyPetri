@@ -16,9 +16,11 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) =>
   };
 
   const handleSave = () => {
-    // Prompt the user for a filename
-    const defaultName = `petri-net-${new Date().toISOString().slice(0, 10)}`;
-    const filename = prompt('Enter a filename for your Petri net:', defaultName);
+    // Use the current title as the default filename instead of a date-based name
+    const currentTitle = petriNetData.title || "Untitled Petri Net";
+    
+    // Prompt the user for a filename, pre-filled with the current title
+    const filename = prompt('Enter a filename for your Petri net:', currentTitle);
     
     // If the user cancels the prompt or enters an empty string, abort the save
     if (!filename) return;
@@ -27,7 +29,13 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) =>
     const filenameWithExtension = filename.endsWith('.pats') ? filename : `${filename}.pats`;
     
     // Create a blob with the JSON data
-    const jsonString = JSON.stringify(petriNetData, null, 2);
+    // Make sure to include the title in the saved data
+    const dataToSave = {
+      ...petriNetData,
+      title: filename // Update the title to match the filename the user chose
+    };
+    
+    const jsonString = JSON.stringify(dataToSave, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     
     // Create a download link and trigger it
@@ -60,6 +68,13 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) =>
       try {
         const content = e.target?.result as string;
         const importedData = JSON.parse(content) as PetriNetDTO;
+        
+        // If the imported file doesn't have a title, use the filename (without extension)
+        if (!importedData.title) {
+          const filename = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
+          importedData.title = filename;
+        }
+        
         onImport(importedData);
       } catch (error) {
         console.error('Error parsing imported file:', error);
@@ -96,7 +111,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) =>
         onClick={toggleMenu}
         style={{
           padding: '4px 8px',
-          color: 'white',
+          color: 'ddd',
           cursor: 'pointer',
           fontWeight: isOpen ? 'bold' : 'normal',
           backgroundColor: isOpen ? '#444' : 'transparent',

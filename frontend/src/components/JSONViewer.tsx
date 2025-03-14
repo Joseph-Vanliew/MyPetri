@@ -14,17 +14,23 @@ interface JSONViewerProps {
 // Function to format JSON and highlight selected elements
 const formatJSON = (jsonData: object, selectedElements: string[] = []) => {
     // Convert the object to a formatted string
-    let jsonString = JSON.stringify(jsonData, null, 2);
+    let jsonString = JSON.stringify(jsonData, (_, value) => {
+        // Rounding numeric values to integers for better readability
+        if (typeof value === 'number') {
+            return Math.round(value);
+        }
+        return value;
+    }, 2); // space parameter for indentation
 
     // Bold section headers
     jsonString = jsonString.replace(/"places":/g, `"<strong>places</strong>":`);
     jsonString = jsonString.replace(/"transitions":/g, `"<strong>transitions</strong>":`);
     jsonString = jsonString.replace(/"arcs":/g, `"<strong>arcs</strong>":`);
 
-    // Bold all property names (keys) but not their values
+    // Bolding all property names but not their values
     jsonString = jsonString.replace(/"([^"]+)":/g, `"<strong>$1</strong>":`);
 
-    // If have selected elements, highlight them
+    // highlighting selected elements
     if (selectedElements.length > 0) {
         // parse JSON string into lines
         const lines = jsonString.split('\n');

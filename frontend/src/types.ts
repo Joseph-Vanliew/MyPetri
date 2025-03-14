@@ -34,6 +34,7 @@ export interface PetriNetDTO {
     }[];
     deterministicMode?: boolean;
     selectedTransitionId?: string;
+    title?: string;
 }
 
 export interface PlaceDTO {

@@ -289,14 +289,14 @@ export const Transition = (props: TransitionProps) => {
             {/* Arc mode highlight - renders a light green rectangle around the transition when hovered */}
             {props.arcMode && isHovered && (
                 <rect
-                    x={-props.width / 2 - 3}
-                    y={-props.height / 2 - 3}
-                    width={props.width + 6}
-                    height={props.height + 6}
-                    rx={5}
+                    x={-props.width / 2 - 6}
+                    y={-props.height / 2 - 6}
+                    width={props.width + 12}
+                    height={props.height + 12}
+                    rx={10}
                     fill="none"
                     stroke="rgba(0, 255, 0, 0.5)"
-                    strokeWidth="3"
+                    strokeWidth="6"
                     style={{cursor: 'pointer'}}
                 />
             )}
@@ -304,14 +304,14 @@ export const Transition = (props: TransitionProps) => {
             {/* Conflict highlight - for transitions in conflict resolution mode */}
             {props.isConflicting && (
                 <rect
-                    x={-props.width / 2 - 4}
-                    y={-props.height / 2 - 4}
-                    width={props.width + 8}
-                    height={props.height + 8}
-                    rx={6}
+                    x={-props.width / 2 - 8}
+                    y={-props.height / 2 - 8}
+                    width={props.width + 16}
+                    height={props.height + 16}
+                    rx={12}
                     fill="none"
                     stroke={isConflictSelected ? "rgba(0, 255, 0, 0.7)" : "rgba(255, 0, 0, 0.7)"}
-                    strokeWidth="3"
+                    strokeWidth="6"
                 />
             )}
             
@@ -321,12 +321,12 @@ export const Transition = (props: TransitionProps) => {
                 y={-props.height / 2}
                 width={props.width}
                 height={props.height}
-                rx={4}
+                rx={8}
                 fill={props.isConflicting 
                     ? (isConflictSelected ? "#0f3f0f" : "#3f0f0f") 
                     : "#0f0f0f"}
                 stroke={props.isSelected ? "#ffffff" : "#ffffff"}
-                strokeWidth="1"
+                strokeWidth="2"
             />
 
             {/* Optional label - Only show when not editing */}
@@ -337,6 +337,8 @@ export const Transition = (props: TransitionProps) => {
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fill="#fff"
+                    fontSize="20"
+                    fontWeight="bold"
                 >
                     {props.name}
                 </text>
@@ -345,10 +347,10 @@ export const Transition = (props: TransitionProps) => {
             {/* Name editing input - Only show when editing name */}
             {isEditingName && (
                 <foreignObject 
-                    x={-50} 
-                    y={-10} 
-                    width="100" 
-                    height="20"
+                    x={-75}
+                    y={-20}
+                    width="150"
+                    height="40"
                 >
                     <input
                         type="text"
@@ -361,7 +363,9 @@ export const Transition = (props: TransitionProps) => {
                             backgroundColor: '#333',
                             color: 'white',
                             border: '1px solid #555',
-                            borderRadius: '3px'
+                            borderRadius: '3px',
+                            fontSize: '16px',
+                            padding: '4px'
                         }}
                         autoFocus
                         onBlur={finishNameEdit}
@@ -380,13 +384,14 @@ export const Transition = (props: TransitionProps) => {
                         height={props.height}
                         fill="none"
                         stroke="#007bff"
-                        strokeDasharray="4"
+                        strokeDasharray="8"
+                        strokeWidth="2"
                     />
                     {/* Only corner handles => always scale with aspect ratio */}
                     <circle
                         cx={-props.width / 2}
                         cy={-props.height / 2}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{ cursor: 'nwse-resize' }}
                         onMouseDown={(e) => handleResizeStart('top-left', e)}
@@ -394,7 +399,7 @@ export const Transition = (props: TransitionProps) => {
                     <circle
                         cx={props.width / 2}
                         cy={-props.height / 2}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{ cursor: 'nesw-resize' }}
                         onMouseDown={(e) => handleResizeStart('top-right', e)}
@@ -402,7 +407,7 @@ export const Transition = (props: TransitionProps) => {
                     <circle
                         cx={-props.width / 2}
                         cy={props.height / 2}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{ cursor: 'nesw-resize' }}
                         onMouseDown={(e) => handleResizeStart('bottom-left', e)}
@@ -410,7 +415,7 @@ export const Transition = (props: TransitionProps) => {
                     <circle
                         cx={props.width / 2}
                         cy={props.height / 2}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{ cursor: 'nwse-resize' }}
                         onMouseDown={(e) => handleResizeStart('bottom-right', e)}

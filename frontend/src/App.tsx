@@ -1,5 +1,5 @@
 // src/App.tsx
-import {useState, useCallback, useEffect} from 'react';
+import {useState, useCallback, useEffect, useRef} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
 import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE} from './types';
@@ -20,6 +20,9 @@ export default function App() {
     const [deterministicMode, setDeterministicMode] = useState(false);
     const [conflictResolutionMode, setConflictResolutionMode] = useState(false);
     const [conflictingTransitions, setConflictingTransitions] = useState<string[]>([]);
+    const [title, setTitle] = useState<string>("Untitled Petri Net");
+    const [isEditingTitle, setIsEditingTitle] = useState<boolean>(false);
+    const titleInputRef = useRef<HTMLInputElement>(null);
 
     // ===== DERIVED STATE / CONSTANTS =====
     const petriNetDTO: PetriNetDTO = {
@@ -102,7 +105,7 @@ export default function App() {
                 tokens: 0,
                 x,
                 y,
-                radius: 23
+                radius: 46
             };
             setPlaces(prev => [...prev, newPlace]);
             setSelectedTool('NONE');
@@ -114,8 +117,8 @@ export default function App() {
                 arcIds: [],
                 x,
                 y,
-                width: 60,
-                height: 27
+                width: 120,
+                height: 54
             };
             setTransitions(prev => [...prev, newTransition]);
             setSelectedTool('NONE');
@@ -452,7 +455,7 @@ export default function App() {
             tokens: place.tokens,
             x: place.x || 100, // Default position if not provided
             y: place.y || 100,
-            radius: place.radius || 23
+            radius: place.radius || 46  // Doubled from 23 to 46
         }));
         
         // Convert imported transitions to UITransition objects
@@ -463,14 +466,19 @@ export default function App() {
             arcIds: transition.arcIds,
             x: transition.x || 200, // Default position if not provided
             y: transition.y || 200,
-            width: transition.width || 60,
-            height: transition.height || 27
+            width: transition.width || 120,  // Doubled from 60 to 120
+            height: transition.height || 54   // Doubled from 27 to 54
         }));
         
         // Set the imported data
         setPlaces(importedPlaces);
         setTransitions(importedTransitions);
         setArcs(importedData.arcs);
+        
+        // If the imported data has a title, use it
+        if (importedData.title) {
+            setTitle(importedData.title);
+        }
     };
 
     const continueSimulation = async (selectedTransitionId: string) => {
@@ -511,87 +519,248 @@ export default function App() {
 
     // ===== RENDER =====
     return (
-        <div className="app">
-            {/* Menu Bar at the very top */}
+        <div className="app" style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            height: '100vh'
+        }}>
+            {/* Title div in upper left - now with fixed dimensions */}
+            <div className="title-container" style={{ 
+                padding: '10px', 
+                textAlign: 'left', 
+                borderBottom: '1px solid #2a2a2a',
+                display: 'flex',
+                alignItems: 'center',
+                height: '60px', // Fixed height to prevent layout shifts
+                minHeight: '60px' // Ensure minimum height
+            }}>
+                {isEditingTitle ? (
+                    <div style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        display: 'flex', 
+                        alignItems: 'center' 
+                    }}>
+                        <input
+                            ref={titleInputRef}
+                            type="text"
+                            value={title}
+                            onChange={(e) => {
+                                setTitle(e.target.value);
+                            }}
+                            onBlur={() => {
+                                setIsEditingTitle(false);
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    setIsEditingTitle(false);
+                                } else if (e.key === 'Escape') {
+                                    setIsEditingTitle(false);
+                                }
+                            }}
+                            style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 'bold',
+                                padding: '5px',
+                                border: '1px solid #444',
+                                borderRadius: '3px',
+                                backgroundColor: '#333',
+                                color: 'white',
+                                width: '300px',
+                                height: '40px', // Fixed height
+                                boxSizing: 'border-box' // Include padding and border in the element's size
+                            }}
+                        />
+                    </div>
+                ) : (
+                    <h2 
+                        onClick={() => {
+                            setIsEditingTitle(true);
+                            setTimeout(() => {
+                                if (titleInputRef.current) {
+                                    titleInputRef.current.focus();
+                                    titleInputRef.current.select();
+                                }
+                            }, 10);
+                        }}
+                        style={{ 
+                            cursor: 'pointer',
+                            margin: 0,
+                            padding: '5px',
+                            borderRadius: '3px',
+                            transition: 'background-color 0.2s',
+                            height: '40px', // Fixed height
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}
+                    >
+                        {title}
+                        <span style={{ 
+                            marginLeft: '10px', 
+                            fontSize: '0.8rem', 
+                            opacity: 0.6,
+                            verticalAlign: 'middle'
+                        }}>
+                            (click to edit)
+                        </span>
+                    </h2>
+                )}
+            </div>
+            
+            {/* Menu Bar below the title */}
             <MenuBar
-                petriNetData={petriNetDTO}
+                petriNetData={{
+                    ...petriNetDTO,
+                    title: title
+                }}
                 onImport={handleImport}
             />
 
-            {/* Toolbar for editing tools below the menu bar */}
-            <Toolbar
-                selectedTool={selectedTool}
-                setSelectedTool={setSelectedTool}
-                arcType={arcType}
-                setArcType={setArcType}
-            />
-
-            {/* Main area*/}
-            <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                {/* Canvas */}
-                <div style={{ width: '800px', height: '600px' }}>
-                    <Canvas
-                        places={places}
-                        transitions={transitions}
-                        arcs={arcs}
-                        selectedElements={selectedElements}
-                        onCanvasClick={handleCanvasClick}
-                        onUpdatePlaceSize={updatePlaceSize}
-                        onUpdateTransitionSize={updateTransitionSize}
-                        onUpdateElementPosition={updateElementPosition}
-                        onSelectElement={handleSelectElement}
+            {/* Main content area */}
+            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                {/* Left sidebar for tools */}
+                <div style={{ 
+                    width: '200px', 
+                    borderRight: '1px solid #2a2a2a', // Lighter grey border
+                    padding: '10px',
+                    flexShrink: 0 // Prevent sidebar from shrinking
+                }}>
+                    <Toolbar
                         selectedTool={selectedTool}
-                        onArcPortClick={handleArcPortClick}
+                        setSelectedTool={setSelectedTool}
                         arcType={arcType}
-                        onUpdateToken={handleTokenUpdate}
-                        onTypingChange={handleTypingChange}
-                        onUpdateName={handleNameUpdate}
-                        conflictResolutionMode={conflictResolutionMode}
-                        conflictingTransitions={conflictingTransitions}
-                        onConflictingTransitionSelect={continueSimulation}
+                        setArcType={setArcType}
                     />
+                    
+                    {/* Simulation controls */}
+                    <div className="controls" style={{ 
+                        marginTop: '2rem', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '10px',
+                        padding: '10px',
+                        borderTop: '1px solid #2a2a2a' // Lighter grey border
+                    }}>
+                        {/* Deterministic Mode checkbox moved above the Next State button */}
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                            <input
+                                type="checkbox"
+                                id="deterministic-mode"
+                                checked={deterministicMode}
+                                onChange={(e) => {
+                                    console.log("Setting deterministic mode to:", e.target.checked);
+                                    setDeterministicMode(e.target.checked);
+                                }}
+                                style={{ marginRight: '5px' }}
+                            />
+                            <label htmlFor="deterministic-mode">Deterministic Mode</label>
+                        </div>
+                        
+                        <button 
+                            onClick={handleSimulate} 
+                            className="simulate-button"
+                            style={{
+                                padding: '8px 12px',
+                                backgroundColor: '#2c5282', // Blue button
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Next State
+                        </button>
+                        <button 
+                            onClick={handleReset} 
+                            className="reset-button"
+                            style={{
+                                padding: '8px 12px',
+                                backgroundColor: '#822c2c', // Red button
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Reset
+                        </button>
+                        
+                        {conflictResolutionMode && (
+                            <div style={{ marginTop: '10px', color: '#ff4d4d' }}>
+                                Select one transition to fire
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* JSON Viewer */}
-                <div style={{ marginLeft: '1rem' }}>
+                {/* Center area with canvas and page navigation */}
+                <div style={{ 
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
+                }}>
+                    {/* Canvas container - takes most of the space but leaves room at bottom */}
+                    <div style={{ 
+                        flex: 1,
+                        overflow: 'hidden',
+                        minHeight: 0 // Important for flex child to respect parent's size
+                    }}>
+                        <Canvas
+                            places={places}
+                            transitions={transitions}
+                            arcs={arcs}
+                            selectedElements={selectedElements}
+                            onCanvasClick={handleCanvasClick}
+                            onUpdatePlaceSize={updatePlaceSize}
+                            onUpdateTransitionSize={updateTransitionSize}
+                            onUpdateElementPosition={updateElementPosition}
+                            onSelectElement={handleSelectElement}
+                            selectedTool={selectedTool}
+                            onArcPortClick={handleArcPortClick}
+                            arcType={arcType}
+                            onUpdateToken={handleTokenUpdate}
+                            onTypingChange={handleTypingChange}
+                            onUpdateName={handleNameUpdate}
+                            conflictResolutionMode={conflictResolutionMode}
+                            conflictingTransitions={conflictingTransitions}
+                            onConflictingTransitionSelect={continueSimulation}
+                        />
+                    </div>
+                    
+                    {/* Space for future page navigation */}
+                    <div style={{ 
+                        height: '40px', // Reserved space for page navigation
+                        borderTop: '1px solid #2a2a2a',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#1a1a1a'
+                    }}>
+                        {/* Placeholder for future page navigation */}
+                        <div style={{ color: '#777', fontSize: '14px' }}>
+                            Page navigation placeholder (Under Construction)
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right sidebar for JSON viewer */}
+                <div style={{ 
+                    width: '400px', 
+                    borderLeft: '1px solid #2a2a2a',
+                    overflow: 'auto',
+                    flexShrink: 0 // Prevent JSON viewer from shrinking
+                }}>
                     <JSONViewer 
                         data={petriNetDTO} 
                         width={400} 
-                        height={600} 
+                        height="100%" 
                         selectedElements={selectedElements} 
                         autoScrollEnabled={autoScrollEnabled}
                         onAutoScrollToggle={setAutoScrollEnabled}
                         currentMode={currentMode}
                     />
                 </div>
-            </div>
-
-            {/* Simulate and reset buttons */}
-            <div className="controls" style={{ marginTop: '1rem' }}>
-                <button onClick={handleSimulate} className="simulate-button">
-                    Next State
-                </button>
-                <button onClick={handleReset} className="reset-button">
-                    Reset
-                </button>
-                <div style={{ marginLeft: '1rem', display: 'inline-flex', alignItems: 'center' }}>
-                    <input
-                        type="checkbox"
-                        id="deterministic-mode"
-                        checked={deterministicMode}
-                        onChange={(e) => {
-                            console.log("Setting deterministic mode to:", e.target.checked);
-                            setDeterministicMode(e.target.checked);
-                        }}
-                        style={{ marginRight: '5px' }}
-                    />
-                    <label htmlFor="deterministic-mode">Deterministic Mode</label>
-                </div>
-                {conflictResolutionMode && (
-                    <div style={{ marginLeft: '1rem', color: '#ff4d4d' }}>
-                        Select one transition to fire
-                    </div>
-                )}
             </div>
         </div>
     );

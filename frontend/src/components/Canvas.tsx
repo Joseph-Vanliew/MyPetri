@@ -27,11 +27,29 @@ interface CanvasProps {
 
 export const Canvas = (props: CanvasProps) => {
     // ===== STATE =====
-    /* starting bounds for the canvas grid and element rendering, *adjust later when polishing */
-    const [viewBox, setViewBox] = useState({ x: 0, y: 0, w: 800, h: 600 });
+    /* Increase the initial viewBox width and height */
+    const [viewBox, setViewBox] = useState({ x: -150, y: -150, w: 1100, h: 900 }); // Centered and enlarged
     const [isPanning, setIsPanning] = useState(false);
     const [lastMouseX, setLastMouseX] = useState(0);
     const [lastMouseY, setLastMouseY] = useState(0);
+
+    // Get the container dimensions
+    const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
+    
+    // Update dimensions on resize
+    useEffect(() => {
+        const updateDimensions = () => {
+            const container = document.querySelector('.canvas-container');
+            if (container) {
+                const { width, height } = container.getBoundingClientRect();
+                setDimensions({ width, height });
+            }
+        };
+        
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, []);
 
     // ===== EFFECTS =====
     // non-passive wheel event listener because react is too slow
@@ -56,8 +74,11 @@ export const Canvas = (props: CanvasProps) => {
         const lines = [];
 
         // Using Math.floor/ceil to ensure lines snap to grid multiples.
-        const startX = Math.floor(vBox.x / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-        const endX   = Math.ceil((vBox.x + vBox.w) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        // Extend the grid by adding extra padding to ensure it covers the entire viewBox
+        const gridPadding = 300; // Add extra padding to ensure grid covers the entire viewBox
+        
+        const startX = Math.floor((vBox.x - gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        const endX = Math.ceil((vBox.x + vBox.w + gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
 
         // Generate vertical lines / math for resizing
         for (let xVal = startX; xVal <= endX; xVal += GRID_CELL_SIZE) {
@@ -65,9 +86,9 @@ export const Canvas = (props: CanvasProps) => {
                 <line
                     key={`v-${xVal}`}
                     x1={xVal}
-                    y1={vBox.y}
+                    y1={vBox.y - gridPadding}
                     x2={xVal}
-                    y2={vBox.y + vBox.h}
+                    y2={vBox.y + vBox.h + gridPadding}
                     stroke="#e9ecef"
                     opacity="0.4"
                     strokeWidth="0.5"
@@ -75,17 +96,17 @@ export const Canvas = (props: CanvasProps) => {
             );
         }
 
-        const startY = Math.floor(vBox.y / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-        const endY   = Math.ceil((vBox.y + vBox.h) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        const startY = Math.floor((vBox.y - gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        const endY = Math.ceil((vBox.y + vBox.h + gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
 
         // Generate horizontal lines and math for resizing
         for (let yVal = startY; yVal <= endY; yVal += GRID_CELL_SIZE) {
             lines.push(
                 <line
                     key={`h-${yVal}`}
-                    x1={vBox.x}
+                    x1={vBox.x - gridPadding}
                     y1={yVal}
-                    x2={vBox.x + vBox.w}
+                    x2={vBox.x + vBox.w + gridPadding}
                     y2={yVal}
                     stroke="#e9ecef"
                     opacity="0.4"
@@ -242,139 +263,142 @@ export const Canvas = (props: CanvasProps) => {
 
     // ===== RENDER =====
     return (
-        <svg
-            className="petri-canvas"
-            width={800}
-            height={600}
-            // important
-            viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
-            onWheel={handleWheel}
-            onClick={handleSvgClick}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onMouseDown={handleMouseDown}
-            onMouseMove={panCanvas}
-            onMouseUp={handleMouseUp}
-            // ...
-            style={{ backgroundColor: 'rgb(19,19,19)' }}
-        >
-            {/* Grid Layer */}
-            <g className="grid-layer">{renderGrid(viewBox)}</g>
+        <div className="canvas-container" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+            <svg
+                className="petri-canvas"
+                width={dimensions.width}
+                height={dimensions.height}
+                viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
+                onWheel={handleWheel}
+                onClick={handleSvgClick}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onMouseDown={handleMouseDown}
+                onMouseMove={panCanvas}
+                onMouseUp={handleMouseUp}
+                style={{ 
+                    backgroundColor: 'rgb(19,19,19)',
+                    display: 'block'
+                }}
+            >
+                {/* Grid Layer */}
+                <g className="grid-layer">{renderGrid(viewBox)}</g>
 
-            {/* Arcs Layer */}
-            <g className="arcs-layer">
-                {props.arcs.map(arc => {
-                    const sourceElement =
-                        props.places.find(p => p.id === arc.incomingId) ||
-                        props.transitions.find(t => t.id === arc.incomingId);
-                    const targetElement =
-                        props.places.find(p => p.id === arc.outgoingId) ||
-                        props.transitions.find(t => t.id === arc.outgoingId);
+                {/* Arcs Layer */}
+                <g className="arcs-layer">
+                    {props.arcs.map(arc => {
+                        const sourceElement =
+                            props.places.find(p => p.id === arc.incomingId) ||
+                            props.transitions.find(t => t.id === arc.incomingId);
+                        const targetElement =
+                            props.places.find(p => p.id === arc.outgoingId) ||
+                            props.transitions.find(t => t.id === arc.outgoingId);
 
-                    return sourceElement && targetElement ? (
-                        <Arc
-                            key={arc.id}
-                            id={arc.id}
-                            type={arc.type}
-                            incomingId={arc.incomingId}
-                            outgoingId={arc.outgoingId}
-                            source={sourceElement}
-                            target={targetElement}
-                            isSelected={props.selectedElements.includes(arc.id)}
+                        return sourceElement && targetElement ? (
+                            <Arc
+                                key={arc.id}
+                                id={arc.id}
+                                type={arc.type}
+                                incomingId={arc.incomingId}
+                                outgoingId={arc.outgoingId}
+                                source={sourceElement}
+                                target={targetElement}
+                                isSelected={props.selectedElements.includes(arc.id)}
+                                onSelect={props.onSelectElement}
+                            />
+                        ) : null;
+                    })}
+                </g>
+
+                {/* Elements Layer */}
+                <g className="elements-layer">
+                    {props.places.map(place => (
+                        <Place
+                            key={place.id}
+                            id={place.id}
+                            name={place.name}
+                            x={place.x}
+                            y={place.y}
+                            tokens={place.tokens}
+                            radius={place.radius}
+                            isSelected={props.selectedElements.includes(place.id)}
                             onSelect={props.onSelectElement}
+                            onUpdateSize={props.onUpdatePlaceSize}
+                            onUpdatePosition={props.onUpdateElementPosition}
+                            arcMode={props.selectedTool === 'ARC'}
+                            arcType={props.arcType}
+                            onArcPortClick={props.onArcPortClick}
+                            onUpdateTokens={props.onUpdateToken}
+                            onTypingChange={props.onTypingChange}
+                            onUpdateName={props.onUpdateName}
                         />
-                    ) : null;
-                })}
-            </g>
+                    ))}
 
-            {/* Elements Layer */}
-            <g className="elements-layer">
-                {props.places.map(place => (
-                    <Place
-                        key={place.id}
-                        id={place.id}
-                        name={place.name}
-                        x={place.x}
-                        y={place.y}
-                        tokens={place.tokens}
-                        radius={place.radius}
-                        isSelected={props.selectedElements.includes(place.id)}
-                        onSelect={props.onSelectElement}
-                        onUpdateSize={props.onUpdatePlaceSize}
-                        onUpdatePosition={props.onUpdateElementPosition}
-                        arcMode={props.selectedTool === 'ARC'}
-                        arcType={props.arcType}
-                        onArcPortClick={props.onArcPortClick}
-                        onUpdateTokens={props.onUpdateToken}
-                        onTypingChange={props.onTypingChange}
-                        onUpdateName={props.onUpdateName}
-                    />
-                ))}
+                    {props.transitions.map(transition => (
+                        <Transition
+                            name={transition.name}
+                            key={transition.id}
+                            id={transition.id}
+                            arcIds={transition.arcIds}
+                            x={transition.x}
+                            y={transition.y}
+                            width={transition.width}
+                            height={transition.height}
+                            enabled={transition.enabled}
+                            isSelected={props.selectedElements.includes(transition.id)}
+                            onSelect={props.onSelectElement}
+                            onUpdateSize={props.onUpdateTransitionSize}
+                            onUpdatePosition={props.onUpdateElementPosition}
+                            arcMode={props.selectedTool === 'ARC'}
+                            arcType={props.arcType}
+                            onArcPortClick={props.onArcPortClick}
+                            onUpdateName={props.onUpdateName}
+                            onTypingChange={props.onTypingChange}
+                            isConflicting={props.conflictResolutionMode && props.conflictingTransitions?.includes(transition.id)}
+                            onConflictingTransitionSelect={props.onConflictingTransitionSelect}
+                            conflictResolutionMode={props.conflictResolutionMode}
+                        />
+                    ))}
+                </g>
 
-                {props.transitions.map(transition => (
-                    <Transition
-                        name={transition.name}
-                        key={transition.id}
-                        id={transition.id}
-                        arcIds={transition.arcIds}
-                        x={transition.x}
-                        y={transition.y}
-                        width={transition.width}
-                        height={transition.height}
-                        enabled={transition.enabled}
-                        isSelected={props.selectedElements.includes(transition.id)}
-                        onSelect={props.onSelectElement}
-                        onUpdateSize={props.onUpdateTransitionSize}
-                        onUpdatePosition={props.onUpdateElementPosition}
-                        arcMode={props.selectedTool === 'ARC'}
-                        arcType={props.arcType}
-                        onArcPortClick={props.onArcPortClick}
-                        onUpdateName={props.onUpdateName}
-                        onTypingChange={props.onTypingChange}
-                        isConflicting={props.conflictResolutionMode && props.conflictingTransitions?.includes(transition.id)}
-                        onConflictingTransitionSelect={props.onConflictingTransitionSelect}
-                        conflictResolutionMode={props.conflictResolutionMode}
-                    />
-                ))}
-            </g>
+                {/* Marker definitions - adjusted to be more proportional */}
+                <defs>
+                    <marker
+                        id="arrow"
+                        viewBox="0 0 10 10"  // Keep original viewBox
+                        refX="9"             // Keep original refX
+                        refY="5"             // Keep original refY
+                        markerWidth="8"      // Increased from 6 but not doubled
+                        markerHeight="8"     // Increased from 6 but not doubled
+                        orient="auto-start-reverse"
+                    >
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
+                    </marker>
 
-            {/* Marker definitions */}
-            <defs>
-                <marker
-                    id="arrow"
-                    viewBox="0 0 10 10"
-                    refX="9"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
-                    orient="auto-start-reverse"
-                >
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
-                </marker>
+                    <marker
+                        id="inhibitor"
+                        viewBox="0 0 10 10"  // Keep original viewBox
+                        refX="9"             // Keep original refX
+                        refY="5"             // Keep original refY
+                        markerWidth="8"      // Increased from 6 but not doubled
+                        markerHeight="8"     // Increased from 6 but not doubled
+                    >
+                        <circle cx="5" cy="5" r="4" fill="#ff3333" />
+                    </marker>
 
-                <marker
-                    id="inhibitor"
-                    viewBox="0 0 10 10"
-                    refX="9"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
-                >
-                    <circle cx="5" cy="5" r="4" fill="#ff0000" />
-                </marker>
-
-                <marker
-                    id="bidirectional"
-                    viewBox="0 0 10 10"
-                    refX="1"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
-                    orient="auto-start-reverse"
-                >
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
-                </marker>
-            </defs>
-        </svg>
+                    <marker
+                        id="bidirectional"
+                        viewBox="0 0 10 10"  // Keep original viewBox
+                        refX="1"             // Keep original refX
+                        refY="5"             // Keep original refY
+                        markerWidth="8"      // Increased from 6 but not doubled
+                        markerHeight="8"     // Increased from 6 but not doubled
+                        orient="auto-start-reverse"
+                    >
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
+                    </marker>
+                </defs>
+            </svg>
+        </div>
     );
 };

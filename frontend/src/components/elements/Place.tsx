@@ -148,23 +148,27 @@ export const Place = (props : PlaceProps) => {
 
     // ===== EVENT HANDLERS =====
     // Token input handlers
-    const handleFocus = () => {
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+        e.stopPropagation();
         setIsTyping(true);
         setTempTokenCount("");
         props.onTypingChange(true);
     };
 
-    const handleBlur = () => {
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        e.stopPropagation();
         setIsTyping(false);
         props.onTypingChange(false);
         setTempTokenCount(tokenCount.toString());
     };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        event.stopPropagation();
         setTempTokenCount(event.target.value);
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        event.stopPropagation();
         if (event.key === "Enter") {
             let newTokenCount = parseInt(tempTokenCount, 10);
 
@@ -176,6 +180,12 @@ export const Place = (props : PlaceProps) => {
             props.onUpdateTokens(props.id, newTokenCount);
             setIsTyping(false);
         }
+    };
+
+    // Add a specific handler for token input clicks
+    const handleTokenInputClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Prevent event bubbling to avoid triggering other click handlers
     };
 
     // Name editing handlers
@@ -262,10 +272,10 @@ export const Place = (props : PlaceProps) => {
             {/* Arc mode highlight - renders a light green circle around the place when hovered */}
             {props.arcMode && isHovered && (
                 <circle
-                    r={props.radius + 3}
+                    r={props.radius + 6}
                     fill="none"
                     stroke="rgba(0, 255, 0, 0.5)"
-                    strokeWidth="3"
+                    strokeWidth="6"
                     style={{cursor: 'pointer'}}
                 />
             )}
@@ -275,39 +285,65 @@ export const Place = (props : PlaceProps) => {
                 r={props.radius}
                 fill="#0f0f0f"
                 stroke="#ffffff"
-                strokeWidth="1"
+                strokeWidth="2"
             />
 
             {/* Token Count Display */}
-            <text x="0" y="5" textAnchor="middle" className="token-count" fill="white">
+            <text 
+                x="0" 
+                y="10"
+                textAnchor="middle" 
+                className="token-count" 
+                fill="white"
+                fontSize="24"
+                fontWeight="bold"
+            >
                 {tokenCount}
             </text>
 
             {/*Token Input - Only renders when selected */}
             {props.isSelected && !props.arcMode && (
-                <foreignObject x="-15" y="25" width="30" height="20">
-                    <input
-                        type="number"
-                        value={tempTokenCount}
-                        onChange={handleInputChange}
-                        className="token-input"
-                        min="0"
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                        onKeyDown={handleKeyDown} // Update tokens only on Enter
-                    />
+                <foreignObject 
+                    x="-30"
+                    y="50"
+                    width="60"
+                    height="30"
+                >
+                    <div 
+                        onClick={handleTokenInputClick} 
+                        onDoubleClick={(e) => e.stopPropagation()}
+                        style={{ width: '100%', height: '100%' }}
+                    >
+                        <input
+                            type="number"
+                            value={tempTokenCount}
+                            onChange={handleInputChange}
+                            className="token-input"
+                            min="0"
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
+                            onKeyDown={handleKeyDown}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                width: '80%',
+                                fontSize: '20px',
+                                padding: '2px'
+                            }}
+                        />
+                    </div>
                 </foreignObject>
             )}
 
             {/* Label Below - Only show when not editing */}
             {!isEditingName && (
                 <text 
-                    x={props.radius + 5} 
-                    y={-props.radius + 5} 
+                    x={props.radius + 10}
+                    y={-props.radius + 10}
                     textAnchor="start" 
                     dominantBaseline="hanging" 
                     className="token-count"
                     fill="white"
+                    fontSize="18"
                 >
                     {props.name}
                 </text>
@@ -316,10 +352,10 @@ export const Place = (props : PlaceProps) => {
             {/* Name editing input - Only show when editing name */}
             {isEditingName && (
                 <foreignObject 
-                    x={props.radius + 5} 
-                    y={-props.radius - 10} 
-                    width="100" 
-                    height="20"
+                    x={props.radius + 10}
+                    y={-props.radius - 20}
+                    width="150"
+                    height="40"
                 >
                     <input
                         type="text"
@@ -327,12 +363,14 @@ export const Place = (props : PlaceProps) => {
                         onChange={handleNameChange}
                         className="name-input"
                         style={{
-                            width: '100%',
+                            width: '80%',
                             textAlign: 'left',
                             backgroundColor: '#333',
                             color: 'white',
                             border: '1px solid #555',
-                            borderRadius: '3px'
+                            borderRadius: '3px',
+                            fontSize: '16px',
+                            padding: '4px'
                         }}
                         autoFocus
                         onBlur={finishNameEdit}
@@ -352,14 +390,15 @@ export const Place = (props : PlaceProps) => {
                         height={2 * props.radius}
                         fill="none"
                         stroke="#007bff"
-                        strokeDasharray="4"
+                        strokeDasharray="8"
+                        strokeWidth="2"
                     />
 
                     {/* Corner Resize handles */}
                     <circle
                         cx={-props.radius}
                         cy={-props.radius}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{cursor: 'nwse-resize'}}
                         onMouseDown={(e) => {
@@ -370,7 +409,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={props.radius}
                         cy={-props.radius}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{cursor: 'nesw-resize'}}
                         onMouseDown={(e) => {
@@ -381,7 +420,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={-props.radius}
                         cy={props.radius}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{cursor: 'nesw-resize'}}
                         onMouseDown={(e) => {
@@ -392,7 +431,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={props.radius}
                         cy={props.radius}
-                        r={4}
+                        r={8}
                         fill="#007bff"
                         style={{cursor: 'nwse-resize'}}
                         onMouseDown={(e) => {

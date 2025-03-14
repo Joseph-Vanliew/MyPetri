@@ -8,36 +8,7 @@ interface ArcProps extends UIArc {
     onSelect: (id: string) => void;
 }
 
-// Compute the anchor point on a circle's circumference
-function getCircleAnchorPoint(center: { x: number; y: number }, radius: number, target: { x: number; y: number }) {
-    const dx = target.x - center.x;
-    const dy = target.y - center.y;
-    const angle = Math.atan2(dy, dx);
-    return {
-        x: center.x + radius * Math.cos(angle),
-        y: center.y + radius * Math.sin(angle),
-    };
-}
-
-// Compute the intersection on a rectangle's boundary
-function getRectAnchorPoint(center: { x: number; y: number }, width: number, height: number, target: { x: number; y: number }) {
-    const dx = target.x - center.x;
-    const dy = target.y - center.y;
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
-    if (dx === 0 && dy === 0) return center;
-
-    // Determine the scaling factors needed to reach the rectangle edge
-    const scaleX = halfWidth / Math.abs(dx);
-    const scaleY = halfHeight / Math.abs(dy);
-    const scale = Math.min(scaleX, scaleY);
-    return {
-        x: center.x + dx * scale,
-        y: center.y + dy * scale,
-    };
-}
-
-// Decide which helper to use based on the element type.
+// Deciding which helper to use based on the element type.
 function getElementAnchorPoint( element: UIPlace | UITransition, otherCenter: { x: number; y: number }) {
     const center = { x: element.x, y: element.y };
     if (element.id.startsWith('place')) {
@@ -48,6 +19,35 @@ function getElementAnchorPoint( element: UIPlace | UITransition, otherCenter: { 
         return getRectAnchorPoint(center, (element as UITransition).width, (element as UITransition).height, otherCenter);
     }
     return center;
+}
+
+// Computing the anchor point on a circle's circumference
+function getCircleAnchorPoint(center: { x: number; y: number }, radius: number, target: { x: number; y: number }) {
+    const dx = target.x - center.x;
+    const dy = target.y - center.y;
+    const angle = Math.atan2(dy, dx);
+    return {
+        x: center.x + radius * Math.cos(angle),
+        y: center.y + radius * Math.sin(angle),
+    };
+}
+
+// Computing the intersection on a rectangle's boundary
+function getRectAnchorPoint(center: { x: number; y: number }, width: number, height: number, target: { x: number; y: number }) {
+    const dx = target.x - center.x;
+    const dy = target.y - center.y;
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+    if (dx === 0 && dy === 0) return center;
+
+    // Determining the scaling factors needed to reach the rectangle edge
+    const scaleX = halfWidth / Math.abs(dx);
+    const scaleY = halfHeight / Math.abs(dy);
+    const scale = Math.min(scaleX, scaleY);
+    return {
+        x: center.x + dx * scale,
+        y: center.y + dy * scale,
+    };
 }
 
 export const Arc = ( props: ArcProps ) => {
@@ -72,24 +72,24 @@ export const Arc = ( props: ArcProps ) => {
     // Calculate the length of the vector
     const length = Math.sqrt(dx * dx + dy * dy);
     
-    // Normalize the vector
+    // Normalizing the vector
     const ndx = dx / length;
     const ndy = dy / length;
     
     if (props.type === "BIDIRECTIONAL") {
         // Adjust both ends for bidirectional arcs
-        adjustedSourceX = sourceAnchor.x + ndx * 4;
-        adjustedSourceY = sourceAnchor.y + ndy * 4;
-        adjustedTargetX = targetAnchor.x - ndx * 4;
-        adjustedTargetY = targetAnchor.y - ndy * 4;
+        adjustedSourceX = sourceAnchor.x + ndx * 6;  // Adjusted from 8 to 6
+        adjustedSourceY = sourceAnchor.y + ndy * 6;  // Adjusted from 8 to 6
+        adjustedTargetX = targetAnchor.x - ndx * 6;  // Adjusted from 8 to 6
+        adjustedTargetY = targetAnchor.y - ndy * 6;  // Adjusted from 8 to 6
     } else if (props.type === "REGULAR") {
         // Adjust only the target end for regular arcs
-        adjustedTargetX = targetAnchor.x - ndx * 4;
-        adjustedTargetY = targetAnchor.y - ndy * 4;
+        adjustedTargetX = targetAnchor.x - ndx * 6;  // Adjusted from 8 to 6
+        adjustedTargetY = targetAnchor.y - ndy * 6;  // Adjusted from 8 to 6
     } else if (props.type === "INHIBITOR") {
         // For inhibitor arcs, position the circle further from the target element
-        adjustedTargetX = targetAnchor.x - ndx * 10; // Position circle further from target
-        adjustedTargetY = targetAnchor.y - ndy * 10;
+        adjustedTargetX = targetAnchor.x - ndx * 15; // Adjusted from 20 to 15
+        adjustedTargetY = targetAnchor.y - ndy * 15; // Adjusted from 20 to 15
     }
 
     return (
@@ -104,7 +104,7 @@ export const Arc = ( props: ArcProps ) => {
                 x2={targetAnchor.x}
                 y2={targetAnchor.y}
                 stroke="transparent"
-                strokeWidth="10"
+                strokeWidth="15"  // Adjusted from 20 to 15
             />
 
             {/* Main visible arc (white stroke) */}
@@ -114,10 +114,10 @@ export const Arc = ( props: ArcProps ) => {
                 x2={adjustedTargetX}
                 y2={adjustedTargetY}
                 stroke="#ddd"
-                strokeWidth="2"
+                strokeWidth="3"  // Adjusted from 4 to 3
                 markerEnd={
                     props.type === "INHIBITOR"
-                        ? undefined  // We'll draw our own circle
+                        ? undefined
                         : "url(#arrow)"
                 }
                 markerStart={props.type === "BIDIRECTIONAL" ? "url(#arrow)" : undefined}
@@ -128,10 +128,10 @@ export const Arc = ( props: ArcProps ) => {
                 <circle
                     cx={adjustedTargetX}
                     cy={adjustedTargetY}
-                    r={5}
-                    fill="#ff3333"  // Red fill
+                    r={8}  // Adjusted from 10 to 8
+                    fill="#ff3333"
                     stroke="#ddd"
-                    strokeWidth="1.5"
+                    strokeWidth="2"  // Adjusted from 3 to 2
                 />
             )}
 
@@ -142,9 +142,9 @@ export const Arc = ( props: ArcProps ) => {
                     y1={adjustedSourceY}
                     x2={adjustedTargetX}
                     y2={adjustedTargetY}
-                    stroke="#007bff"  // Blue color for selection
-                    strokeWidth="1.5"  // Slightly thicker to stand out
-                    strokeDasharray="5,5"  // Dashed effect
+                    stroke="#007bff"
+                    strokeWidth="2"  // Adjusted from 3 to 2
+                    strokeDasharray="8,8"  // Adjusted from 10,10 to 8,8
                 />
             )}
         </g>
