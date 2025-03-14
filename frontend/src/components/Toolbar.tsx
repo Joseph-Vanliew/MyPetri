@@ -1,6 +1,7 @@
 // src/components/Toolbar.tsx
 
 import { UIArc } from '../types';
+import React from 'react';
 
 interface ToolbarProps {
     selectedTool: 'PLACE' | 'TRANSITION' | 'ARC'| 'NONE';
@@ -28,7 +29,7 @@ export const Toolbar = ({
                 Elements:
             </div>
 
-            {/* Place Tool*/}
+            {/* Place button with hover effect and tooltip */}
             <div 
                 className={`toolbar-item ${selectedTool === 'PLACE' ? 'active' : ''}`}
                 onClick={() => setSelectedTool('PLACE')}
@@ -43,8 +44,20 @@ export const Toolbar = ({
                     borderRadius: '4px',
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'PLACE' ? '#333' : 'transparent',
-                    border: selectedTool === 'PLACE' ? '1px solid #555' : '1px solid transparent'
+                    border: selectedTool === 'PLACE' ? '1px solid #555' : '1px solid transparent',
+                    transition: 'background-color 0.2s ease'
                 }}
+                onMouseOver={(e) => {
+                    if (selectedTool !== 'PLACE') {
+                        e.currentTarget.style.backgroundColor = '#2a2a2a';
+                    }
+                }}
+                onMouseOut={(e) => {
+                    if (selectedTool !== 'PLACE') {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                }}
+                title="Add a Place (container for tokens)"
             >
                 <div style={{ width: '80px', height: '80px', position: 'relative', marginRight: '10px' }}>
                     <svg width="80" height="80" viewBox="0 0 80 80">
@@ -56,23 +69,12 @@ export const Toolbar = ({
                             stroke="#ffffff" 
                             strokeWidth="2" 
                         />
-                        <text 
-                            x="40" 
-                            y="44" 
-                            textAnchor="middle" 
-                            dominantBaseline="middle" 
-                            fill="white" 
-                            fontSize="24"
-                            fontWeight="bold"
-                        >
-                            0
-                        </text>
                     </svg>
                 </div>
                 <span style={{ fontSize: '16px' }}>Place</span>
             </div>
 
-            {/* Transition Tool*/}
+            {/* Transition button with hover effect and tooltip */}
             <div 
                 className={`toolbar-item ${selectedTool === 'TRANSITION' ? 'active' : ''}`}
                 onClick={() => setSelectedTool('TRANSITION')}
@@ -87,8 +89,20 @@ export const Toolbar = ({
                     borderRadius: '4px',
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'TRANSITION' ? '#333' : 'transparent',
-                    border: selectedTool === 'TRANSITION' ? '1px solid #555' : '1px solid transparent'
+                    border: selectedTool === 'TRANSITION' ? '1px solid #555' : '1px solid transparent',
+                    transition: 'background-color 0.2s ease'
                 }}
+                onMouseOver={(e) => {
+                    if (selectedTool !== 'TRANSITION') {
+                        e.currentTarget.style.backgroundColor = '#2a2a2a';
+                    }
+                }}
+                onMouseOut={(e) => {
+                    if (selectedTool !== 'TRANSITION') {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                }}
+                title="Add a Transition (action that consumes and produces tokens)"
             >
                 <div style={{ width: '80px', height: '80px', position: 'relative', marginRight: '10px' }}>
                     <svg width="80" height="80" viewBox="0 0 80 80">
@@ -107,7 +121,7 @@ export const Toolbar = ({
                 <span style={{ fontSize: '16px' }}>Transition</span>
             </div>
 
-            {/* Arc Tool*/}
+            {/* Arc button with hover effect and tooltip */}
             <div 
                 className={`toolbar-item ${selectedTool === 'ARC' ? 'active' : ''}`}
                 onClick={() => setSelectedTool('ARC')}
@@ -123,8 +137,20 @@ export const Toolbar = ({
                     borderRadius: '4px',
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'ARC' ? '#333' : 'transparent',
-                    border: selectedTool === 'ARC' ? '1px solid #555' : '1px solid transparent'
+                    border: selectedTool === 'ARC' ? '1px solid #555' : '1px solid transparent',
+                    transition: 'background-color 0.2s ease'
                 }}
+                onMouseOver={(e) => {
+                    if (selectedTool !== 'ARC') {
+                        e.currentTarget.style.backgroundColor = '#2a2a2a';
+                    }
+                }}
+                onMouseOut={(e) => {
+                    if (selectedTool !== 'ARC') {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                }}
+                title={`Add an ${arcType.toLowerCase()} arc (connects places and transitions)`}
             >
                 <div style={{ width: '80px', height: '80px', position: 'relative', marginRight: '10px' }}>
                     <svg width="80" height="80" viewBox="0 0 80 80">
@@ -192,7 +218,7 @@ export const Toolbar = ({
                 <span style={{ fontSize: '16px' }}>Arc</span>
             </div>
 
-            {/* Arc type selector */}
+            {/* Arc type selector with hover effect */}
             {selectedTool === 'ARC' && (
                 <div style={{ marginLeft: '10px', marginTop: '5px' }}>
                     <select
@@ -205,8 +231,17 @@ export const Toolbar = ({
                             color: 'white',
                             border: '1px solid #555',
                             borderRadius: '3px',
-                            fontSize: '16px'
+                            fontSize: '16px',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.2s ease'
                         }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#444';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#333';
+                        }}
+                        title="Select the type of arc to create"
                     >
                         <option value="REGULAR">Regular</option>
                         <option value="INHIBITOR">Inhibitor</option>

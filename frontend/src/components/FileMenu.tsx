@@ -4,9 +4,11 @@ import { PetriNetDTO } from '../types';
 interface FileMenuProps {
   petriNetData: PetriNetDTO;
   onImport: (data: PetriNetDTO) => void;
+  onSaveAs?: () => void;
+  highlightTitle?: () => void;
 }
 
-export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) => {
+export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport, onSaveAs, highlightTitle }) => {
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -16,6 +18,13 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) =>
   };
 
   const handleSave = () => {
+    // Check if the title is the default and prompt for editing if it is
+    if (petriNetData.title === "Untitled Petri Net" && highlightTitle) {
+      highlightTitle();
+      setIsOpen(false);
+      return;
+    }
+    
     // Use the current title as the default filename instead of a date-based name
     const currentTitle = petriNetData.title || "Untitled Petri Net";
     
@@ -105,20 +114,39 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) =>
     };
   }, [isOpen]);
 
+  // Handle save with title check
+  const handleSaveClick = () => {
+    if (onSaveAs) {
+      // Check if the title is the default and prompt for editing if it is
+      if (petriNetData.title === "Untitled Petri Net" && highlightTitle) {
+        highlightTitle();
+        setIsOpen(false);
+        return;
+      }
+      onSaveAs();
+    } else {
+      handleSave();
+    }
+  };
+
   return (
     <div className="file-menu" style={{ position: 'relative' }} ref={menuRef}>
       <div 
         onClick={toggleMenu}
         style={{
-          padding: '4px 8px',
+          padding: '6px 12px',
           color: 'ddd',
           cursor: 'pointer',
           fontWeight: isOpen ? 'bold' : 'normal',
           backgroundColor: isOpen ? '#444' : 'transparent',
-          borderRadius: '3px'
+          borderRadius: '3px',
+          transition: 'background-color 0.2s ease',
+          fontSize: '16px',
+          letterSpacing: '0.5px'
         }}
         onMouseOver={(e) => !isOpen && (e.currentTarget.style.backgroundColor = '#333')}
         onMouseOut={(e) => !isOpen && (e.currentTarget.style.backgroundColor = 'transparent')}
+        title="File operations"
       >
         File
       </div>
@@ -134,31 +162,37 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport }) =>
             border: '1px solid #555',
             borderRadius: '4px',
             zIndex: 1000,
-            minWidth: '150px',
+            minWidth: '160px',
             boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
           }}
         >
           <div 
             onClick={handleImportClick}
             style={{
-              padding: '8px 12px',
+              padding: '10px 14px',
               cursor: 'pointer',
-              color: 'white'
+              color: 'white',
+              transition: 'background-color 0.2s ease',
+              fontSize: '15px'
             }}
             onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#444'}
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            title="Import a Petri net from a file"
           >
             Import...
           </div>
           <div 
-            onClick={handleSave}
+            onClick={handleSaveClick}
             style={{
-              padding: '8px 12px',
+              padding: '10px 14px',
               cursor: 'pointer',
-              color: 'white'
+              color: 'white',
+              transition: 'background-color 0.2s ease',
+              fontSize: '15px'
             }}
             onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#444'}
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            title="Save the current Petri net to a file"
           >
             Save As...
           </div>

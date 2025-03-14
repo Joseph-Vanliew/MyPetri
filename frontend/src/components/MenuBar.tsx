@@ -5,9 +5,10 @@ import { PetriNetDTO } from '../types';
 interface MenuBarProps {
   petriNetData: PetriNetDTO;
   onImport: (data: PetriNetDTO) => void;
+  highlightTitle?: () => void;
 }
 
-export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport }) => {
+export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport, highlightTitle }) => {
   const handleSave = () => {
     // grabbing the title
     const dataToSave = {
@@ -31,7 +32,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport }) => {
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .toLowerCase();
       
-    a.download = `${sanitizedTitle}.json`;
+    a.download = `${sanitizedTitle}.pats`;
     
     // Trigger download
     document.body.appendChild(a);
@@ -45,6 +46,12 @@ export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport }) => {
   // For a more user-friendly approach, we can also implement a "Save As" function
   // that uses the browser's built-in file save dialog
   const handleSaveAs = () => {
+    // Check if the title is the default and prompt for editing if it is
+    if (petriNetData.title === "Untitled Petri Net" && highlightTitle) {
+      highlightTitle();
+      return;
+    }
+    
     // Include the title in the data to be saved
     const dataToSave = {
       ...petriNetData,
@@ -68,10 +75,10 @@ export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport }) => {
         try {
           // @ts-ignore
           const fileHandle = await window.showSaveFilePicker({
-            suggestedName: `${sanitizedTitle}.json`,
+            suggestedName: `${sanitizedTitle}.pats`,
             types: [{
-              description: 'JSON Files',
-              accept: { 'application/json': ['.json'] }
+              description: 'Petri Net Files',
+              accept: { 'application/json': ['.pats'] }
             }]
           });
           
@@ -103,14 +110,16 @@ export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport }) => {
     <div className="menu-bar" style={{ 
       display: 'flex', 
       alignItems: 'center', 
-      padding: '5px 10px', 
+      padding: '6px 10px', 
       backgroundColor: '#252525', 
       borderBottom: '1px solid #333',
-      height: '30px'
+      height: '36px'
     }}>
       <FileMenu 
         petriNetData={petriNetData}
         onImport={onImport}
+        onSaveAs={handleSaveAs}
+        highlightTitle={highlightTitle}
       />
     </div>
   );
