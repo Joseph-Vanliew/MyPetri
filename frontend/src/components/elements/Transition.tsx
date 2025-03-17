@@ -14,6 +14,7 @@ interface TransitionProps extends UITransition {
     isConflicting?: boolean;
     onConflictingTransitionSelect?: (id: string) => void;
     conflictResolutionMode?: boolean;
+    isFired?: boolean;
 }
 
 export const Transition = (props: TransitionProps) => {
@@ -39,16 +40,15 @@ export const Transition = (props: TransitionProps) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(props.name || '');
 
-    // Add state to track if a conflicting transition is selected
-    const [isConflictSelected, setIsConflictSelected] = useState(false);
-
     // Compute the current visual position (either from local state during dragging or from props)
     const visualPosition = isDragging ? localPosition : { x: props.x, y: props.y };
 
     // ===== EVENT HANDLERS =====
     // Name editing handlers
     const handleDoubleClick = (e: React.MouseEvent) => {
-        if (props.arcMode) return; // Don't allow editing in arc mode
+        // Don't allow editing in arc mode or conflict resolution mode
+        if (props.arcMode || props.conflictResolutionMode) return;
+        
         e.stopPropagation();
         setIsEditingName(true);
         if (props.onTypingChange) {
@@ -132,7 +132,6 @@ export const Transition = (props: TransitionProps) => {
     const handleConflictSelect = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (props.isConflicting && props.onConflictingTransitionSelect) {
-            setIsConflictSelected(true);
             props.onConflictingTransitionSelect(props.id);
         }
     };
@@ -286,6 +285,28 @@ export const Transition = (props: TransitionProps) => {
         }
     }, [visualPosition]);
 
+    // Update the animation to allow proper stacking
+    useEffect(() => {
+        if (!document.getElementById('transition-animation-style')) {
+            const styleElement = document.createElement('style');
+            styleElement.id = 'transition-animation-style';
+            styleElement.textContent = `
+                @keyframes flash-green {
+                    0% { fill: #0f0f0f; }
+                    25% { fill: #1a472a; }
+                    50% { fill: #2e8b57; }
+                    75% { fill: #1a472a; }
+                    100% { fill: #0f0f0f; }
+                }
+                
+                .transition-fired {
+                    animation: flash-green 0.8s ease;
+                }
+            `;
+            document.head.appendChild(styleElement);
+        }
+    }, []);
+
     // ===== RENDER =====
     return (
         <g
@@ -336,32 +357,27 @@ export const Transition = (props: TransitionProps) => {
                 />
             )}
             
-            {/* Conflict highlight - for transitions in conflict resolution mode */}
-            {props.isConflicting && (
-                <rect
-                    x={-props.width / 2 - 8}
-                    y={-props.height / 2 - 8}
-                    width={props.width + 16}
-                    height={props.height + 16}
-                    rx={12}
-                    fill="none"
-                    stroke={isConflictSelected ? "rgba(0, 255, 0, 0.7)" : "rgba(255, 0, 0, 0.7)"}
-                    strokeWidth="6"
-                />
-            )}
-            
-            {/* Main rectangle */}
+            {/* Main rectangle - adjust fill and animation based on states */}
             <rect
                 x={-props.width / 2}
                 y={-props.height / 2}
                 width={props.width}
                 height={props.height}
                 rx={8}
-                fill={props.isConflicting 
-                    ? (isConflictSelected ? "#0f3f0f" : "#3f0f0f") 
-                    : "#0f0f0f"}
-                stroke={props.isSelected ? "#ffffff" : "#ffffff"}
-                strokeWidth="2"
+                fill="#0f0f0f"  // Keep the default fill dark
+                stroke={
+                    props.isSelected 
+                        ? "#ffffff"  // White border for selected transitions
+                        : (props.conflictResolutionMode && props.isConflicting)
+                            ? "#ff3333"  // Bright red border for transitions in conflict resolution mode
+                            : (props.enabled && !props.conflictResolutionMode)
+                                ? "#4CAF50"  // Green border for enabled transitions outside conflict mode
+                                : "#ffffff"  // White border for disabled transitions
+                }
+                strokeWidth={
+                    (props.conflictResolutionMode && props.isConflicting) ? 4 : 2  // Much thicker border for conflict mode
+                }
+                className={props.isFired ? "transition-fired" : ""}
             />
 
             {/* Optional label - Only show when not editing */}

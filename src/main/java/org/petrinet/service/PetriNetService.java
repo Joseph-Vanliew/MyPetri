@@ -41,6 +41,15 @@ public class PetriNetService {
 
         System.out.println("Number of enabled transitions: " + enabledTransitions.size());
         
+        // Check if we're in deterministic mode
+        Boolean isDeterministicMode = petriNetDTO.getDeterministicMode();
+        
+        // If in deterministic mode and multiple transitions are enabled, return early
+        if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
+            System.out.println("Deterministic mode: returning all enabled transitions for user selection");
+            return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap);
+        }
+        
         if (!enabledTransitions.isEmpty()) {
             Transition selectedTransition;
             
@@ -208,5 +217,65 @@ public class PetriNetService {
 
 
         return new PetriNetDTO(placeDTOs, transitionDTOs, arcDTOs);
+    }
+
+    public PetriNetDTO resolveConflict(PetriNetDTO petriNetDTO, String selectedTransitionId) {
+        Map<String, Place> placesMap = PetriNetMapper.mapPlacesToMap(petriNetDTO.getPlaces());
+        Map<String, Arc> arcsMap = PetriNetMapper.mapArcsToMap(petriNetDTO.getArcs());
+        List<Transition> transitions = PetriNetMapper.dtoToTransitionList(petriNetDTO.getTransitions());
+        
+        // Find the selected transition
+        Transition selectedTransition = transitions.stream()
+            .filter(t -> t.getId().equals(selectedTransitionId))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Selected transition not found: " + selectedTransitionId));
+        
+        // First, disable all transitions
+        transitions.forEach(t -> t.setEnabled(false));
+        
+        // Update tokens for the selected transition
+        updateTokensForFiringTransition(selectedTransition, arcsMap, placesMap);
+        
+        // After firing, calculate which transitions are enabled
+        Map<String, Integer> totalIncomingTransitionCounts = calculateTotalIncomingTransitionCounts(transitions, arcsMap);
+        
+        // Evaluate all transitions to find enabled ones
+        List<Transition> enabledTransitions = new ArrayList<>();
+        transitions.forEach(transition -> {
+            boolean canFire = evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
+            if (canFire) {
+                enabledTransitions.add(transition);
+            }
+        });
+        
+        // If there are multiple enabled transitions and in deterministic mode, 
+        // return them all as enabled for user selection
+        Boolean isDeterministicMode = petriNetDTO.getDeterministicMode();
+        if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
+            System.out.println("Multiple transitions enabled after firing, user will select again");
+            // Set the enabled flag for the enabled transitions
+            for (Transition t : enabledTransitions) {
+                t.setEnabled(true);
+            }
+        }
+        // If there's only one enabled transition, or we're in non-deterministic mode,
+        // select one randomly
+        else if (!enabledTransitions.isEmpty()) {
+            Transition nextTransition;
+            
+            if (enabledTransitions.size() == 1) {
+                nextTransition = enabledTransitions.get(0);
+            } else {
+                // Random selection for non-deterministic mode
+                Random random = new Random();
+                nextTransition = enabledTransitions.get(random.nextInt(enabledTransitions.size()));
+            }
+            
+            // Only enable the selected/random transition
+            nextTransition.setEnabled(true);
+            System.out.println("Selected transition for next state: " + nextTransition.getId());
+        }
+        
+        return convertDomainModelsToDTO(placesMap, transitions, arcsMap);
     }
 }

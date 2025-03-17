@@ -6,6 +6,8 @@ public class PetriNetDTO {
     private List<PlaceDTO> places;
     private List<TransitionDTO> transitions;
     private List<ArcDTO> arcs;
+    private String selectedTransitionId;
+    private Boolean deterministicMode;
 
     public PetriNetDTO() {}
 
@@ -37,5 +39,21 @@ public class PetriNetDTO {
 
     public void setArcs(List<ArcDTO> arcs) {
         this.arcs = arcs;
+    }
+    
+    public String getSelectedTransitionId() {
+        return selectedTransitionId;
+    }
+    
+    public void setSelectedTransitionId(String selectedTransitionId) {
+        this.selectedTransitionId = selectedTransitionId;
+    }
+    
+    public Boolean getDeterministicMode() {
+        return deterministicMode;
+    }
+    
+    public void setDeterministicMode(Boolean deterministicMode) {
+        this.deterministicMode = deterministicMode;
     }
 }

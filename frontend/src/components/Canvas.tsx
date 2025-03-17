@@ -1,8 +1,20 @@
-import React, {useState, useCallback, useEffect} from 'react';
+import React, {useState, useCallback, useEffect, useRef} from 'react';
 import { Place } from './elements/Place';
 import { Transition } from './elements/Transition';
 import { Arc } from './elements/Arc';
-import { UIPlace, UITransition, UIArc, GRID_CELL_SIZE } from '../types';
+import { Grid } from './canvas/Grid';
+import { ArcPreview } from './canvas/ArcPreview';
+import { useZoomAndPan } from './canvas/hooks/useZoomAndPan';
+import { useMouseTracking } from './canvas/hooks/useMouseTracking';
+import { screenToSVGCoordinates, snapToGrid } from './canvas/utils/coordinateUtils';
+import { UIPlace, UITransition, UIArc } from '../types';
+
+
+declare global {
+  interface Window {
+    lastMousePosition?: { clientX: number; clientY: number };
+  }
+}
 
 interface CanvasProps {
     places: UIPlace[];
@@ -24,18 +36,27 @@ interface CanvasProps {
     conflictResolutionMode?: boolean;
     conflictingTransitions?: string[];
     onConflictingTransitionSelect?: (id: string) => void;
+    firedTransitions?: string[];
 }
 
 export const Canvas = (props: CanvasProps) => {
-    // ===== STATE =====
-    /* Increase the initial viewBox width and height */
-    const [viewBox, setViewBox] = useState({ x: -150, y: -150, w: 1100, h: 900 }); // Centered and enlarged
-    const [isPanning, setIsPanning] = useState(false);
-    const [lastMouseX, setLastMouseX] = useState(0);
-    const [lastMouseY, setLastMouseY] = useState(0);
-
-    // Get the container dimensions
+    // Create a ref for the SVG element
+    const svgRef = useRef<SVGSVGElement>(null);
+    
+    // Get container dimensions
     const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
+    
+    // Use custom hooks for zoom/pan and mouse tracking
+    const zoomAndPan = useZoomAndPan(svgRef, {
+        initialViewBox: { x: -150, y: -150, w: 1100, h: 900 }
+    });
+    
+    const mouseTracking = useMouseTracking(svgRef, {
+        enabled: props.selectedTool === 'ARC' && props.selectedElements.length > 0
+    });
+    
+    // Add a new state to store refs to elements
+    const [elementRefs, setElementRefs] = useState<{[id: string]: React.RefObject<SVGGElement>}>({});
     
     // Update dimensions on resize
     useEffect(() => {
@@ -51,17 +72,12 @@ export const Canvas = (props: CanvasProps) => {
         window.addEventListener('resize', updateDimensions);
         return () => window.removeEventListener('resize', updateDimensions);
     }, []);
-
-    // Add a new state to store refs to elements
-    const [elementRefs, setElementRefs] = useState<{[id: string]: React.RefObject<SVGGElement>}>({});
-
-    // ===== EFFECTS =====
-    // non-passive wheel event listener because react is too slow
+    
+    // Handle non-passive wheel events
     useEffect(() => {
         const svgElement = document.querySelector('.petri-canvas');
         if (!svgElement) return;
         
-        // handle wheel event without passive: true
         const handleWheelNonPassive = (e: Event) => {
             e.preventDefault();
         };
@@ -72,230 +88,97 @@ export const Canvas = (props: CanvasProps) => {
             svgElement.removeEventListener('wheel', handleWheelNonPassive);
         };
     }, []);
-
-    // ===== GRID RENDERING =====
-    const renderGrid = useCallback((vBox: { x: number; y: number; w: number; h: number }) => {
-        const lines = [];
-
-        // Using Math.floor/ceil to ensure lines snap to grid multiples.
-        // Extend the grid by adding extra padding to ensure it covers the entire viewBox
-        const gridPadding = 300; // Add extra padding to ensure grid covers the entire viewBox
+    
+    // Track the last mouse position globally
+    useEffect(() => {
+        const trackMousePosition = (e: MouseEvent) => {
+            window.lastMousePosition = { clientX: e.clientX, clientY: e.clientY };
+        };
         
-        const startX = Math.floor((vBox.x - gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-        const endX = Math.ceil((vBox.x + vBox.w + gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-
-        // Generate vertical lines / math for resizing
-        for (let xVal = startX; xVal <= endX; xVal += GRID_CELL_SIZE) {
-            lines.push(
-                <line
-                    key={`v-${xVal}`}
-                    x1={xVal}
-                    y1={vBox.y - gridPadding}
-                    x2={xVal}
-                    y2={vBox.y + vBox.h + gridPadding}
-                    stroke="#e9ecef"
-                    opacity="0.4"
-                    strokeWidth="0.5"
-                />
-            );
-        }
-
-        const startY = Math.floor((vBox.y - gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-        const endY = Math.ceil((vBox.y + vBox.h + gridPadding) / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-
-        // Generate horizontal lines and math for resizing
-        for (let yVal = startY; yVal <= endY; yVal += GRID_CELL_SIZE) {
-            lines.push(
-                <line
-                    key={`h-${yVal}`}
-                    x1={vBox.x - gridPadding}
-                    y1={yVal}
-                    x2={vBox.x + vBox.w + gridPadding}
-                    y2={yVal}
-                    stroke="#e9ecef"
-                    opacity="0.4"
-                    strokeWidth="0.5"
-                />
-            );
-        }
-
-        return lines;
+        window.addEventListener('mousemove', trackMousePosition);
+        return () => {
+            window.removeEventListener('mousemove', trackMousePosition);
+        };
     }, []);
-
-
-    // ===== MOUSE EVENT HANDLERS =====
-    const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
-        // If user clicked directly on the background:
-        if (e.target === e.currentTarget) {
-            e.stopPropagation();
-            setIsPanning(true);
-            setLastMouseX(e.clientX);
-            setLastMouseY(e.clientY);
-        }
-    };
-
-    const handleMouseUp = (e: React.MouseEvent<SVGSVGElement>) => {
-        console.log(`Mouse released at (${e.clientX}, ${e.clientY})`);
-        setIsPanning(false);
-    };
-
-    const panCanvas = (e: React.MouseEvent<SVGSVGElement>) => {
-        if (!isPanning) return;
-
-        const dx = e.clientX - lastMouseX;
-        const dy = e.clientY - lastMouseY;
-
-        // Convert screen dx,dy to the "viewBox" coordinate space
-        const svgRect = e.currentTarget.getBoundingClientRect();
-        const scaleX = viewBox.w / svgRect.width;
-        const scaleY = viewBox.h / svgRect.height;
-
-        const moveX = dx * scaleX;  // how much to shift in the viewBox coords
-        const moveY = dy * scaleY;
-
-        // Update the viewBox
-        setViewBox((v) => ({
-            ...v,
-            x: v.x - moveX, // minus because dragging left moves the viewBox "right"
-            y: v.y - moveY, //reverse of above
-        }));
-
-        // Store the new lastMouse coords for next move
-        setLastMouseX(e.clientX);
-        setLastMouseY(e.clientY);
-    };
-
-    // ===== CANVAS INTERACTION HANDLERS =====
-    const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
-        e.preventDefault();
-
-        // If click directly on the canvas (not on an element), selection should be cleared
-        if (e.target === e.currentTarget) {
-            // Clear selection if the user clicked on the empty canvas
-            if (props.selectedElements.length > 0) {
-                props.onSelectElement('');
+    
+    // Reset mouse position when starting a new arc
+    useEffect(() => {
+        if (props.selectedTool === 'ARC' && props.selectedElements.length === 1) {
+            // If we have a last known mouse position, use it
+            if (window.lastMousePosition && svgRef.current) {
+                const coords = screenToSVGCoordinates(
+                    window.lastMousePosition.clientX, 
+                    window.lastMousePosition.clientY, 
+                    svgRef.current
+                );
+                mouseTracking.setMousePosition(coords);
             }
         }
-
-        const rect = e.currentTarget.getBoundingClientRect();
-
-        // Mouse position in *screen* pixels
-        const mousePx = e.clientX - rect.left;
-        const mousePy = e.clientY - rect.top;
-
-        // The ratio between the physical <svg> size and the "virtual" viewBox size
-        const scaleX = viewBox.w / rect.width;
-        const scaleY = viewBox.h / rect.height;
-
-        // Convert screen px => your current viewBox coordinates
-        const xInViewBox = viewBox.x + mousePx * scaleX;
-        const yInViewBox = viewBox.y + mousePy * scaleY;
-
-        props.onCanvasClick(xInViewBox, yInViewBox);
-    };
-
-    /* for zooming canvas in and out*/
-    const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
-        // zoom aggressiveness
-        const zoomFactor = 0.04;
-
-        // If deltaY < 0, user is scrolling up => zoom in (decrease w/h).
-        // If deltaY > 0, user is scrolling down => zoom out (increase w/h).
-        const direction = e.deltaY < 0 ? -1 : 1;
-
-        // Calculate new width/height
-        const newW = viewBox.w * (1 + direction * zoomFactor);
-        const newH = viewBox.h * (1 + direction * zoomFactor);
-
-        // zoom limits
-        const minZoom = 200; // smallest viewBox
-        const maxZoom = 3000; //largest viewBox
-        
-        // / Don't allow zooming beyond limits
-        if (newW < minZoom || newH < minZoom || newW > maxZoom || newH > maxZoom) {
-            return;
-        }
-
-        // 1. Convert mouse coords to SVG coords
-        const svgRect = e.currentTarget.getBoundingClientRect();
-        const mouseX = e.clientX - svgRect.left;
-        const mouseY = e.clientY - svgRect.top;
-
-        // 2. Mouse offset in the current SVG coordinate space
-        //    (mouseX / the physical width) * the viewBox's width
-        const percentX = mouseX / svgRect.width;
-        const percentY = mouseY / svgRect.height;
-        const xOffset = viewBox.w * percentX;
-
-        const yOffset = viewBox.h * percentY;
-        // 3. Adjust x/y so the zoom is centered on mouse
-        const newX = viewBox.x + xOffset - (xOffset * newW) / viewBox.w;
-
-        const newY = viewBox.y + yOffset - (yOffset * newH) / viewBox.h;
-        setViewBox({ x: newX, y: newY, w: newW, h: newH });
-    };
-
-    // ===== DRAG & DROP HANDLERS =====
-    const handleDrop = (e: React.DragEvent<SVGSVGElement>) => {
+    }, [props.selectedTool, props.selectedElements]);
+    
+    // Handle canvas click
+    const handleSvgClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
         e.preventDefault();
         
-        // Get the dragged element type from dataTransfer
+        if (e.target === e.currentTarget && props.selectedElements.length > 0) {
+            props.onSelectElement('');
+        }
+        
+        const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
+        const snapped = snapToGrid(coords.x, coords.y);
+        
+        props.onCanvasClick(snapped.x, snapped.y);
+    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick]);
+    
+    // Handle drag and drop
+    const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {
+        e.preventDefault();
+    };
+    
+    const handleDrop = useCallback((e: React.DragEvent<SVGSVGElement>) => {
+        e.preventDefault();
+        
         const type = e.dataTransfer.getData("application/petri-item");
         if(!type) return;
         
-        // Convert screen coordinates to SVG viewBox coordinates
-        const svgRect = e.currentTarget.getBoundingClientRect();
-        const dropX = e.clientX - svgRect.left;
-        const dropY = e.clientY - svgRect.top;
-
-        const scaleX = viewBox.w / svgRect.width;
-        const scaleY = viewBox.h / svgRect.height;
-
-        const xInViewBox = viewBox.x + dropX * scaleX;
-        const yInViewBox = viewBox.y + dropY * scaleY;
+        const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
+        const snapped = snapToGrid(coords.x, coords.y);
         
-        // Snap to grid
-        const gridX = Math.round(xInViewBox / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-        const gridY = Math.round(yInViewBox / GRID_CELL_SIZE) * GRID_CELL_SIZE;
-
-        // Temporarily set the selected tool based on the dragged item
         if (type === 'PLACE') {
             props.onSelectTool('PLACE');
         } else if (type === 'TRANSITION') {
             props.onSelectTool('TRANSITION');
         }
         
-        // Call the canvas click handler with the converted coordinates
-        props.onCanvasClick(gridX, gridY);
-    }
-
-    const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {
-        // Must call preventDefault() so we can drop
-        e.preventDefault();
-    };
-
-    // ===== RENDER =====
+        props.onCanvasClick(snapped.x, snapped.y);
+    }, [props.onSelectTool, props.onCanvasClick]);
+    
     return (
         <div className="canvas-container" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
             <svg
+                ref={svgRef}
                 className="petri-canvas"
                 width={dimensions.width}
                 height={dimensions.height}
-                viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
-                onWheel={handleWheel}
+                viewBox={`${zoomAndPan.viewBox.x} ${zoomAndPan.viewBox.y} ${zoomAndPan.viewBox.w} ${zoomAndPan.viewBox.h}`}
+                onWheel={zoomAndPan.handleZoom}
                 onClick={handleSvgClick}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                onMouseDown={handleMouseDown}
-                onMouseMove={panCanvas}
-                onMouseUp={handleMouseUp}
+                onMouseDown={zoomAndPan.handleMouseDown}
+                onMouseMove={(e) => {
+                    mouseTracking.updateMousePosition(e.clientX, e.clientY);
+                    zoomAndPan.handlePan(e);
+                }}
+                onMouseUp={zoomAndPan.handleMouseUp}
+                onMouseLeave={zoomAndPan.handleMouseLeave}
                 style={{ 
                     backgroundColor: 'rgb(19,19,19)',
                     display: 'block'
                 }}
             >
                 {/* Grid Layer */}
-                <g className="grid-layer">{renderGrid(viewBox)}</g>
+                <Grid viewBox={zoomAndPan.viewBox} />
 
                 {/* Arcs Layer */}
                 <g className="arcs-layer">
@@ -326,7 +209,6 @@ export const Canvas = (props: CanvasProps) => {
                 {/* Elements Layer */}
                 <g className="elements-layer">
                     {props.places.map(place => {
-                        // Create a ref for this place if it doesn't exist
                         if (!elementRefs[place.id]) {
                             setElementRefs(prev => ({...prev, [place.id]: React.createRef()}));
                         }
@@ -383,20 +265,31 @@ export const Canvas = (props: CanvasProps) => {
                                 isConflicting={props.conflictResolutionMode && props.conflictingTransitions?.includes(transition.id)}
                                 onConflictingTransitionSelect={props.onConflictingTransitionSelect}
                                 conflictResolutionMode={props.conflictResolutionMode}
+                                isFired={props.firedTransitions?.includes(transition.id)}
                             />
                         );
                     })}
                 </g>
 
-                {/* Marker definitions - adjusted to be more proportional */}
+                {/* Arc Preview */}
+                <ArcPreview
+                    selectedTool={props.selectedTool}
+                    selectedElements={props.selectedElements}
+                    places={props.places}
+                    transitions={props.transitions}
+                    arcType={props.arcType}
+                    mousePosition={mouseTracking.mousePosition}
+                />
+
+                {/* Marker definitions */}
                 <defs>
                     <marker
                         id="arrow"
-                        viewBox="0 0 10 10"  // Keep original viewBox
-                        refX="9"             // Keep original refX
-                        refY="5"             // Keep original refY
-                        markerWidth="8"      // Increased from 6 but not doubled
-                        markerHeight="8"     // Increased from 6 but not doubled
+                        viewBox="0 0 10 10"
+                        refX="9"
+                        refY="5"
+                        markerWidth="8"
+                        markerHeight="8"
                         orient="auto-start-reverse"
                     >
                         <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
@@ -404,22 +297,22 @@ export const Canvas = (props: CanvasProps) => {
 
                     <marker
                         id="inhibitor"
-                        viewBox="0 0 10 10"  // Keep original viewBox
-                        refX="9"             // Keep original refX
-                        refY="5"             // Keep original refY
-                        markerWidth="8"      // Increased from 6 but not doubled
-                        markerHeight="8"     // Increased from 6 but not doubled
+                        viewBox="0 0 10 10"
+                        refX="9"
+                        refY="5"
+                        markerWidth="8"
+                        markerHeight="8"
                     >
                         <circle cx="5" cy="5" r="4" fill="#ff3333" />
                     </marker>
 
                     <marker
                         id="bidirectional"
-                        viewBox="0 0 10 10"  // Keep original viewBox
-                        refX="1"             // Keep original refX
-                        refY="5"             // Keep original refY
-                        markerWidth="8"      // Increased from 6 but not doubled
-                        markerHeight="8"     // Increased from 6 but not doubled
+                        viewBox="0 0 10 10"
+                        refX="1"
+                        refY="5"
+                        markerWidth="8"
+                        markerHeight="8"
                         orient="auto-start-reverse"
                     >
                         <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />

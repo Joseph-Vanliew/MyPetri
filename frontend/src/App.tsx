@@ -5,7 +5,7 @@ import { Toolbar } from './components/Toolbar';
 import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE} from './types';
 import {JSONViewer} from "./components/JSONViewer.tsx";
 import { MenuBar } from './components/MenuBar';
-import { EditableTitle, EditableTitleRef } from './components/EditableTitle';
+import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
 
 export default function App() {
     // ===== STATE MANAGEMENT =====
@@ -22,6 +22,10 @@ export default function App() {
     const [conflictResolutionMode, setConflictResolutionMode] = useState(false);
     const [conflictingTransitions, setConflictingTransitions] = useState<string[]>([]);
     const [title, setTitle] = useState<string>("Untitled Petri Net");
+    // Add state to track recently fired transitions
+    const [firedTransitions, setFiredTransitions] = useState<string[]>([]);
+    // Add a new state to track transition animation states
+    const [animatingTransitions, setAnimatingTransitions] = useState<Record<string, boolean>>({});
     
     // Reference to the EditableTitle component
     const titleRef = useRef<EditableTitleRef>(null);
@@ -114,7 +118,9 @@ export default function App() {
             if (isTyping) return; // Prevent actions while typing
             
             if (e.key === 'Escape') {
+                // Escape key exits the current tool mode AND clears selection
                 setSelectedTool('NONE');
+                setSelectedElements([]);
                 return;
             }
             
@@ -126,7 +132,14 @@ export default function App() {
             }
 
             if (e.key === 'Delete' || e.key === 'Backspace') {
-                // Save current state before deletion
+                // If in arc mode with a source selected, just clear the selection
+                // but stay in arc mode
+                if (selectedTool === 'ARC' && selectedElements.length > 0) {
+                    setSelectedElements([]);
+                    return;
+                }
+                
+                // Otherwise proceed with normal deletion
                 saveToHistory();
                 handleDelete();
             }
@@ -136,7 +149,7 @@ export default function App() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [selectedElements, places, transitions, arcs, isTyping, handleUndo, saveToHistory]);
+    }, [selectedElements, places, transitions, arcs, isTyping, handleUndo, saveToHistory, selectedTool]);
 
     useEffect(() => {
         if (selectedTool === 'ARC') {
@@ -338,18 +351,36 @@ export default function App() {
     const handleSimulate = async () => {
         console.log("Current deterministic mode state:", deterministicMode);
         
+        // First, clear any existing animation by setting firedTransitions to empty
+        setFiredTransitions([]);
+        
+        // Small delay to ensure the animation class is removed before adding it again
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
         const requestBody: PetriNetDTO = {
-            places: places.map(p => ({ id: p.id, tokens: p.tokens })),
+            places: places.map(p => ({ 
+                id: p.id, 
+                tokens: p.tokens,
+                name: p.name,
+                x: p.x,
+                y: p.y,
+                radius: p.radius
+            })),
             transitions: transitions.map(t => ({
                 id: t.id,
                 enabled: t.enabled,
-                arcIds: t.arcIds
+                arcIds: t.arcIds,
+                name: t.name,
+                x: t.x,
+                y: t.y,
+                width: t.width,
+                height: t.height
             })),
             arcs: arcs.map(a => ({
                 id: a.id,
                 type: a.type,
                 incomingId: a.incomingId,
-                outgoingId: a.outgoingId
+                outgoingId: a.outgoingId,
             })),
             deterministicMode: deterministicMode
         };
@@ -366,51 +397,69 @@ export default function App() {
             const responseData: PetriNetDTO = await response.json();
             console.log("Received new state response:", responseData);
 
-            // In deterministic mode, handle potentially multiple enabled transitions
-            if (deterministicMode) {
-                const enabledTransitions = responseData.transitions
-                    .filter(t => t.enabled)
-                    .map(t => t.id);
-                
-                if (enabledTransitions.length > 1) {
-                    // Multiple enabled transitions - enter conflict resolution mode
-                    setConflictingTransitions(enabledTransitions);
-                    setConflictResolutionMode(true);
-                    
-                    // Update places state
-                    const newPlaces = places.map(p => {
-                        const updated = responseData.places.find(rp => rp.id === p.id);
-                        return updated ? { ...p, tokens: updated.tokens } : p;
-                    });
-                    setPlaces([...newPlaces]);
-                    
-                    // Mark transitions as enabled based on response
-                    const newTransitions = transitions.map(t => {
-                        const updated = responseData.transitions.find(rt => rt.id === t.id);
-                        return updated ? { ...t, enabled: updated.enabled } : t;
-                    });
-                    setTransitions([...newTransitions]);
-                    
-                    return; // Wait for user selection
-                }
-            }
-            
-            // Normal flow (non-deterministic or deterministic with single enabled transition)
+            // Update places state
             const newPlaces = places.map(p => {
                 const updated = responseData.places.find(rp => rp.id === p.id);
                 return updated ? { ...p, tokens: updated.tokens } : p;
             });
+            setPlaces([...newPlaces]); 
 
-            console.log("Updated places state:", newPlaces);
-            setPlaces([...newPlaces]); // new reference for rendering token counts
-
+            // Get the list of enabled transitions from the response
+            const enabledTransitions = responseData.transitions
+                .filter(t => t.enabled)
+                .map(t => t.id);
+                
+            console.log("Enabled transitions:", enabledTransitions);
+            
+            // In deterministic mode, handle potentially multiple enabled transitions
+            if (deterministicMode && enabledTransitions.length > 1) {
+                console.log("Entering conflict resolution mode with transitions:", enabledTransitions);
+                
+                // Multiple enabled transitions - enter conflict resolution mode
+                setConflictingTransitions(enabledTransitions);
+                setConflictResolutionMode(true);
+                
+                // Update transitions state without animation
+                const newTransitions = transitions.map(t => {
+                    const updated = responseData.transitions.find(rt => rt.id === t.id);
+                    return updated ? { ...t, enabled: updated.enabled } : t;
+                });
+                setTransitions([...newTransitions]);
+                
+                return; // Wait for user selection - don't animate
+            }
+            
+            // Non-deterministic mode or only one enabled transition
+            
+            // Update transitions based on response
             const newTransitions = transitions.map(t => {
                 const updated = responseData.transitions.find(rt => rt.id === t.id);
                 return updated ? { ...t, enabled: updated.enabled } : t;
             });
-
-            console.log("Updated transitions state:", newTransitions);
-            setTransitions([...newTransitions]); // new reference to update transition enabled boolean
+            setTransitions([...newTransitions]);
+            
+            // When setting animations, use a different approach
+            if (enabledTransitions.length > 0) {
+                // Create a copy of the current animation state
+                const newAnimatingTransitions = { ...animatingTransitions };
+                
+                // Mark each enabled transition as animating
+                enabledTransitions.forEach(id => {
+                    newAnimatingTransitions[id] = true;
+                });
+                
+                // Update the animation state
+                setAnimatingTransitions(newAnimatingTransitions);
+                
+                // Mark these transitions as fired for the animation
+                setFiredTransitions(prevFired => [...prevFired, ...enabledTransitions]);
+                
+                // Don't clear the animations - they will naturally complete
+            }
+            
+            // Exit conflict resolution mode
+            setConflictResolutionMode(false);
+            setConflictingTransitions([]);
 
         } catch (error) {
             console.error('Simulation error:', error);
@@ -573,9 +622,63 @@ export default function App() {
     };
 
     const continueSimulation = async (selectedTransitionId: string) => {
+        // First, clear any existing animation by setting firedTransitions to empty
+        setFiredTransitions([]);
+        
+        // Small delay to ensure the animation class is removed before adding it again
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        // Update transitions in state to mark only the selected one as enabled
+        const updatedTransitions = transitions.map(t => ({
+            ...t,
+            enabled: t.id === selectedTransitionId
+        }));
+        
+        // Update the transitions state immediately to show the user's selection
+        setTransitions(updatedTransitions);
+        
+        // Clear any existing animation states
+        setAnimatingTransitions({});
+        
+        // Mark ONLY the selected transition as animating
+        setAnimatingTransitions({
+            [selectedTransitionId]: true
+        });
+        
+        // Add ONLY the selected transition to the fired transitions list
+        setFiredTransitions([selectedTransitionId]);
+        
+        // DO NOT exit conflict resolution mode yet - we'll do that only when we confirm
+        // there are no more conflicts from the backend
+        
+        // Create a request body with the updated transitions
         const requestBody = {
-            ...petriNetDTO,
-            selectedTransitionId
+            places: places.map(p => ({ 
+                id: p.id, 
+                tokens: p.tokens,
+                name: p.name,
+                x: p.x,
+                y: p.y,
+                radius: p.radius
+            })),
+            transitions: updatedTransitions.map(t => ({
+                id: t.id,
+                enabled: t.enabled,
+                arcIds: t.arcIds,
+                name: t.name,
+                x: t.x,
+                y: t.y,
+                width: t.width,
+                height: t.height
+            })),
+            arcs: arcs.map(a => ({
+                id: a.id,
+                type: a.type,
+                incomingId: a.incomingId,
+                outgoingId: a.outgoingId,
+            })),
+            selectedTransitionId,
+            deterministicMode: deterministicMode
         };
         
         try {
@@ -594,17 +697,37 @@ export default function App() {
             });
             setPlaces([...newPlaces]);
             
-            // Update transitions state
+            // Update transitions state with the response from the backend
             const newTransitions = transitions.map(t => {
                 const updated = responseData.transitions.find((rt: { id: string; enabled: boolean }) => rt.id === t.id);
                 return updated ? { ...t, enabled: updated.enabled } : t;
             });
-            setTransitions([...newTransitions]);
             
-            setConflictResolutionMode(false);
-            setConflictingTransitions([]);
+            // Get the list of enabled transitions from the response
+            const enabledTransitions = responseData.transitions
+                .filter((t: { enabled: boolean }) => t.enabled)
+                .map((t: { id: string }) => t.id);
+                
+            console.log("Enabled transitions after selection:", enabledTransitions);
+            
+            // Do NOT add animations for newly enabled transitions in deterministic mode
+            // Only exit conflict resolution mode if there are no more conflicts
+            if (enabledTransitions.length <= 1 || !deterministicMode) {
+                // No more conflicts, exit conflict resolution mode
+                setConflictResolutionMode(false);
+                setConflictingTransitions([]);
+            } else {
+                // Still have conflicts, update the conflicting transitions list
+                setConflictingTransitions(enabledTransitions);
+                // We're already in conflict resolution mode, so no need to set it again
+            }
+            
+            setTransitions(newTransitions);
         } catch (error) {
             console.error('Error resolving conflict:', error);
+            // In case of error, still exit conflict resolution mode to avoid getting stuck
+            setConflictResolutionMode(false);
+            setConflictingTransitions([]);
         }
     };
 
@@ -654,7 +777,13 @@ export default function App() {
                     <div style={{ flex: 'none', overflow: 'hidden' }}>
                         <Toolbar
                             selectedTool={selectedTool}
-                            setSelectedTool={setSelectedTool}
+                            setSelectedTool={(tool) => {
+                                // If switching to ARC tool, deselect any selected elements
+                                if (tool === 'ARC') {
+                                    setSelectedElements([]);
+                                }
+                                setSelectedTool(tool);
+                            }}
                             arcType={arcType}
                             setArcType={setArcType}
                         />
@@ -690,6 +819,21 @@ export default function App() {
                             onClick={() => {
                                 const newValue = !deterministicMode;
                                 console.log("Setting deterministic mode to:", newValue);
+                                
+                                // If turning off deterministic mode and currently in conflict resolution mode
+                                if (!newValue && conflictResolutionMode) {
+                                    // First, clear the conflict resolution state
+                                    setConflictResolutionMode(false);
+                                    setConflictingTransitions([]);
+                                    
+                                    // Reset all transitions to not enabled (clear any red borders)
+                                    setTransitions(transitions.map(t => ({
+                                        ...t,
+                                        enabled: false
+                                    })));
+                                }
+                                
+                                // Update deterministic mode state
                                 setDeterministicMode(newValue);
                             }}
                             title="When enabled, you can choose which transition to fire when multiple are enabled"
@@ -699,24 +843,20 @@ export default function App() {
                                 id="deterministic-mode"
                                 checked={deterministicMode}
                                 onChange={(e) => {
-                                    // This handler is now redundant since the parent div handles the click,
-                                    // keeping it for accessibility and direct checkbox interactions
-                                    console.log("Setting deterministic mode to:", e.target.checked);
-                                    setDeterministicMode(e.target.checked);
+                                    // Prevent propagation to avoid double-triggering with the parent's onClick
+                                    e.stopPropagation();
+                                    
+                                    // No state change code here - let the parent handle it
                                 }}
                                 style={{ marginRight: '5px', cursor: 'pointer' }}
-                                onClick={(e) => {
-                                    // Stop propagation to prevent double-toggling
-                                    e.stopPropagation();
-                                }}
                             />
                             <label 
                                 htmlFor="deterministic-mode" 
                                 style={{ cursor: 'pointer' }}
                                 onClick={(e) => {
-                                    // Stop propagation to prevent double-toggling
-                                    // since clicking the label already triggers the checkbox
-                                    e.stopPropagation();
+                                    // Prevent the label's default behavior (which would toggle the checkbox)
+                                    // so that we can handle it in the parent div's onClick
+                                    e.preventDefault();
                                 }}
                             >
                                 Deterministic Mode
@@ -823,6 +963,7 @@ export default function App() {
                         conflictResolutionMode={conflictResolutionMode}
                         conflictingTransitions={conflictingTransitions}
                         onConflictingTransitionSelect={continueSimulation}
+                        firedTransitions={firedTransitions}
                     />
                 </div>
 

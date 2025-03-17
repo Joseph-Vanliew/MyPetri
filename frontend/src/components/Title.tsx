@@ -17,7 +17,7 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
     const [showNotification, setShowNotification] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     
-    // Default title constant
+    // constants
     const DEFAULT_TITLE = "Untitled Petri Net";
     
     // Timer for notification
@@ -62,7 +62,7 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
         }, 10);
     };
 
-    // Expose the startEditing method through the ref
+    // Expose the startEditing method 
     useImperativeHandle(ref, () => ({
         startEditing
     }));

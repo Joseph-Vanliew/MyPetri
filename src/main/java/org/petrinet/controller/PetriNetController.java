@@ -27,4 +27,21 @@ public class PetriNetController {
             return ResponseEntity.badRequest().body("Error processing Petri net: " + e.getMessage());
         }
     }
+    
+    @PostMapping("/api/process/resolve")
+    public ResponseEntity<?> resolveConflict(@RequestBody PetriNetDTO petriNetDTO) {
+        try {
+            // Extract the selected transition ID from the request
+            String selectedTransitionId = petriNetDTO.getSelectedTransitionId();
+            if (selectedTransitionId == null || selectedTransitionId.isEmpty()) {
+                return ResponseEntity.badRequest().body("No transition selected for conflict resolution");
+            }
+            
+            // Process the Petri net with the selected transition
+            PetriNetDTO updatedPetriNetDTO = petriNetService.resolveConflict(petriNetDTO, selectedTransitionId);
+            return ResponseEntity.ok(updatedPetriNetDTO);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error resolving conflict: " + e.getMessage());
+        }
+    }
 }
