@@ -814,6 +814,7 @@ export default function App() {
                         onUpdateElementPosition={updateElementPosition}
                         onSelectElement={handleSelectElement}
                         selectedTool={selectedTool}
+                        onSelectTool={setSelectedTool}
                         onArcPortClick={handleArcPortClick}
                         arcType={arcType}
                         onUpdateToken={handleTokenUpdate}
@@ -837,7 +838,7 @@ export default function App() {
                     }}>
                         {/* Page Navigation */}
                         <div style={{ color: '#777', fontSize: '14px' }}>
-                            Page navigation (Under Construction)
+                            Page Tabs (Under Construction)
                         </div>
                     </div>
                 </div>

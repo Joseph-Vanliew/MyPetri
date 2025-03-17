@@ -1,6 +1,7 @@
 // src/components/Toolbar.tsx
 
 import { UIArc } from '../types';
+import { useState, useRef } from 'react';
 
 interface ToolbarProps {
     selectedTool: 'PLACE' | 'TRANSITION' | 'ARC'| 'NONE';
@@ -15,6 +16,13 @@ export const Toolbar = ({
                             arcType,
                             setArcType,
                         }: ToolbarProps) => {
+    // Add state to track if we're currently dragging
+    const [isDragging, setIsDragging] = useState<'PLACE' | 'TRANSITION' | null>(null);
+    
+    // Create refs for the SVG elements to use as drag images
+    const placeRef = useRef<SVGSVGElement>(null);
+    const transitionRef = useRef<SVGSVGElement>(null);
+    
     return (
         <div className="toolbar" style={{ 
             display: 'flex', 
@@ -31,11 +39,41 @@ export const Toolbar = ({
 
             {/* Place button with hover effect and tooltip */}
             <div 
-                className={`toolbar-item ${selectedTool === 'PLACE' ? 'active' : ''}`}
+                className={`toolbar-item ${selectedTool === 'PLACE' || isDragging === 'PLACE' ? 'active' : ''}`}
                 onClick={() => setSelectedTool('PLACE')}
                 draggable
                 onDragStart={(e) => {
+                    // Set the data for transfer
                     e.dataTransfer.setData('application/petri-item', 'PLACE');
+                    
+                    // Set the selected tool to PLACE
+                    setSelectedTool('PLACE');
+                    setIsDragging('PLACE');
+                    
+                    // drag image
+                    const dragImage = document.createElement('div');
+                    dragImage.innerHTML = `
+                        <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="30" cy="30" r="25" fill="#0f0f0f" stroke="#ffffff" stroke-width="2" />
+                        </svg>
+                    `;
+                    document.body.appendChild(dragImage);
+                    
+                    // Position off-screen to hide it
+                    dragImage.style.position = 'absolute';
+                    dragImage.style.top = '-1000px';
+                    
+                    // Use the div as drag image
+                    e.dataTransfer.setDragImage(dragImage, 30, 30);
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(dragImage);
+                    }, 0);
+                }}
+                onDragEnd={() => {
+                    // Reset dragging state when drag ends
+                    setIsDragging(null);
                 }}
                 style={{
                     display: 'flex',
@@ -43,24 +81,29 @@ export const Toolbar = ({
                     padding: '8px',
                     borderRadius: '4px',
                     cursor: 'pointer',
-                    backgroundColor: selectedTool === 'PLACE' ? '#333' : 'transparent',
-                    border: selectedTool === 'PLACE' ? '1px solid #555' : '1px solid transparent',
+                    backgroundColor: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '#333' : 'transparent',
+                    border: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
                     transition: 'background-color 0.2s ease'
                 }}
                 onMouseOver={(e) => {
-                    if (selectedTool !== 'PLACE') {
+                    if (selectedTool !== 'PLACE' && isDragging !== 'PLACE') {
                         e.currentTarget.style.backgroundColor = '#2a2a2a';
                     }
                 }}
                 onMouseOut={(e) => {
-                    if (selectedTool !== 'PLACE') {
+                    if (selectedTool !== 'PLACE' && isDragging !== 'PLACE') {
                         e.currentTarget.style.backgroundColor = 'transparent';
                     }
                 }}
                 title="Add a Place (container for tokens)"
             >
                 <div style={{ width: '80px', height: '80px', position: 'relative', marginRight: '10px' }}>
-                    <svg width="80" height="80" viewBox="0 0 80 80">
+                    <svg 
+                        ref={placeRef}
+                        width="80" 
+                        height="80" 
+                        viewBox="0 0 80 80"
+                    >
                         <circle 
                             cx="40" 
                             cy="40" 
@@ -76,11 +119,41 @@ export const Toolbar = ({
 
             {/* Transition button with hover effect and tooltip */}
             <div 
-                className={`toolbar-item ${selectedTool === 'TRANSITION' ? 'active' : ''}`}
+                className={`toolbar-item ${selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? 'active' : ''}`}
                 onClick={() => setSelectedTool('TRANSITION')}
                 draggable
                 onDragStart={(e) => {
+                    // Set the data for transfer
                     e.dataTransfer.setData('application/petri-item', 'TRANSITION');
+                    
+                    // Setting the selected tool to TRANSITION
+                    setSelectedTool('TRANSITION');
+                    setIsDragging('TRANSITION');
+                    
+                    // drag image
+                    const dragImage = document.createElement('div');
+                    dragImage.innerHTML = `
+                        <svg width="60" height="30" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0" y="0" width="60" height="30" rx="4" fill="#0f0f0f" stroke="#ffffff" stroke-width="2" />
+                        </svg>
+                    `;
+                    document.body.appendChild(dragImage);
+                    
+                    // Position off-screen to hide it
+                    dragImage.style.position = 'absolute';
+                    dragImage.style.top = '-1000px';
+                    
+                    // Using the div as drag image
+                    e.dataTransfer.setDragImage(dragImage, 30, 15);
+                    
+                    // Clean up 
+                    setTimeout(() => {
+                        document.body.removeChild(dragImage);
+                    }, 0);
+                }}
+                onDragEnd={() => {
+                    // Reset dragging state when drag ends
+                    setIsDragging(null);
                 }}
                 style={{
                     display: 'flex',
@@ -88,24 +161,29 @@ export const Toolbar = ({
                     padding: '8px',
                     borderRadius: '4px',
                     cursor: 'pointer',
-                    backgroundColor: selectedTool === 'TRANSITION' ? '#333' : 'transparent',
-                    border: selectedTool === 'TRANSITION' ? '1px solid #555' : '1px solid transparent',
+                    backgroundColor: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? '#333' : 'transparent',
+                    border: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? '1px solid #555' : '1px solid transparent',
                     transition: 'background-color 0.2s ease'
                 }}
                 onMouseOver={(e) => {
-                    if (selectedTool !== 'TRANSITION') {
+                    if (selectedTool !== 'TRANSITION' && isDragging !== 'TRANSITION') {
                         e.currentTarget.style.backgroundColor = '#2a2a2a';
                     }
                 }}
                 onMouseOut={(e) => {
-                    if (selectedTool !== 'TRANSITION') {
+                    if (selectedTool !== 'TRANSITION' && isDragging !== 'TRANSITION') {
                         e.currentTarget.style.backgroundColor = 'transparent';
                     }
                 }}
                 title="Add a Transition (action that consumes and produces tokens)"
             >
                 <div style={{ width: '80px', height: '80px', position: 'relative', marginRight: '10px' }}>
-                    <svg width="80" height="80" viewBox="0 0 80 80">
+                    <svg 
+                        ref={transitionRef}
+                        width="80" 
+                        height="80" 
+                        viewBox="0 0 80 80"
+                    >
                         <rect 
                             x="10" 
                             y="25" 

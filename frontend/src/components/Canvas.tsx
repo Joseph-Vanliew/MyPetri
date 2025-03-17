@@ -16,6 +16,7 @@ interface CanvasProps {
     onUpdateElementPosition: (id: string, newX: number, newY: number) => void;
     onArcPortClick:(id: string)=> void;
     selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';
+    onSelectTool: (tool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC') => void;
     arcType: UIArc['type'];
     onUpdateToken: (id: string, newTokens: number) => void;
     onTypingChange: (isTyping: boolean) => void;
@@ -121,21 +122,6 @@ export const Canvas = (props: CanvasProps) => {
         return lines;
     }, []);
 
-    // ===== COORDINATE CONVERSION =====
-    /* Convert from screen coords to the current viewBox coords */
-    const screenToViewBox = (e: React.DragEvent<SVGSVGElement>) => {
-        const svgRect = e.currentTarget.getBoundingClientRect();
-        const dropX = e.clientX - svgRect.left;
-        const dropY = e.clientY - svgRect.top;
-
-        const scaleX = viewBox.w / svgRect.width;
-        const scaleY = viewBox.h / svgRect.height;
-
-        const xInViewBox = viewBox.x + dropX * scaleX;
-        const yInViewBox = viewBox.y + dropY * scaleY;
-
-        return { xInViewBox, yInViewBox };
-    };
 
     // ===== MOUSE EVENT HANDLERS =====
     const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -252,11 +238,35 @@ export const Canvas = (props: CanvasProps) => {
     // ===== DRAG & DROP HANDLERS =====
     const handleDrop = (e: React.DragEvent<SVGSVGElement>) => {
         e.preventDefault();
+        
+        // Get the dragged element type from dataTransfer
         const type = e.dataTransfer.getData("application/petri-item");
         if(!type) return;
-        const { xInViewBox, yInViewBox } = screenToViewBox(e);
+        
+        // Convert screen coordinates to SVG viewBox coordinates
+        const svgRect = e.currentTarget.getBoundingClientRect();
+        const dropX = e.clientX - svgRect.left;
+        const dropY = e.clientY - svgRect.top;
 
-        props.onCanvasClick(xInViewBox,yInViewBox);
+        const scaleX = viewBox.w / svgRect.width;
+        const scaleY = viewBox.h / svgRect.height;
+
+        const xInViewBox = viewBox.x + dropX * scaleX;
+        const yInViewBox = viewBox.y + dropY * scaleY;
+        
+        // Snap to grid
+        const gridX = Math.round(xInViewBox / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+        const gridY = Math.round(yInViewBox / GRID_CELL_SIZE) * GRID_CELL_SIZE;
+
+        // Temporarily set the selected tool based on the dragged item
+        if (type === 'PLACE') {
+            props.onSelectTool('PLACE');
+        } else if (type === 'TRANSITION') {
+            props.onSelectTool('TRANSITION');
+        }
+        
+        // Call the canvas click handler with the converted coordinates
+        props.onCanvasClick(gridX, gridY);
     }
 
     const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {
