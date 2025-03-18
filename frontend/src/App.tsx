@@ -648,8 +648,8 @@ export default function App() {
         // Add ONLY the selected transition to the fired transitions list
         setFiredTransitions([selectedTransitionId]);
         
-        // DO NOT exit conflict resolution mode yet - we'll do that only when we confirm
-        // there are no more conflicts from the backend
+        /* DO NOT exit conflict resolution mode yet - we'll do that only when we confirm
+        there are no more conflicts from the backend */
         
         // Create a request body with the updated transitions
         const requestBody = {
