@@ -27,15 +27,18 @@ cd pats
 ### Running the Application
 There are two options to start the application:
 
-#### Option 1: Using the start script (Recommended)
+### Option 1: Using the start script (Recommended)
+
+#### Make the script executable (one-time setup)
 ```bash
-# Make the script executable (one-time setup)
 chmod +x start_pats.sh
-# You will then be able to run the command below on subsequent executions without 'chmod +x' command.
+```
+#### You will then be able to run the command below on subsequent executions without 'chmod +x' command.
+```bash
 ./start_pats.sh
 ```
+#### OR run with bash directly (no chmod needed)
 ```bash
-# OR run with bash directly (no chmod needed)
 bash start_pats.sh
 ```
 
@@ -46,7 +49,7 @@ This script will:
 - Start both the backend server and frontend development server
 - Create log files in the `logs` directory
 
-#### Option 2: Manual setup (Command-line)
+### Option 2: Manual setup (Command-line)
 
 1. Install frontend dependencies:
 ```bash
