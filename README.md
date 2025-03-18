@@ -43,7 +43,8 @@ bash start_pats.sh
 ```
 
 This script will:
-- Check for required dependencies and inform the user if they need to be installed.
+- Check for required dependencies.
+- Prompt the user to install tools needed to run application
 - Install frontend dependencies if needed
 - Build the application
 - Start both the backend server and frontend development server
