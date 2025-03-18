@@ -86,12 +86,12 @@ npm run dev
 - `/frontend` - React TypeScript frontend
 - `/src/main/resources/static` - Build output for frontend (generated)
 
-### Command-Line Development Workflow
-PATS is designed to support a complete command-line workflow:
+### Command-Line Development Workflow for Interested Devs
 - Use your preferred text editor for code changes
 - Run tests with `./gradlew test`
 - Check test coverage with `./gradlew jacocoTestReport`
 - Run mutation testing with `./gradlew pitest`
+- Please feel free to incorporate playwright or Cucumber or Selenium for testing the frontend.
 
 ### Building for Production
 To build the complete application for production:
