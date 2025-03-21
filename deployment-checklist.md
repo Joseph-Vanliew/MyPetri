@@ -17,8 +17,8 @@
 ## Post-Deployment
 - [ ] Set up monitoring
 - [ ] Configure alerts
-- [ ] Set up custom domain (optional)
-- [ ] Set up CI/CD pipeline (optional)
+- [ ] Set up custom domain
+- [ ] Set up CI/CD pipeline
 
 ## Common Commands
 ```bash
