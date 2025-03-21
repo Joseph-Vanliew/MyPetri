@@ -14,16 +14,84 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.4)
 
-2025-03-18T12:11:01.228-04:00  INFO 51975 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 51975 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
-2025-03-18T12:11:01.229-04:00  INFO 51975 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
-2025-03-18T12:11:01.511-04:00  INFO 51975 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-03-18T12:11:01.517-04:00  INFO 51975 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-03-18T12:11:01.517-04:00  INFO 51975 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
-2025-03-18T12:11:01.534-04:00  INFO 51975 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-03-18T12:11:01.535-04:00  INFO 51975 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 290 ms
-2025-03-18T12:11:01.646-04:00  INFO 51975 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
-2025-03-18T12:11:01.650-04:00  INFO 51975 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.547 seconds (process running for 0.663)
+2025-03-20T15:45:40.618-04:00  INFO 90264 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 90264 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
+2025-03-20T15:45:40.620-04:00  INFO 90264 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
+2025-03-20T15:45:40.915-04:00  INFO 90264 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-03-20T15:45:40.921-04:00  INFO 90264 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-03-20T15:45:40.921-04:00  INFO 90264 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
+2025-03-20T15:45:40.937-04:00  INFO 90264 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-03-20T15:45:40.938-04:00  INFO 90264 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 302 ms
+2025-03-20T15:45:41.053-04:00  INFO 90264 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-03-20T15:45:41.056-04:00  INFO 90264 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.563 seconds (process running for 0.682)
 PatsApplication started
+2025-03-20T16:34:00.474-04:00  INFO 90264 --- [PATS] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-03-20T16:34:00.478-04:00  INFO 90264 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-03-20T16:34:00.493-04:00  INFO 90264 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 15 ms
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 2
+Randomly selected transition: trans_1742502817152
+Number of enabled transitions: 2
+Randomly selected transition: trans_1742502817152
+Number of enabled transitions: 2
+Randomly selected transition: trans_1742502817152
+Number of enabled transitions: 2
+Randomly selected transition: trans_1742502806469
+Number of enabled transitions: 2
+Deterministic mode: returning all enabled transitions for user selection
+Number of enabled transitions: 2
+Deterministic mode: returning all enabled transitions for user selection
+Number of enabled transitions: 2
+Deterministic mode: returning all enabled transitions for user selection
+Number of enabled transitions: 2
+Deterministic mode: returning all enabled transitions for user selection
+Number of enabled transitions: 2
+Deterministic mode: returning all enabled transitions for user selection
+Number of enabled transitions: 2
+Deterministic mode: returning all enabled transitions for user selection
+Multiple transitions enabled after firing, user will select again
+Multiple transitions enabled after firing, user will select again
+Multiple transitions enabled after firing, user will select again
+Multiple transitions enabled after firing, user will select again
+Multiple transitions enabled after firing, user will select again
+Multiple transitions enabled after firing, user will select again
+Multiple transitions enabled after firing, user will select again
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502806469
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
+Number of enabled transitions: 1
+Only one transition enabled: trans_1742502817152
 
 > Task :bootRun FAILED
 
@@ -39,5 +107,5 @@ Execution failed for task ':bootRun'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 9s
+BUILD FAILED in 57m 33s
 4 actionable tasks: 1 executed, 3 up-to-date

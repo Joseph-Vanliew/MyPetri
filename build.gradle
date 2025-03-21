@@ -33,7 +33,7 @@ tasks.register('buildFrontend', Exec) {
 }
 
 tasks.register('copyFrontendBuild', Copy) {
-    from 'frontend/build'
+    from 'frontend/dist'
     into 'src/main/resources/static'
 }
 

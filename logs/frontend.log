@@ -3,7 +3,8 @@
 > vite
 
 
-  VITE v6.2.0  ready in 180 ms
+  VITE v6.2.0  ready in 520 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
+3:46:37 PM [vite] (client) hmr update /src/components/Canvas.tsx

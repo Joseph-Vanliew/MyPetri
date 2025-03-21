@@ -1,0 +1,30 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA', '.']
+  
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA']
+  
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+    - 'run'
+    - 'deploy'
+    - 'pats-app'
+    - '--image'
+    - '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA'
+    - '--region'
+    - '$REGION'
+    - '--platform'
+    - 'managed'
+    - '--allow-unauthenticated'
+    
+substitutions:
+  _REGION: us-central1
+  _REPO_NAME: pats-repo
+
+images:
+  - '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA' 

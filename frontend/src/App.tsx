@@ -6,6 +6,7 @@ import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE} from './types
 import {JSONViewer} from "./components/JSONViewer.tsx";
 import { MenuBar } from './components/MenuBar';
 import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
+import { API_ENDPOINTS } from './utils/api';
 
 export default function App() {
     // ===== STATE MANAGEMENT =====
@@ -388,7 +389,7 @@ export default function App() {
         console.log("Sending PetriNet Request for simulation", requestBody);
 
         try {
-            const response = await fetch('http://localhost:8080/api/process', {
+            const response = await fetch(API_ENDPOINTS.PROCESS, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
@@ -682,7 +683,7 @@ export default function App() {
         };
         
         try {
-            const response = await fetch('http://localhost:8080/api/process/resolve', {
+            const response = await fetch(API_ENDPOINTS.RESOLVE, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)

@@ -86,14 +86,14 @@ cleanup() {
     # For the Spring Boot backend, find and kill any process still using port 8080
     local SPRING_PID=$(lsof -ti:8080 2>/dev/null)
     if [ ! -z "$SPRING_PID" ]; then
-        # Silently terminate without warning
+        # Silently terminate
         kill -9 $SPRING_PID 2>/dev/null || true
     fi
     
     # For the Vite dev server, find and kill any process still using port 5173
     local VITE_PID=$(lsof -ti:5173 2>/dev/null)
     if [ ! -z "$VITE_PID" ]; then
-        # Silently terminate without warning
+        # Silently terminate
         kill -9 $VITE_PID 2>/dev/null || true
     fi
     
