@@ -21,6 +21,16 @@ html, body {
   overflow: hidden; /* Prevent scrolling at the document level */
 }
 
+/* Prevent text selection on double click */
+.toolbar, .file-menu, .title-container, .place, 
+.transition, .toolbar-item, button, [class*="element"],
+.canvas, .canvas-container {
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE/Edge */
+}
+
 #root {
   width: 100%;
   height: 100%;
@@ -69,13 +79,33 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
   }
+  
+  /* Keep dark components consistent in light mode, but maintain visual hierarchy */
+  .toolbar {
+    background-color: #1a1a1a !important; /* Slightly darker than root background */
+    color: rgba(255, 255, 255, 0.87) !important;
+    border-color: #333 !important;
+  }
+  
+  .file-menu {
+    background-color: #242424 !important; /* Same as root background */
+    color: rgba(255, 255, 255, 0.87) !important;
+    border-color: #333 !important;
+  }
+  
+  .title-container {
+    background-color: #242424 !important;
+    color: rgba(255, 255, 255, 0.87) !important;
+    border-color: #333 !important;
+  }
+  
   a:hover {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #1a1a1a;
   }
 }
