@@ -15,7 +15,8 @@ public class WebConfig {
                 registry.addMapping("/api/**")
                         .allowedOrigins(
                             "http://localhost:5173", 
-                            "https://pats-app-652197520510.us-central1.run.app"
+                            "https://pats-app-652197520510.us-central1.run.app",
+                            "https://mypetri.net"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")

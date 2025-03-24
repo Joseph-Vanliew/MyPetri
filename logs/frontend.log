@@ -3,25 +3,9 @@
 > vite
 
 
-  VITE v6.2.0  ready in 188 ms
+  VITE v6.2.0  ready in 190 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-5:37:21 PM [vite] (client) hmr update /src/index.css
-5:39:34 PM [vite] (client) hmr update /src/index.css
-5:39:41 PM [vite] (client) hmr update /src/index.css
-5:43:52 PM [vite] (client) hmr update /src/index.css
-5:44:26 PM [vite] (client) hmr update /src/index.css
-5:44:55 PM [vite] (client) hmr update /src/index.css
-5:45:37 PM [vite] (client) hmr update /src/index.css
-5:45:42 PM [vite] (client) hmr update /src/index.css
-5:45:42 PM [vite] (client) hmr update /src/index.css
-5:47:16 PM [vite] (client) hmr update /src/index.css
-5:47:19 PM [vite] (client) hmr update /src/index.css
-5:48:01 PM [vite] (client) hmr update /src/index.css
-5:48:03 PM [vite] (client) hmr update /src/index.css
-5:49:58 PM [vite] (client) hmr update /src/index.css
-5:50:50 PM [vite] (client) hmr update /src/index.css
-5:54:58 PM [vite] (client) hmr update /src/index.css
-5:56:20 PM [vite] (client) hmr update /src/index.css
-5:56:30 PM [vite] (client) hmr update /src/index.css
+1:18:38 PM [vite] (client) page reload index.html
+1:21:40 PM [vite] (client) page reload index.html
