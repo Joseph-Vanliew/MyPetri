@@ -13,7 +13,7 @@ COPY . .
 # Build frontend with explicit output to the dist directory
 RUN cd frontend && npm install && npm run build
 
-# Ensure the frontend build is copied to the right location
+# Copying frontend build to main java location
 RUN mkdir -p src/main/resources/static
 RUN if [ -d "frontend/dist" ]; then cp -r frontend/dist/* src/main/resources/static/; fi
 

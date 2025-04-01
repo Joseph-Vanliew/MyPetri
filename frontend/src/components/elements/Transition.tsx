@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import type {UIArc, UITransition} from '../../types';
+import '../styles/Transition.css';
 
 interface TransitionProps extends UITransition {
     isSelected: boolean;
@@ -285,28 +286,6 @@ export const Transition = (props: TransitionProps) => {
         }
     }, [visualPosition]);
 
-    // Update the animation to allow proper stacking
-    useEffect(() => {
-        if (!document.getElementById('transition-animation-style')) {
-            const styleElement = document.createElement('style');
-            styleElement.id = 'transition-animation-style';
-            styleElement.textContent = `
-                @keyframes flash-green {
-                    0% { fill: #0f0f0f; }
-                    25% { fill: #1a472a; }
-                    50% { fill: #2e8b57; }
-                    75% { fill: #1a472a; }
-                    100% { fill: #0f0f0f; }
-                }
-                
-                .transition-fired {
-                    animation: flash-green 0.8s ease;
-                }
-            `;
-            document.head.appendChild(styleElement);
-        }
-    }, []);
-
     // ===== RENDER =====
     return (
         <g
@@ -350,10 +329,7 @@ export const Transition = (props: TransitionProps) => {
                     width={props.width + 12}
                     height={props.height + 12}
                     rx={10}
-                    fill="none"
-                    stroke="rgba(0, 255, 0, 0.5)"
-                    strokeWidth="6"
-                    style={{cursor: 'pointer'}}
+                    className="transition-arc-highlight"
                 />
             )}
             
@@ -363,21 +339,11 @@ export const Transition = (props: TransitionProps) => {
                 y={-props.height / 2}
                 width={props.width}
                 height={props.height}
-                rx={8}
-                fill="#0f0f0f"  // Keep the default fill dark
-                stroke={
-                    props.isSelected 
-                        ? "#ffffff"  // White border for selected transitions
-                        : (props.conflictResolutionMode && props.isConflicting)
-                            ? "#ff3333"  // Bright red border for transitions in conflict resolution mode
-                            : (props.enabled && !props.conflictResolutionMode)
-                                ? "#4CAF50"  // Green border for enabled transitions outside conflict mode
-                                : "#ffffff"  // White border for disabled transitions
-                }
-                strokeWidth={
-                    (props.conflictResolutionMode && props.isConflicting) ? 4 : 2  // Much thicker border for conflict mode
-                }
-                className={props.isFired ? "transition-fired" : ""}
+                className={`transition-rectangle ${
+                    props.isSelected ? 'selected' : 
+                    (props.conflictResolutionMode && props.isConflicting) ? 'conflicting' : 
+                    (props.enabled && !props.conflictResolutionMode) ? 'enabled' : ''
+                } ${props.isFired ? 'transition-fired' : ''}`}
             />
 
             {/* Optional label - Only show when not editing */}
@@ -385,11 +351,7 @@ export const Transition = (props: TransitionProps) => {
                 <text
                     x="0"
                     y="0"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#fff"
-                    fontSize="20"
-                    fontWeight="bold"
+                    className="transition-label"
                 >
                     {props.name}
                 </text>
@@ -407,17 +369,7 @@ export const Transition = (props: TransitionProps) => {
                         type="text"
                         value={tempName}
                         onChange={handleNameChange}
-                        className="name-input"
-                        style={{
-                            width: '90%',
-                            textAlign: 'center',
-                            backgroundColor: '#333',
-                            color: 'white',
-                            border: '1px solid #555',
-                            borderRadius: '3px',
-                            fontSize: '16px',
-                            padding: '4px'
-                        }}
+                        className="transition-name-input"
                         autoFocus
                         onBlur={finishNameEdit}
                         onKeyDown={handleNameKeyDown}
@@ -433,42 +385,31 @@ export const Transition = (props: TransitionProps) => {
                         y={-props.height / 2}
                         width={props.width}
                         height={props.height}
-                        fill="none"
-                        stroke="#007bff"
-                        strokeDasharray="8"
-                        strokeWidth="2"
+                        className="transition-bounding-box"
                     />
                     {/* Only corner handles => always scale with aspect ratio */}
                     <circle
                         cx={-props.width / 2}
                         cy={-props.height / 2}
-                        r={8}
-                        fill="#007bff"
-                        style={{ cursor: 'nwse-resize' }}
+                        className="transition-resize-handle top-left"
                         onMouseDown={(e) => handleResizeStart('top-left', e)}
                     />
                     <circle
                         cx={props.width / 2}
                         cy={-props.height / 2}
-                        r={8}
-                        fill="#007bff"
-                        style={{ cursor: 'nesw-resize' }}
+                        className="transition-resize-handle top-right"
                         onMouseDown={(e) => handleResizeStart('top-right', e)}
                     />
                     <circle
                         cx={-props.width / 2}
                         cy={props.height / 2}
-                        r={8}
-                        fill="#007bff"
-                        style={{ cursor: 'nesw-resize' }}
+                        className="transition-resize-handle bottom-left"
                         onMouseDown={(e) => handleResizeStart('bottom-left', e)}
                     />
                     <circle
                         cx={props.width / 2}
                         cy={props.height / 2}
-                        r={8}
-                        fill="#007bff"
-                        style={{ cursor: 'nwse-resize' }}
+                        className="transition-resize-handle bottom-right"
                         onMouseDown={(e) => handleResizeStart('bottom-right', e)}
                     />
                 </>

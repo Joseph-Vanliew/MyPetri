@@ -1,6 +1,7 @@
 // src/components/elements/Place.tsx
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import type {UIArc, UIPlace} from '../../types';
+import '../styles/Place.css';
 
 interface PlaceProps extends UIPlace {
     isSelected: boolean;
@@ -305,30 +306,21 @@ export const Place = (props : PlaceProps) => {
             {props.arcMode && isHovered && (
                 <circle
                     r={props.radius + 6}
-                    fill="none"
-                    stroke="rgba(0, 255, 0, 0.5)"
-                    strokeWidth="6"
-                    style={{cursor: 'pointer'}}
+                    className="place-arc-highlight"
                 />
             )}
 
             {/* Original Circle */}
             <circle
                 r={props.radius}
-                fill="#0f0f0f"
-                stroke="#ffffff"
-                strokeWidth="2"
+                className="place-circle"
             />
 
             {/* Token Count Display */}
             <text 
                 x="0" 
                 y="10"
-                textAnchor="middle" 
-                className="token-count" 
-                fill="white"
-                fontSize="24"
-                fontWeight="bold"
+                className="place-token-count"
             >
                 {tokenCount}
             </text>
@@ -350,17 +342,12 @@ export const Place = (props : PlaceProps) => {
                             type="number"
                             value={tempTokenCount}
                             onChange={handleInputChange}
-                            className="token-input"
+                            className="place-token-input"
                             min="0"
                             onFocus={handleFocus}
                             onBlur={handleBlur}
                             onKeyDown={handleKeyDown}
                             onClick={(e) => e.stopPropagation()}
-                            style={{
-                                width: '80%',
-                                fontSize: '20px',
-                                padding: '2px'
-                            }}
                         />
                     </div>
                 </foreignObject>
@@ -371,11 +358,7 @@ export const Place = (props : PlaceProps) => {
                 <text 
                     x={props.radius + 10}
                     y={-props.radius + 10}
-                    textAnchor="start" 
-                    dominantBaseline="hanging" 
-                    className="token-count"
-                    fill="white"
-                    fontSize="18"
+                    className="place-label"
                 >
                     {props.name}
                 </text>
@@ -393,17 +376,7 @@ export const Place = (props : PlaceProps) => {
                         type="text"
                         value={tempName}
                         onChange={handleNameChange}
-                        className="name-input"
-                        style={{
-                            width: '80%',
-                            textAlign: 'left',
-                            backgroundColor: '#333',
-                            color: 'white',
-                            border: '1px solid #555',
-                            borderRadius: '3px',
-                            fontSize: '16px',
-                            padding: '4px'
-                        }}
+                        className="place-name-input"
                         autoFocus
                         onBlur={finishNameEdit}
                         onKeyDown={handleNameKeyDown}
@@ -420,19 +393,14 @@ export const Place = (props : PlaceProps) => {
                         y={-props.radius}
                         width={2 * props.radius}
                         height={2 * props.radius}
-                        fill="none"
-                        stroke="#007bff"
-                        strokeDasharray="8"
-                        strokeWidth="2"
+                        className="place-bounding-box"
                     />
 
                     {/* Corner Resize handles */}
                     <circle
                         cx={-props.radius}
                         cy={-props.radius}
-                        r={8}
-                        fill="#007bff"
-                        style={{cursor: 'nwse-resize'}}
+                        className="place-resize-handle top-left"
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('top-left');
@@ -441,9 +409,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={props.radius}
                         cy={-props.radius}
-                        r={8}
-                        fill="#007bff"
-                        style={{cursor: 'nesw-resize'}}
+                        className="place-resize-handle top-right"
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('top-right');
@@ -452,9 +418,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={-props.radius}
                         cy={props.radius}
-                        r={8}
-                        fill="#007bff"
-                        style={{cursor: 'nesw-resize'}}
+                        className="place-resize-handle bottom-left"
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('bottom-left');
@@ -463,9 +427,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={props.radius}
                         cy={props.radius}
-                        r={8}
-                        fill="#007bff"
-                        style={{cursor: 'nwse-resize'}}
+                        className="place-resize-handle bottom-right"
                         onMouseDown={(e) => {
                             e.stopPropagation();
                             setActiveHandle('bottom-right');

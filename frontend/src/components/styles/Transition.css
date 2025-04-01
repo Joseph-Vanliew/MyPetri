@@ -1,0 +1,92 @@
+/* Transition component styles */
+.petri-element.transition {
+  cursor: move;
+}
+
+.transition-rectangle {
+  rx: 8;
+  fill: #0f0f0f;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.transition-rectangle.selected {
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.transition-rectangle.enabled {
+  stroke: #4CAF50;
+  stroke-width: 2;
+}
+
+.transition-rectangle.conflicting {
+  stroke: #ff3333;
+  stroke-width: 4;
+}
+
+.transition-fired {
+  animation: flash-green 0.8s ease;
+}
+
+.transition-label {
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: #fff;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.transition-name-input {
+  width: 90%;
+  text-align: center;
+  background-color: transparent;
+  color: white;
+  border: none;
+  font-size: 16px;
+  padding: 4px;
+  outline: none;
+}
+
+.transition-bounding-box {
+  fill: none;
+  stroke: #007bff;
+  stroke-dasharray: 8;
+  stroke-width: 2;
+}
+
+.transition-resize-handle {
+  fill: #007bff;
+  r: 8;
+}
+
+.transition-resize-handle.top-left {
+  cursor: nwse-resize;
+}
+
+.transition-resize-handle.top-right {
+  cursor: nesw-resize;
+}
+
+.transition-resize-handle.bottom-left {
+  cursor: nesw-resize;
+}
+
+.transition-resize-handle.bottom-right {
+  cursor: nwse-resize;
+}
+
+.transition-arc-highlight {
+  fill: none;
+  stroke: rgba(0, 255, 0, 0.5);
+  stroke-width: 6;
+  cursor: pointer;
+}
+
+@keyframes flash-green {
+  0% { fill: #0f0f0f; }
+  25% { fill: #1a472a; }
+  50% { fill: #2e8b57; }
+  75% { fill: #1a472a; }
+  100% { fill: #0f0f0f; }
+} 

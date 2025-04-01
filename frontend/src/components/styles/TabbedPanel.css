@@ -1,0 +1,90 @@
+/* TabbedPanel container and toggle button */
+.tabbed-panel-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+}
+
+/* TabbedPanel styles */
+.tabbed-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: none;
+  background-color: #242424;
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.tab-header {
+  display: flex;
+  border-bottom: 1px solid #4a4a4a;
+  background-color: #252525;
+  height: 36px;
+  flex-shrink: 0;
+  width: 100%;
+  justify-content: flex-start;
+  padding-left: 0;
+}
+
+.tab-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  height: calc(100% - 36px);
+  display: flex;
+  flex-direction: column;
+  background-color: #242424;
+  width: 100%;
+}
+
+/* Tab button styles */
+.tab-button {
+  padding: 0 20px;
+  height: 36px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: normal;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  border-radius: 0;
+  position: relative;
+}
+
+.tab-button:first-child {
+  border-top-left-radius: 0;
+}
+
+.tab-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.tab-button:focus,
+.tab-button:focus-visible {
+  outline: none;
+}
+
+.tab-button.active {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.87);
+  font-weight: bold;
+}
+
+.tab-button:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background-color: #4a4a4a;
+} 

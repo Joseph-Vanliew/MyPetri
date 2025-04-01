@@ -48,7 +48,7 @@ export const Canvas = (props: CanvasProps) => {
     
     // Use custom hooks for zoom/pan and mouse tracking
     const zoomAndPan = useZoomAndPan(svgRef, {
-        initialViewBox: { x: -150, y: -150, w: 1100, h: 900 }
+        initialViewBox: { x: -500, y: -500, w: 1000, h: 1000 }
     });
     
     const mouseTracking = useMouseTracking(svgRef, {
@@ -154,7 +154,14 @@ export const Canvas = (props: CanvasProps) => {
     }, [props.onSelectTool, props.onCanvasClick]);
     
     return (
-        <div className="canvas-container" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
+        <div className="canvas-container" style={{ 
+            width: '100%', 
+            height: '100%', 
+            overflow: 'hidden',
+            margin: 0,
+            padding: 0,
+            display: 'flex'
+        }}>
             <svg
                 ref={svgRef}
                 className="petri-canvas"
@@ -173,10 +180,22 @@ export const Canvas = (props: CanvasProps) => {
                 onMouseUp={zoomAndPan.handleMouseUp}
                 onMouseLeave={zoomAndPan.handleMouseLeave}
                 style={{ 
-                    backgroundColor: 'rgb(19,19,19)',
-                    display: 'block'
+                    backgroundColor: 'transparent',
+                    display: 'block',
+                    width: '100%',
+                    height: '100%'
                 }}
             >
+                {/* Canvas Background */}
+                <rect
+                    x={zoomAndPan.viewBox.x - 2000}
+                    y={zoomAndPan.viewBox.y - 2000}
+                    width={zoomAndPan.viewBox.w + 4000}
+                    height={zoomAndPan.viewBox.h + 4000}
+                    fill="#1A1A1A"
+                    pointerEvents="none"
+                />
+                
                 {/* Grid Layer */}
                 <Grid viewBox={zoomAndPan.viewBox} />
 

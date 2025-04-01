@@ -2,11 +2,11 @@
 import {useState, useCallback, useEffect, useRef} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
-import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE} from './types';
-import {JSONViewer} from "./components/JSONViewer.tsx";
+import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult} from './types';
 import { MenuBar } from './components/MenuBar';
 import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
 import { API_ENDPOINTS } from './utils/api';
+import { TabbedPanel } from './components/TabbedPanel';
 
 export default function App() {
     // ===== STATE MANAGEMENT =====
@@ -732,6 +732,12 @@ export default function App() {
         }
     };
 
+    // Add handler for validation results
+    const handleValidationResult = (result: ValidationResult) => {
+        console.log('Validation result:', result);
+        // You can add logic here to display validation results or update UI based on results
+    };
+
     // ===== RENDER =====
     return (
         <div className="app" style={{ 
@@ -767,7 +773,7 @@ export default function App() {
                 {/* Left sidebar for tools */}
                 <div style={{ 
                     width: '200px', 
-                    borderRight: '1px solid #2a2a2a', // Lighter grey border
+                    borderRight: '1px solid #4a4a4a', // Lighter grey border
                     padding: '10px',
                     flexShrink: 0, // Prevent sidebar from shrinking
                     display: 'flex',
@@ -797,7 +803,7 @@ export default function App() {
                         flexDirection: 'column', 
                         gap: '10px',
                         padding: '10px',
-                        borderTop: '1px solid #2a2a2a',
+                        borderTop: '1px solid #4a4a4a',
                         overflow: 'hidden' // Prevent scrolling in controls
                     }}>
                         {/* Deterministic Mode checkbox with hover effect */}
@@ -901,7 +907,7 @@ export default function App() {
                     {/* Reset button at the bottom of sidebar */}
                     <div style={{ 
                         marginTop: '10px', 
-                        borderTop: '1px solid #2a2a2a',
+                        borderTop: '1px solid #4a4a4a',
                         paddingTop: '10px'
                     }}>
                         <button 
@@ -971,7 +977,7 @@ export default function App() {
                     {/* Space for future page navigation */}
                     <div style={{ 
                         height: '40px',
-                        borderTop: '1px solid #2a2a2a',
+                        borderTop: '1px solid #4a4a4a',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -988,19 +994,20 @@ export default function App() {
                 {/* Right sidebar for JSON viewer */}
                 <div style={{ 
                     width: '390px', 
-                    borderLeft: '1px solid #2a2a2a',
+                    borderLeft: '1px solid #4a4a4a',
                     overflow: 'auto',
                     flexShrink: 0, // Prevent shrinking
                     marginRight: '2px' // Add a small margin to ensure scrollbar is visible
                 }}>
-                    <JSONViewer 
-                        data={petriNetDTO} 
-                        width={390} 
-                        height="100%" 
-                        selectedElements={selectedElements} 
+                    <TabbedPanel
+                        data={petriNetDTO}
+                        width={390}
+                        height="100%"
+                        selectedElements={selectedElements}
                         autoScrollEnabled={autoScrollEnabled}
                         onAutoScrollToggle={setAutoScrollEnabled}
                         currentMode={currentMode}
+                        onValidationResult={handleValidationResult}
                     />
                 </div>
             </div>

@@ -100,10 +100,10 @@ cleanup() {
     info "Services stopped successfully"
 }
 
-# Register cleanup for specific signals
+# leanup for specific signals
 trap 'cleanup; exit 0' INT TERM
 
-# Register a simplified cleanup for EXIT to avoid duplicate messages
+# A simplified cleanup for EXIT to avoid duplicate messages
 trap 'exit 0' EXIT
 
 # Check for port conflicts

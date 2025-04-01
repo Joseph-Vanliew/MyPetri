@@ -21,4 +21,7 @@ export const API_ENDPOINTS = {
           RESOLVE: window.location.hostname === 'localhost' 
             ? 'http://localhost:8080/api/process/resolve' 
             : '/api/process/resolve',
+          VALIDATE: window.location.hostname === 'localhost' 
+            ? 'http://localhost:8080/api/validate'
+            : '/api/validate',
         };

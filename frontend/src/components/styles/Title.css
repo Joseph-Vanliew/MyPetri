@@ -1,0 +1,95 @@
+/* Title component styles */
+.title-container {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #3e3e3e;
+  display: flex;
+  align-items: center;
+  height: 60px;
+  min-height: 60px;
+  position: relative;
+}
+
+.title-content {
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.87);
+  width: auto;
+  max-width: 80%;
+  background: transparent;
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.title-content:hover,
+.title-content.editing {
+  background-color: #333;
+}
+
+.title-content.editing {
+  cursor: text;
+}
+
+.title-text {
+  margin: 0;
+  padding: 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title-input {
+  font-size: 1.3rem;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.87);
+  height: 40px;
+  box-sizing: border-box;
+  outline: none;
+  min-width: 100px;
+}
+
+.title-text span {
+  margin-left: 10px;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  vertical-align: middle;
+}
+
+.title-notification {
+  position: absolute;
+  top: 60px;
+  left: 10px;
+  color: #ff4d4d;
+  font-weight: 400;
+  font-size: 0.8rem;
+  animation: fadeIn 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  background-color: rgba(40, 40, 40, 0.9);
+  padding: 3px 8px;
+  border-radius: 3px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  line-height: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+} 

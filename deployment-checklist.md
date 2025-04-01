@@ -27,11 +27,10 @@ export PROJECT_ID=$(gcloud config get-value project)
 export REGION=us-central1
 export REPO_NAME=pats-repo
 
-gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v7
+gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v11
 
-# Deploy we are on v6 at the moment so a new version would be v6
 gcloud run deploy pats-app \
-  --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v7 \
+  --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v11 \
   --platform managed \
   --region ${REGION} \
   --allow-unauthenticated

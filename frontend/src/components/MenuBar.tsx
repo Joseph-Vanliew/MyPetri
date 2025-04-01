@@ -112,7 +112,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport, highli
       alignItems: 'center', 
       padding: '6px 10px', 
       backgroundColor: '#252525', 
-      borderBottom: '1px solid #333',
+      borderBottom: '1px solid #4a4a4a',
       height: '36px'
     }}>
       <FileMenu 

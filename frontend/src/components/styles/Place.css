@@ -1,0 +1,76 @@
+/* Place component styles */
+.petri-element.place {
+  cursor: move;
+}
+
+.place-circle {
+  fill: #0f0f0f;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.place-token-count {
+  text-anchor: middle;
+  fill: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.place-label {
+  text-anchor: start;
+  dominant-baseline: hanging;
+  fill: white;
+  font-size: 18px;
+}
+
+.place-token-input {
+  width: 80%;
+  font-size: 20px;
+  padding: 2px;
+}
+
+.place-name-input {
+  width: 80%;
+  text-align: left;
+  background-color: transparent;
+  color: white;
+  border: none;
+  font-size: 16px;
+  padding: 4px;
+  outline: none;
+}
+
+.place-bounding-box {
+  fill: none;
+  stroke: #007bff;
+  stroke-dasharray: 8;
+  stroke-width: 2;
+}
+
+.place-resize-handle {
+  fill: #007bff;
+  r: 8;
+}
+
+.place-resize-handle.top-left {
+  cursor: nwse-resize;
+}
+
+.place-resize-handle.top-right {
+  cursor: nesw-resize;
+}
+
+.place-resize-handle.bottom-left {
+  cursor: nesw-resize;
+}
+
+.place-resize-handle.bottom-right {
+  cursor: nwse-resize;
+}
+
+.place-arc-highlight {
+  fill: none;
+  stroke: rgba(0, 255, 0, 0.5);
+  stroke-width: 6;
+  cursor: pointer;
+} 

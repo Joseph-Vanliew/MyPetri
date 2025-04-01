@@ -29,8 +29,7 @@ export const Toolbar = ({
             flexDirection: 'column', 
             padding: '10px', 
             backgroundColor: '#1a1a1a', 
-            borderBottom: '1px solid #333',
-            gap: '15px',
+            gap: '0px',
             overflow: 'hidden'
         }}>
             <div className="elements-label" style={{ marginBottom: '5px', fontWeight: 'bold' }}>
@@ -79,11 +78,14 @@ export const Toolbar = ({
                     display: 'flex',
                     alignItems: 'center',
                     padding: '8px',
-                    borderRadius: '4px',
+                    borderRadius: '4px 4px 0 0',
+                    marginBottom: '-1px',
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '#333' : 'transparent',
                     border: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
-                    transition: 'background-color 0.2s ease'
+                    borderBottom: 'none',
+                    transition: 'background-color 0.2s ease',
+                    zIndex: selectedTool === 'PLACE' || isDragging === 'PLACE' ? 1 : 'auto'
                 }}
                 onMouseOver={(e) => {
                     if (selectedTool !== 'PLACE' && isDragging !== 'PLACE') {
@@ -159,11 +161,12 @@ export const Toolbar = ({
                     display: 'flex',
                     alignItems: 'center',
                     padding: '8px',
-                    borderRadius: '4px',
+                    borderRadius: '0 0 4px 4px',
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? '#333' : 'transparent',
                     border: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? '1px solid #555' : '1px solid transparent',
-                    transition: 'background-color 0.2s ease'
+                    transition: 'background-color 0.2s ease',
+                    zIndex: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? 1 : 'auto'
                 }}
                 onMouseOver={(e) => {
                     if (selectedTool !== 'TRANSITION' && isDragging !== 'TRANSITION') {
@@ -208,7 +211,8 @@ export const Toolbar = ({
                 borderRadius: '4px',
                 backgroundColor: selectedTool === 'ARC' ? '#333' : 'transparent',
                 border: selectedTool === 'ARC' ? '1px solid #555' : '1px solid transparent',
-                transition: 'background-color 0.2s ease'
+                transition: 'background-color 0.2s ease',
+                marginTop: '15px'
             }}>
                 {/* Arcs label */}
                 <div style={{ fontWeight: 'bold', marginBottom: '2px', fontSize: '14px' }}>

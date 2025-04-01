@@ -1,5 +1,6 @@
 import { PetriNetDTO } from '../types';
 import React, { useRef } from 'react';
+import './styles/JSONViewer.css';
 
 interface JSONViewerProps {
     data: PetriNetDTO;
@@ -13,7 +14,6 @@ interface JSONViewerProps {
 
 // Function to format JSON and highlight selected elements
 const formatJSON = (jsonData: object, selectedElements: string[] = []) => {
-    // Convert the object to a formatted string
     let jsonString = JSON.stringify(jsonData, (_, value) => {
         // Rounding numeric values to integers for better readability
         if (typeof value === 'number') {
@@ -79,7 +79,7 @@ const formatJSON = (jsonData: object, selectedElements: string[] = []) => {
         // Wrap each line that needs highlighting in a span
         for (let i = 0; i < lines.length; i++) {
             if (highlightedLines.includes(i)) {
-                lines[i] = `<span style="background-color: #c8f7c8; display: inline-block; width: 100%;">${lines[i]}</span>`;
+                lines[i] = `<span class="json-highlight">${lines[i]}</span>`;
             }
         }
         
@@ -132,7 +132,7 @@ export function JSONViewer({
             if (!containerRef.current) return;
             
             // Find all highlighted spans
-            const highlightedElements = containerRef.current.querySelectorAll('span[style*="background-color: #c8f7c8"]');
+            const highlightedElements = containerRef.current.querySelectorAll('.json-highlight');
             let foundElement = false;
             
             // find and scroll to the specific element
@@ -157,112 +157,50 @@ export function JSONViewer({
         });
     }, [selectedElements, data, autoScrollEnabled, currentMode]);
 
-    // custom scrollbar
-    React.useEffect(() => {
-        // styling element
-        const style = document.createElement('style');
-        style.innerHTML = `
-            .json-viewer-container::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
-            }
-            .json-viewer-container::-webkit-scrollbar-track {
-                background: transparent;
-            }
-            .json-viewer-container::-webkit-scrollbar-thumb {
-                background-color: #888;
-                border-radius: 4px;
-            }
-            .json-viewer-container::-webkit-scrollbar-thumb:hover {
-                background-color: #555;
-            }
-            /* For Firefox */
-            .json-viewer-container {
-                scrollbar-width: thin;
-                scrollbar-color: #888 transparent;
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Clean up
-        return () => {
-            document.head.removeChild(style);
-        };
-    }, []);
+    const wrapperStyle = {
+        width: typeof width === 'number' ? `${width}px` : width,
+        height: typeof height === 'number' ? `${height}px` : height,
+    };
 
     return (
-        <div style={{ position: 'relative', width: typeof width === 'number' ? `${width}px` : width }}>
-            {/* Scroll Buttons */}
-            <div style={{
-                position: 'absolute',
-                top: '-48px',
-                left: '0',
-                display: 'flex',
-                gap: '10px',
-                alignItems: 'center'
-            }}>
+        <div className="json-viewer-wrapper" style={wrapperStyle}>
+            {/* Auto-scroll toggle */}
+            <div className="json-auto-scroll">
+                <input 
+                    type="checkbox" 
+                    id="auto-scroll-toggle" 
+                    checked={autoScrollEnabled}
+                    onChange={(e) => onAutoScrollToggle && onAutoScrollToggle(e.target.checked)}
+                />
+                <label htmlFor="auto-scroll-toggle">
+                    Auto-scroll
+                </label>
             </div>
 
-            {/* Container for JSON Viewer */}
-            <div style={{ position: 'relative' }}>
-                {/* Auto-scroll toggle positioned absolutely relative to this container */}
-                <div style={{ 
-                    position: 'absolute',
-                    top: '10px',
-                    right: '18px',
-                    display: 'flex', 
-                    alignItems: 'center',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    zIndex: 10
-                }}>
-                    <input 
-                        type="checkbox" 
-                        id="auto-scroll-toggle" 
-                        checked={autoScrollEnabled}
-                        onChange={(e) => onAutoScrollToggle && onAutoScrollToggle(e.target.checked)}
-                        style={{ marginRight: '5px' }}
-                    />
-                    <label htmlFor="auto-scroll-toggle" style={{ color: '#333', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                        Auto-scroll
-                    </label>
-                </div>
+            {/* Scrollable JSON Viewer */}
+            <div
+                ref={containerRef}
+                className="json-viewer-container"
+            >
+                <h3 className="json-viewer-title">Petri Net:</h3>
 
-                {/* Scrollable JSON Viewer */}
-                <div
-                    ref={containerRef}
-                    className="json-viewer-container"
-                    style={{
-                        height: typeof height === 'number' ? `${height}px` : height,
-                        backgroundColor: '#f9f9f9',
-                        overflow: 'auto',
-                        padding: '0.5rem',
-                        borderRadius: '8px',
-                        border: '1px solid #ddd',
-                        position: 'relative',
-                        marginTop: '0px'
-                    }}
-                >
-                    <h3 style={{ margin: '0.5rem', color: '#000' }}>Petri Net:</h3>
+                <pre ref={placesRef} className="json-viewer-content">
+                    <span dangerouslySetInnerHTML={{ 
+                        __html: formatJSON({ places: data.places }, selectedElements) 
+                    }} />
+                </pre>
 
-                    <pre ref={placesRef} style={{ color: '#000', margin: '0.5rem', whiteSpace: 'pre-wrap' }}>
-                        <span dangerouslySetInnerHTML={{ 
-                            __html: formatJSON({ places: data.places }, selectedElements) 
-                        }} />
-                    </pre>
+                <pre ref={transitionsRef} className="json-viewer-content">
+                    <span dangerouslySetInnerHTML={{ 
+                        __html: formatJSON({ transitions: data.transitions }, selectedElements) 
+                    }} />
+                </pre>
 
-                    <pre ref={transitionsRef} style={{ color: '#000', margin: '0.5rem', whiteSpace: 'pre-wrap' }}>
-                        <span dangerouslySetInnerHTML={{ 
-                            __html: formatJSON({ transitions: data.transitions }, selectedElements) 
-                        }} />
-                    </pre>
-
-                    <pre ref={arcsRef} style={{ color: '#000', margin: '0.5rem', whiteSpace: 'pre-wrap' }}>
-                        <span dangerouslySetInnerHTML={{ 
-                            __html: formatJSON({ arcs: data.arcs }, selectedElements) 
-                        }} />
-                    </pre>
-                </div>
+                <pre ref={arcsRef} className="json-viewer-content">
+                    <span dangerouslySetInnerHTML={{ 
+                        __html: formatJSON({ arcs: data.arcs }, selectedElements) 
+                    }} />
+                </pre>
             </div>
         </div>
     );

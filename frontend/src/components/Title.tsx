@@ -90,7 +90,7 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
         <div className="title-container" style={{ 
             padding: '10px', 
             textAlign: 'left', 
-            borderBottom: '1px solid #2a2a2a',
+            borderBottom: '1px solid #4a4a4a',
             display: 'flex',
             alignItems: 'center',
             height: '60px',

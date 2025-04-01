@@ -1,0 +1,393 @@
+/* ValidatorTool styles */
+.validator-container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #242424;
+  border: none;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+}
+
+.validator-title {
+  margin: 0 0 16px 0;
+  color: rgba(255, 255, 255, 0.87);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.validator-section {
+  margin-bottom: 16px;
+  background: #1a1a1a;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.validator-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.validator-section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+.validator-empty-message {
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.validator-config-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px 8px;
+  background: #2a2a2a;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  border: 1px solid #4a4a4a;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.validator-select {
+  margin-right: 5px;
+  padding: 6px;
+  font-size: 13px;
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
+  flex: 0 0 170px;
+  border: 1px solid #5a5a5a;
+  border-radius: 4px;
+  background-color: #1a1a1a;
+  color: rgba(255, 255, 255, 0.87);
+  transition: background-color 0.1s;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  /* Center dropdown and improve positioning */
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px; /* Make room for the arrow */
+  position: relative;
+}
+
+.validator-select:hover,
+.validator-select:focus {
+  background-color: #2a2a2a;
+  outline: none;
+}
+
+.validator-input {
+  width: 45px;
+  min-width: 45px;
+  max-width: 45px;
+  flex: 0 0 45px;
+  padding: 6px;
+  margin: 0 0;
+  font-size: 13px;
+  border: 1px solid #5a5a5a;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #1a1a1a;
+  color: rgba(255, 255, 255, 0.87);
+  transition: background-color 0.1s;
+}
+
+/* Hide spinner for Chrome, Safari, Edge, Opera */
+.validator-input::-webkit-outer-spin-button,
+.validator-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.validator-input:hover,
+.validator-input:focus {
+  background-color: #2a2a2a;
+  outline: none;
+}
+
+.validator-button-add {
+  padding: 8px 12px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.validator-button-add.green {
+  background-color: #2c5282;
+}
+
+.validator-button-add.green:hover {
+  background-color: #3a69a4;
+}
+
+.validator-button-add.blue {
+  background-color: #2c5282;
+}
+
+.validator-button-add.blue:hover {
+  background-color: #3a69a4;
+}
+
+.validator-button-add:focus,
+.validator-button-add:focus-visible {
+  outline: none;
+}
+
+.validator-button-add:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.validator-button-remove {
+  padding: 6px 8px;
+  background-color: #822c2c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  min-width: 30px;
+  max-width: 30px;
+  width: 30px;
+  flex: 0 0 30px;
+  flex-shrink: 0;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.validator-button-remove:hover {
+  background-color: #a43a3a;
+}
+
+.validator-button-remove:focus,
+.validator-button-remove:focus-visible {
+  outline: none;
+}
+
+.validator-button-remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.validator-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.validator-button-run {
+  padding: 8px 12px;
+  background-color: #2c5282;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  flex-grow: 1;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  min-width: 120px;
+}
+
+.validator-button-run:hover {
+  background-color: #3a69a4;
+}
+
+.validator-button-run:focus,
+.validator-button-run:focus-visible {
+  outline: none;
+}
+
+.validator-button-run:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.validator-button-reset {
+  padding: 8px 12px;
+  background-color: #822c2c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  min-width: 100px;
+}
+
+.validator-button-reset:hover {
+  background-color: #a43a3a;
+}
+
+.validator-button-reset:focus,
+.validator-button-reset:focus-visible {
+  outline: none;
+}
+
+.validator-button-reset:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.validator-result {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.validator-result.success {
+  background: #1e3a1e;
+  border-left: 4px solid #6fdb73;
+}
+
+.validator-result.error {
+  background: #3a1e1e;
+}
+
+.validator-result-title {
+  margin: 0 0 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.validator-result-title.success {
+  color: #81c784;
+}
+
+.validator-result-title.error {
+  color: #e57373;
+}
+
+.validator-result-section-title {
+  margin: 10px 0 6px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.validator-result-list {
+  margin: 0 0 10px 0;
+  padding-left: 20px;
+}
+
+.validator-result-list-item.success {
+  color: #2e7d32;
+}
+
+.validator-result-list-item.error {
+  color: #c62828;
+}
+
+.validator-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  background: #1a1a1a;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.validator-tokens-control {
+  display: flex;
+  align-items: center;
+  margin-left: 5px;
+  margin-right: auto;
+}
+
+.validator-button-controls {
+  display: flex;
+  flex-direction: column;
+  margin-left: 4px;
+}
+
+.validator-button-increment,
+.validator-button-decrement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  max-width: 20px;
+  flex: 0 0 20px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: bold;
+  border: 1px solid #5a5a5a;
+  border-radius: 4px;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.87);
+  cursor: pointer;
+  transition: all 0.05s;
+}
+
+.validator-button-increment {
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: -1px;
+}
+
+.validator-button-decrement {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.validator-button-increment:hover,
+.validator-button-decrement:hover {
+  background-color: transparent;
+}
+
+.validator-button-increment:active,
+.validator-button-decrement:active {
+  color: #ffffff;
+  transform: scale(0.85);
+  outline: none;
+}
+
+.validator-button-increment:focus,
+.validator-button-decrement:focus {
+  outline: none;
+}
+
+.validator-button-increment:disabled,
+.validator-button-decrement:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+} 

@@ -14,7 +14,7 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
                         .allowedOrigins(
-                            "http://localhost:5173", 
+                            "http://localhost:5173",
                             "https://pats-app-652197520510.us-central1.run.app",
                             "https://mypetri.net"
                         )

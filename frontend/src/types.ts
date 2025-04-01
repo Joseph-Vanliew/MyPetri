@@ -76,3 +76,25 @@ export interface UITransition extends TransitionDTO {
 export interface UIArc extends ArcDTO {
 
 }
+
+// --------------------------
+// Validator Types
+// --------------------------
+export interface PlaceConfig {
+    placeId: string;
+    tokens: number;
+}
+
+export interface PetriNetValidationRequest {
+    petriNet: PetriNetDTO;
+    inputConfigs: PlaceConfig[];
+    expectedOutputs: PlaceConfig[];
+}
+
+export interface ValidationResult {
+    valid: boolean;
+    message: string;
+    conflictingTransitions?: string[];
+    finalState?: PetriNetDTO;
+    outputMatches?: Record<string, boolean>;
+}
