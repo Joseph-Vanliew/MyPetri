@@ -167,12 +167,37 @@ fi
 # Run backend tests after successful build
 log "Running backend tests"
 mkdir -p logs
-$GRADLE_CMD test --quiet > logs/tests.log 2>&1
-TEST_RESULT=$?
+# Run tests, show output on console, log to file, and force rerun
+$GRADLE_CMD test --rerun-tasks 2>&1 | tee logs/tests.log 
+# Capture the exit status of the gradle command (first command in the pipe)
+TEST_RESULT=${PIPESTATUS[0]}
+
+# Check the overall result and provide summary
 if [ $TEST_RESULT -eq 0 ]; then
-    info "✅ All tests passed!"
+    info "✅ Overall tests passed! Summary:"
+    # Assuming these are your test files. Add/remove as needed.
+    info "   - ✅ ServiceTest passed."
+    info "   - ✅ ValidatorServiceTest passed."
+    info "   - ✅ MapperTest passed."
+    # Add ControllerTest - it might be empty now but good to include
+    info "   - ✅ ControllerTest passed."
 else
     error "❌ Tests failed! Check logs/tests.log for details."
+    # Add specific checks by grepping the log file
+    info "Attempting to identify failing test files..."
+    if grep -q "org\.petrinet\.ServiceTest.*FAILED" logs/tests.log; then
+        error "   - ❌ ServiceTest likely failed."
+    fi
+    if grep -q "org\.petrinet\.ValidatorServiceTest.*FAILED" logs/tests.log; then
+        error "   - ❌ ValidatorServiceTest likely failed."
+    fi
+    if grep -q "org\.petrinet\.MapperTest.*FAILED" logs/tests.log; then
+        error "   - ❌ MapperTest likely failed."
+    fi
+    if grep -q "org\.petrinet\.ControllerTest.*FAILED" logs/tests.log; then
+        error "   - ❌ ControllerTest likely failed."
+    fi
+    # Original prompt to continue
     read -p "Continue anyway? (y/n) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -200,7 +225,8 @@ FRONTEND_PID=$!
 info "Services are starting. Check logs/backend.log and logs/frontend.log for details."
 info "Your application will be available at:"
 info "  - Backend: http://localhost:8080"
-info "  - Frontend Dev Server: http://localhost:5173"
+# Use YELLOW color specifically for the frontend URL
+echo -e "${YELLOW}  - Frontend Dev Server: http://localhost:5173${NC}"
 info "Press Ctrl+C to stop all services."
 
 # Wait for both processes

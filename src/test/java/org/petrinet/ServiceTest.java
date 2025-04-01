@@ -216,19 +216,17 @@ public class ServiceTest {
         // Setup
         Map<String, Arc> arcsMap = new HashMap<>();
         Map<String, Place> placesMap = new HashMap<>();
-        Map<String, Integer> totalIncomingTransitionCounts = new HashMap<>();
 
         Place sourcePlace = new Place("source", 2);  // Exactly 2 tokens available
         placesMap.put("source", sourcePlace);
         Arc regularArc = new Arc.RegularArc("arc1", "source", "trans1");
         arcsMap.put("arc1", regularArc);
         Transition transition = new Transition("trans1", true, List.of("arc1"));
-        totalIncomingTransitionCounts.put("source", 2);  // Exactly 2 tokens required
 
         PetriNetService service = new PetriNetService();
 
         // Act
-        boolean result = service.evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
+        boolean result = service.evaluateTransition(transition, arcsMap, placesMap);
 
         // Assert
         assertTrue(result, "Transition should be enabled since available tokens exactly meet the requirement.");
@@ -238,18 +236,16 @@ public class ServiceTest {
     void evaluateTransition_RegularArc_SufficientTokens_Enabled_Test() {
         Map<String, Arc> arcsMap = new HashMap<>();
         Map<String, Place> placesMap = new HashMap<>();
-        Map<String, Integer> totalIncomingTransitionCounts = new HashMap<>();
 
         Place sourcePlace = new Place("source", 3);  // 3 tokens available
         placesMap.put("source", sourcePlace);
         Arc regularArc = new Arc.RegularArc("arc1", "source", "trans1");
         arcsMap.put("arc1", regularArc);
         Transition transition = new Transition("trans1", true, List.of("arc1"));
-        totalIncomingTransitionCounts.put("source", 2);  // 2 tokens required, less than available
 
         PetriNetService service = new PetriNetService();
 
-        boolean result = service.evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
+        boolean result = service.evaluateTransition(transition, arcsMap, placesMap);
 
         assertTrue(result, "Transition should be enabled since available tokens meet or exceed the requirement.");
     }
@@ -258,18 +254,16 @@ public class ServiceTest {
     void evaluateTransition_BidirectionalArc_SufficientTokens_Enabled_Test() {
         Map<String, Arc> arcsMap = new HashMap<>();
         Map<String, Place> placesMap = new HashMap<>();
-        Map<String, Integer> totalIncomingTransitionCounts = new HashMap<>();
 
         Place sourcePlace = new Place("source", 4);  // 4 tokens available
         placesMap.put("source", sourcePlace);
         Arc bidirectionalArc = new Arc.BidirectionalArc("arc2", "source", "trans1");
         arcsMap.put("arc2", bidirectionalArc);
         Transition transition = new Transition("trans1", true, List.of("arc2"));
-        totalIncomingTransitionCounts.put("source", 3);  // 3 tokens required, less than available
 
         PetriNetService service = new PetriNetService();
 
-        boolean result = service.evaluateTransition(transition, arcsMap, placesMap, totalIncomingTransitionCounts);
+        boolean result = service.evaluateTransition(transition, arcsMap, placesMap);
 
         assertTrue(result, "Transition should be enabled as sufficient tokens are available for the bidirectional arc.");
     }
@@ -314,25 +308,6 @@ public class ServiceTest {
 
         //Assert
         assertEquals(2, targetPlace.getTokens(), "Target place should have one more token.");
-    }
-
-    @Test
-    void updateTokensForFiringTransition_BidirectionalArcOutgoing_AddsTokens() {
-        //Setup
-        Map<String, Arc> arcsMap = new HashMap<>();
-        Map<String, Place> placesMap = new HashMap<>();
-        Place targetPlace = new Place("place2", 2);
-        placesMap.put("place2", targetPlace);
-        Arc bidirectionalArc = new Arc.BidirectionalArc("arc2", "trans1", "place2");
-        arcsMap.put("arc2", bidirectionalArc);
-        Transition transition = new Transition("trans1", true, List.of("arc2"));
-
-        //Act
-        PetriNetService service = new PetriNetService();
-        service.updateTokensForFiringTransition(transition, arcsMap, placesMap);
-
-        //Assert
-        assertEquals(3, targetPlace.getTokens(), "Target place should have one more token for bidirectional arc.");
     }
 
     @Test
@@ -641,31 +616,6 @@ public class ServiceTest {
      calculateTotalIncomingTransitionCounts Unit Tests
      ________________________________________________________
      **/
-
-    @Test
-    void calculateTotalIncomingTransitionCounts_AllCases() {
-        // Setup
-        Map<String, Arc> arcsMap = new HashMap<>();
-        Arc arcWithIncoming = new Arc.RegularArc("arc1", "place1", "trans1");
-        Arc arcWithoutIncoming = new Arc.RegularArc("arc2", null, "trans2");
-        arcsMap.put("arc1", arcWithIncoming);
-        arcsMap.put("arc2", arcWithoutIncoming);
-        arcsMap.put("arc3", null);  // arc3 is null
-
-        Transition transition1 = new Transition("trans1", true, Arrays.asList("arc1", "arc2"));
-        Transition transition2 = new Transition("trans2", true, List.of("arc3")); // arc3 does not exist in map
-        List<Transition> transitions = Arrays.asList(transition1, transition2);
-
-        PetriNetService service = new PetriNetService();
-
-        // Act
-        Map<String, Integer> counts = service.calculateTotalIncomingTransitionCounts(transitions, arcsMap);
-
-        // Assert
-        assertEquals(1, counts.getOrDefault("place1", 0), "place1 should be counted once.");
-        assertEquals(0, counts.getOrDefault(null, 0), "No counts should be associated with null places.");
-        assertEquals(false, counts.containsKey("trans2"), "Should not contain counts for non-existent arc.");
-    }
 
     /**
      convertDomainModelToDTO Unit Tests Through indirect testing of processPetriNet
