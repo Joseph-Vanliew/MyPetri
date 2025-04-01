@@ -14,6 +14,11 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Service for processing UNBOUNDED Petri nets.
+ * This service evaluates which transitions are enabled based on the current token distribution.
+ * It also handles conflict resolution when multiple transitions are enabled in deterministic mode.
+ */
 @Service
 public class PetriNetService {
 
@@ -31,6 +36,7 @@ public class PetriNetService {
      *         indicating a conflict or the result of firing a single transition.
      */
     public PetriNetDTO processPetriNet(PetriNetDTO petriNetDTO) {
+       
         Map<String, Place> placesMap = PetriNetMapper.mapPlacesToMap(petriNetDTO.getPlaces());
         Map<String, Arc> arcsMap = PetriNetMapper.mapArcsToMap(petriNetDTO.getArcs());
         List<Transition> transitions = PetriNetMapper.dtoToTransitionList(petriNetDTO.getTransitions());
@@ -57,7 +63,8 @@ public class PetriNetService {
         // If in deterministic mode and multiple transitions are enabled, return early
         if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
             System.out.println("Deterministic mode: returning all enabled transitions for user selection");
-            return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap);
+            // Pass original DTO to preserve mode
+            return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
         }
         
         if (!enabledTransitions.isEmpty()) {
@@ -81,7 +88,7 @@ public class PetriNetService {
             updateTokensForFiringTransition(selectedTransition, arcsMap, placesMap);
         }
 
-        return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap);
+        return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
     }
 
     /**
@@ -97,29 +104,26 @@ public class PetriNetService {
      * @param placesMap A map of place IDs to {@link Place} domain models.
      * @return {@code true} if the transition is enabled (can fire), {@code false} otherwise.
      */
-    public boolean evaluateTransition(
-            Transition transition, Map<String, Arc> arcsMap,
-            Map<String, Place> placesMap) {
+    public boolean evaluateTransition(Transition transition, Map<String, Arc> arcsMap, Map<String, Place> placesMap) {
 
-        // Map to store the net required tokens for each input place (considering bidirectional flows later)
+        
         Map<String, Integer> requiredTokensPerPlace = new HashMap<>();
-        boolean hasAnyTokenRequirement = false; // Flag to track if any arc implies a token need
+        boolean hasAnyTokenRequirement = false;
 
         // Iterate through all arcs connected to this transition
         for (String arcId : transition.getArcIds()) {
             Arc arc = arcsMap.get(arcId);
-            if (arc == null) continue; // Skip if arc not found (shouldn't happen in consistent data)
+            if (arc == null) continue; 
 
             // --- Check Inhibitor Arcs ---
             // Inhibitor arcs *must* be Place -> Transition
             if (arc instanceof Arc.InhibitorArc && arc.getOutgoingId().equals(transition.getId())) {
                 Place sourcePlace = placesMap.get(arc.getIncomingId());
-                // If inhibitor source has tokens, transition is immediately disabled
+                
                 if (sourcePlace != null && sourcePlace.getTokens() > 0) {
                     transition.setEnabled(false);
                     return false;
                 }
-                // If inhibitor condition is met, it doesn't require tokens, so continue checking other arcs
             }
             // --- Check Bidirectional Arcs ---
             else if (arc instanceof Arc.BidirectionalArc) {
@@ -130,14 +134,12 @@ public class PetriNetService {
                 // Bidirectional requires at least one token in the connected place
                 if (connectedPlace == null || connectedPlace.getTokens() < 1) {
                      transition.setEnabled(false);
-                     return false; // Not enough tokens for bidirectional arc
+                     return false;
                 }
                 // For requirement check, it consumes 1 token if Place -> Transition
                  if (arc.getOutgoingId().equals(transition.getId())) {
                      requiredTokensPerPlace.merge(placeId, 1, Integer::sum);
                  }
-                 // Note: If Transition -> Place, it produces a token, but the place still needed >0 initially.
-                 // The check for >0 tokens handles the enablement. The consumption is handled by the Place->Transition case.
             }
             // --- Check Regular Arcs (Place -> Transition only) ---
             else if (arc instanceof Arc.RegularArc && arc.getOutgoingId().equals(transition.getId())) {
@@ -146,29 +148,22 @@ public class PetriNetService {
                 // Increment required token count for this place
                 requiredTokensPerPlace.merge(placeId, 1, Integer::sum);
             }
-            // --- Ignore Regular Arcs (Transition -> Place) for enablement check ---
-            // else if (arc instanceof Arc.RegularArc && arc.getIncomingId().equals(transition.getId())) {
-            //     // This arc produces tokens, doesn't affect enablement check itself
-            // }
         }
 
         // --- Final Check for Required Tokens ---
-        // If any arc implies a token requirement, check if all places have enough
         if (hasAnyTokenRequirement) {
              for (Map.Entry<String, Integer> entry : requiredTokensPerPlace.entrySet()) {
                  String placeId = entry.getKey();
                  int requiredTokens = entry.getValue();
                  
                  Place place = placesMap.get(placeId);
-                 // Check if place exists and has enough tokens for *consumption*
                  if (place == null || place.getTokens() < requiredTokens) {
                      transition.setEnabled(false);
-                     return false; // Not enough tokens available for consumption
+                     return false;
                  }
              }
         }
-        // If we passed all checks (inhibitors satisfied, bidirectional places have >0 tokens, regular places have >= required tokens)
-        // or if there were no token requirements at all (e.g., only satisfied inhibitors or no incoming arcs), the transition is enabled.
+        
         transition.setEnabled(true);
         return true;
     }
@@ -191,7 +186,7 @@ public class PetriNetService {
         // Iterate through all arcs connected to the firing transition
         for (String arcId : transition.getArcIds()) {
             Arc arc = arcsMap.get(arcId);
-            if (arc == null) continue; // Skip if arc data is missing
+            if (arc == null) continue; 
 
             if (arc instanceof Arc.RegularArc) {
                 // Handle regular consumption (Place -> Transition)
@@ -216,32 +211,29 @@ public class PetriNetService {
                 Place connectedPlace = placesMap.get(placeId);
 
                 if (connectedPlace != null) {
-                    // Consume one token (place must have >= 1 token if transition was enabled)
                     if (connectedPlace.getTokens() > 0) {
                          connectedPlace.removeTokens(); 
                     }
-                    // Produce one token back immediately
                      connectedPlace.addToken();
-                    // Net effect for this specific arc is zero change in the connected place's token count.
                 }
             }
-            // Inhibitor arcs do not cause token changes
         }
-        // The previous separate replenishment logic is no longer needed.
     }
 
     /**
      * Converts the internal domain models (Place, Transition, Arc maps/lists) back into a {@link PetriNetDTO}.
      * This is used to return the state of the Petri net after processing or conflict resolution.
      * Maps internal {@link Place}, {@link Transition}, and {@link Arc} representations to their respective DTOs.
+     * Also preserves the deterministicMode flag from the original request.
      *
      * @param placesMap A map of place IDs to {@link Place} domain models.
      * @param transitions A list of {@link Transition} domain models (potentially with updated 'enabled' status).
      * @param arcsMap A map of arc IDs to {@link Arc} domain models.
+     * @param originalDTO The original DTO passed to the service method, used to retrieve the deterministic mode flag.
      * @return A new {@link PetriNetDTO} representing the current state derived from the domain models.
      */
     private PetriNetDTO convertDomainModelsToDTO(Map<String, Place> placesMap, List<Transition> transitions,
-                                                 Map<String, Arc> arcsMap) {
+                                                 Map<String, Arc> arcsMap, PetriNetDTO originalDTO) {
         List<PlaceDTO> placeDTOs = placesMap.values().stream()
                 .map(place -> new PlaceDTO(
                         place.getId(),
@@ -267,7 +259,12 @@ public class PetriNetService {
                 .collect(Collectors.toList());
 
 
-        return new PetriNetDTO(placeDTOs, transitionDTOs, arcDTOs);
+        PetriNetDTO newDTO = new PetriNetDTO(placeDTOs, transitionDTOs, arcDTOs);
+        
+        if (originalDTO != null) {
+             newDTO.setDeterministicMode(originalDTO.getDeterministicMode());
+        }
+        return newDTO;
     }
 
     /**
@@ -296,14 +293,10 @@ public class PetriNetService {
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Selected transition not found: " + selectedTransitionId));
         
-        // First, disable all transitions
         transitions.forEach(t -> t.setEnabled(false));
         
         // Update tokens for the selected transition
         updateTokensForFiringTransition(selectedTransition, arcsMap, placesMap);
-        
-        // After firing, re-evaluate which transitions are enabled
-        // Map<String, Integer> totalIncomingTransitionCounts = calculateTotalIncomingTransitionCounts(transitions, arcsMap);
         
         // Evaluate all transitions to find enabled ones
         List<Transition> enabledTransitions = new ArrayList<>();
@@ -314,8 +307,6 @@ public class PetriNetService {
             }
         });
         
-        // If there are multiple enabled transitions and in deterministic mode, 
-        // return them all as enabled for user selection
         Boolean isDeterministicMode = petriNetDTO.getDeterministicMode();
         if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
             System.out.println("Multiple transitions enabled after firing, user will select again");
@@ -324,8 +315,7 @@ public class PetriNetService {
                 t.setEnabled(true);
             }
         }
-        // If there's only one enabled transition, or we're in non-deterministic mode,
-        // select one randomly
+        
         else if (!enabledTransitions.isEmpty()) {
             Transition nextTransition;
             
@@ -342,6 +332,7 @@ public class PetriNetService {
             System.out.println("Selected transition for next state: " + nextTransition.getId());
         }
         
-        return convertDomainModelsToDTO(placesMap, transitions, arcsMap);
+        // Pass original DTO to preserve mode
+        return convertDomainModelsToDTO(placesMap, transitions, arcsMap, petriNetDTO);
     }
 }

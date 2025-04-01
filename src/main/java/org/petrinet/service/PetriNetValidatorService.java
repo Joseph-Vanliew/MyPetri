@@ -48,6 +48,19 @@ public class PetriNetValidatorService {
         // Apply initial tokens based on input configurations
         applyInputTokens(petriNetCopy, requestDTO.getInputConfigs());
         
+        // Check if any initial tokens were actually set
+        long totalInitialTokens = petriNetCopy.getPlaces().stream()
+                                        .mapToLong(PlaceDTO::getTokens)
+                                        .sum();
+        if (totalInitialTokens == 0) {
+            ValidationResultDTO result = new ValidationResultDTO();
+            result.setValid(false);
+            result.setMessage("Validation failed: No initial tokens provided in the input configuration. The simulation requires at least one token to start.");
+            // Set the initial (all zero) state as the final state for context
+            result.setFinalState(petriNetCopy); 
+            return result;
+        }
+
         // Run simulation until no more transitions can fire or a conflict is detected
         return runSimulationForValidation(petriNetCopy, requestDTO.getExpectedOutputs());
     }
@@ -99,8 +112,10 @@ public class PetriNetValidatorService {
                 return result;
             }
 
-            // Process one step using existing mechanism
+            // Add logging inside the validator loop
+            System.out.println("Validator: Calling processPetriNet. Deterministic mode: " + currentState.getDeterministicMode());
             PetriNetDTO processedState = petriNetService.processPetriNet(currentState);
+            System.out.println("Validator: Received processedState.");
             
             // Check if there are enabled transitions (conflict in deterministic mode)
             List<TransitionDTO> enabledTransitions = processedState.getTransitions().stream()
