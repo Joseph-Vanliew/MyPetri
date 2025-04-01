@@ -17,6 +17,19 @@ import java.util.stream.Collectors;
 @Service
 public class PetriNetService {
 
+    /**
+     * Processes a single step in the Petri net simulation.
+     * It evaluates which transitions are enabled based on the current token distribution.
+     * If running in deterministic mode and multiple transitions are enabled, it returns the state
+     * with all conflicting transitions marked as enabled, requiring user intervention via `resolveConflict`.
+     * If only one transition is enabled, or if in non-deterministic mode, it selects one transition
+     * (the only one or randomly), fires it (updates token counts), and returns the resulting state.
+     * If no transitions are enabled, it returns the current state unchanged.
+     *
+     * @param petriNetDTO The current state of the Petri net, including places, transitions, arcs, and mode.
+     * @return A {@link PetriNetDTO} representing the state after one simulation step, potentially
+     *         indicating a conflict or the result of firing a single transition.
+     */
     public PetriNetDTO processPetriNet(PetriNetDTO petriNetDTO) {
         Map<String, Place> placesMap = PetriNetMapper.mapPlacesToMap(petriNetDTO.getPlaces());
         Map<String, Arc> arcsMap = PetriNetMapper.mapArcsToMap(petriNetDTO.getArcs());
@@ -74,6 +87,16 @@ public class PetriNetService {
         return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap);
     }
 
+    /**
+     * Calculates, for each place, how many transitions have an incoming arc originating from that place.
+     * Note: This calculation's result is not currently used in the `evaluateTransition` or
+     * `updateTokensForFiringTransition` methods. Its purpose within the current workflow may require review.
+     *
+     * @param transitions The list of {@link Transition} domain models.
+     * @param arcsMap A map of arc IDs to {@link Arc} domain models.
+     * @return A map where keys are place IDs and values represent the count of transitions
+     *         that have an incoming arc originating from that place.
+     */
     public Map<String, Integer> calculateTotalIncomingTransitionCounts(List<Transition> transitions,
                                                                        Map<String, Arc> arcsMap) {
         Map<String, Integer> totalIncomingTransitionCounts = new HashMap<>();
@@ -89,6 +112,20 @@ public class PetriNetService {
         return totalIncomingTransitionCounts;
     }
 
+    /**
+     * Evaluates whether a single transition can fire based on the current token distribution and arc types.
+     * Checks inhibitor arcs first (requires 0 tokens in connected place).
+     * Then checks regular/bidirectional arcs (requires sufficient tokens in connected places).
+     * A transition with no incoming regular/bidirectional arcs (only inhibitor or none) is considered enabled
+     * if inhibitor conditions are met.
+     * Note: The `totalIncomingTransitionCounts` parameter is not used in the current implementation.
+     *
+     * @param transition The {@link Transition} to evaluate.
+     * @param arcsMap A map of arc IDs to {@link Arc} domain models.
+     * @param placesMap A map of place IDs to {@link Place} domain models.
+     * @param totalIncomingTransitionCounts (Currently unused) A map of place IDs to their total outgoing arc counts to transitions.
+     * @return {@code true} if the transition is enabled (can fire), {@code false} otherwise.
+     */
     public boolean evaluateTransition(
             Transition transition, Map<String, Arc> arcsMap,
             Map<String, Place> placesMap, Map<String, Integer> totalIncomingTransitionCounts) {
@@ -141,6 +178,17 @@ public class PetriNetService {
         return true;
     }
 
+    /**
+     * Updates the token counts in places connected to a firing transition.
+     * Consumes tokens from input places connected by regular or bidirectional arcs.
+     * Produces tokens in output places connected by regular or bidirectional arcs.
+     * Handles the specific token replenishment logic for bidirectional arcs (consume, produce, then replenish source).
+     * Inhibitor arcs do not affect token counts.
+     *
+     * @param transition The {@link Transition} that is firing.
+     * @param arcsMap A map of arc IDs to {@link Arc} domain models.
+     * @param placesMap A map of place IDs to {@link Place} domain models. This map is modified directly.
+     */
     public void updateTokensForFiringTransition(Transition transition, Map<String, Arc> arcsMap,
                                                 Map<String, Place> placesMap) {
         // collect all places that need to be replenished due to bidirectional arcs
@@ -189,6 +237,16 @@ public class PetriNetService {
         }
     }
 
+    /**
+     * Converts the internal domain models (Place, Transition, Arc maps/lists) back into a {@link PetriNetDTO}.
+     * This is used to return the state of the Petri net after processing or conflict resolution.
+     * Maps internal {@link Place}, {@link Transition}, and {@link Arc} representations to their respective DTOs.
+     *
+     * @param placesMap A map of place IDs to {@link Place} domain models.
+     * @param transitions A list of {@link Transition} domain models (potentially with updated 'enabled' status).
+     * @param arcsMap A map of arc IDs to {@link Arc} domain models.
+     * @return A new {@link PetriNetDTO} representing the current state derived from the domain models.
+     */
     private PetriNetDTO convertDomainModelsToDTO(Map<String, Place> placesMap, List<Transition> transitions,
                                                  Map<String, Arc> arcsMap) {
         List<PlaceDTO> placeDTOs = placesMap.values().stream()
@@ -219,6 +277,21 @@ public class PetriNetService {
         return new PetriNetDTO(placeDTOs, transitionDTOs, arcDTOs);
     }
 
+    /**
+     * Resolves a conflict state where multiple transitions were enabled in deterministic mode.
+     * This method is called after the user has selected which specific transition should fire.
+     * It updates the Petri net state by firing only the selected transition.
+     * After firing, it re-evaluates all transitions to determine the next state, potentially
+     * leading to another conflict if multiple transitions become enabled again.
+     *
+     * @param petriNetDTO The {@link PetriNetDTO} representing the state where the conflict occurred.
+     *                    This DTO should have multiple transitions marked as enabled.
+     * @param selectedTransitionId The ID of the transition chosen by the user to resolve the conflict.
+     * @return A {@link PetriNetDTO} representing the state after firing the selected transition and
+     *         re-evaluating enabled transitions for the subsequent step.
+     * @throws IllegalArgumentException if the {@code selectedTransitionId} does not correspond to any
+     *                                  transition in the provided {@code petriNetDTO}.
+     */
     public PetriNetDTO resolveConflict(PetriNetDTO petriNetDTO, String selectedTransitionId) {
         Map<String, Place> placesMap = PetriNetMapper.mapPlacesToMap(petriNetDTO.getPlaces());
         Map<String, Arc> arcsMap = PetriNetMapper.mapArcsToMap(petriNetDTO.getArcs());

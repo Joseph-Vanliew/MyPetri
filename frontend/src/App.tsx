@@ -732,7 +732,7 @@ export default function App() {
         }
     };
 
-    // Add handler for validation results
+    // ===== VALIDATION HANDLERS =====
     const handleValidationResult = (result: ValidationResult) => {
         console.log('Validation result:', result);
         // You can add logic here to display validation results or update UI based on results
@@ -870,7 +870,7 @@ export default function App() {
                             </label>
                         </div>
                         
-                        {/* Next State button with hover effect */}
+                        {/* Next State button */}
                         <button 
                             onClick={handleSimulate} 
                             className="simulate-button"
@@ -904,7 +904,7 @@ export default function App() {
                     {/* Spacer to push reset button to bottom */}
                     <div style={{ flex: '1' }}></div>
                     
-                    {/* Reset button at the bottom of sidebar */}
+                    {/* Reset button */}
                     <div style={{ 
                         marginTop: '10px', 
                         borderTop: '1px solid #4a4a4a',
@@ -944,7 +944,7 @@ export default function App() {
                     flexDirection: 'column',
                     overflow: 'hidden'
                 }}>
-                    {/* Canvas container - takes most of the space but leaves room at bottom */}
+                    {/* Canvas container */}
                     <div style={{ 
                         flex: 1,
                         overflow: 'hidden',
@@ -974,7 +974,7 @@ export default function App() {
                     />
                 </div>
 
-                    {/* Space for future page navigation */}
+                    {/* Space set aside for page navigation */}
                     <div style={{ 
                         height: '40px',
                         borderTop: '1px solid #4a4a4a',
@@ -991,7 +991,7 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* Right sidebar for JSON viewer */}
+                {/* Tabbed panel for JSON viewer and Validation tool */}
                 <div style={{ 
                     width: '390px', 
                     borderLeft: '1px solid #4a4a4a',
