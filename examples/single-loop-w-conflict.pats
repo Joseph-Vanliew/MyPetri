@@ -1,0 +1,194 @@
+{
+  "places": [
+    {
+      "id": "place_1743110058213",
+      "tokens": 0,
+      "name": "P1",
+      "x": 21.55630874633789,
+      "y": -96.48005676269531,
+      "radius": 46
+    },
+    {
+      "id": "place_1743110062530",
+      "tokens": 0,
+      "name": "P2",
+      "x": 21.170238494873047,
+      "y": 117.8056411743164,
+      "radius": 46
+    },
+    {
+      "id": "place_1743110075213",
+      "tokens": 0,
+      "name": "P3",
+      "x": 34.87675094604492,
+      "y": -277.56114196777344,
+      "radius": 46
+    },
+    {
+      "id": "place_1743110078382",
+      "tokens": 0,
+      "name": "P4",
+      "x": 18.660503387451172,
+      "y": 305.8365249633789,
+      "radius": 46
+    }
+  ],
+  "transitions": [
+    {
+      "id": "trans_1743110065881",
+      "enabled": false,
+      "arcIds": [
+        "arc_1743110069548",
+        "arc_1743110070212",
+        "arc_1743110083205",
+        "arc_1743110112021"
+      ],
+      "name": "T1",
+      "x": 225.41730880737305,
+      "y": 3.7129745483398438,
+      "width": 120,
+      "height": 54
+    },
+    {
+      "id": "trans_1743110067248",
+      "enabled": false,
+      "arcIds": [
+        "arc_1743110070820",
+        "arc_1743110073756",
+        "arc_1743110085532",
+        "arc_1743110113092"
+      ],
+      "name": "T2",
+      "x": -198.52093124389648,
+      "y": 3.7129898071289062,
+      "width": 120,
+      "height": 54
+    },
+    {
+      "id": "trans_1743110076581",
+      "enabled": false,
+      "arcIds": [
+        "arc_1743110083940",
+        "arc_1743110109397"
+      ],
+      "name": "T3",
+      "x": 259.2010612487793,
+      "y": -281.0360412597656,
+      "width": 120,
+      "height": 54
+    },
+    {
+      "id": "trans_1743110080390",
+      "enabled": false,
+      "arcIds": [
+        "arc_1743110086149",
+        "arc_1743110110789"
+      ],
+      "name": "T4",
+      "x": -207.78733444213867,
+      "y": 305.8365249633789,
+      "width": 120,
+      "height": 54
+    },
+    {
+      "id": "trans_1743110363587",
+      "enabled": false,
+      "arcIds": [
+        "arc_1743110370697",
+        "arc_1743110374610"
+      ],
+      "name": "Conflict T",
+      "x": -429.0228691101074,
+      "y": -3.2367935180664062,
+      "width": 120,
+      "height": 54
+    }
+  ],
+  "arcs": [
+    {
+      "id": "arc_1743110069548",
+      "type": "REGULAR",
+      "incomingId": "place_1743110058213",
+      "outgoingId": "trans_1743110065881"
+    },
+    {
+      "id": "arc_1743110070212",
+      "type": "REGULAR",
+      "incomingId": "trans_1743110065881",
+      "outgoingId": "place_1743110062530"
+    },
+    {
+      "id": "arc_1743110070820",
+      "type": "REGULAR",
+      "incomingId": "place_1743110062530",
+      "outgoingId": "trans_1743110067248"
+    },
+    {
+      "id": "arc_1743110073756",
+      "type": "REGULAR",
+      "incomingId": "trans_1743110067248",
+      "outgoingId": "place_1743110058213"
+    },
+    {
+      "id": "arc_1743110083205",
+      "type": "REGULAR",
+      "incomingId": "trans_1743110065881",
+      "outgoingId": "place_1743110075213"
+    },
+    {
+      "id": "arc_1743110083940",
+      "type": "REGULAR",
+      "incomingId": "place_1743110075213",
+      "outgoingId": "trans_1743110076581"
+    },
+    {
+      "id": "arc_1743110085532",
+      "type": "REGULAR",
+      "incomingId": "trans_1743110067248",
+      "outgoingId": "place_1743110078382"
+    },
+    {
+      "id": "arc_1743110086149",
+      "type": "REGULAR",
+      "incomingId": "place_1743110078382",
+      "outgoingId": "trans_1743110080390"
+    },
+    {
+      "id": "arc_1743110109397",
+      "type": "INHIBITOR",
+      "incomingId": "place_1743110058213",
+      "outgoingId": "trans_1743110076581"
+    },
+    {
+      "id": "arc_1743110110789",
+      "type": "INHIBITOR",
+      "incomingId": "place_1743110062530",
+      "outgoingId": "trans_1743110080390"
+    },
+    {
+      "id": "arc_1743110112021",
+      "type": "INHIBITOR",
+      "incomingId": "place_1743110078382",
+      "outgoingId": "trans_1743110065881"
+    },
+    {
+      "id": "arc_1743110113092",
+      "type": "INHIBITOR",
+      "incomingId": "place_1743110075213",
+      "outgoingId": "trans_1743110067248"
+    },
+    {
+      "id": "arc_1743110370697",
+      "type": "INHIBITOR",
+      "incomingId": "place_1743110058213",
+      "outgoingId": "trans_1743110363587"
+    },
+    {
+      "id": "arc_1743110374610",
+      "type": "REGULAR",
+      "incomingId": "place_1743110062530",
+      "outgoingId": "trans_1743110363587"
+    }
+  ],
+  "title": "Single Loop w/ conflict"
+}
