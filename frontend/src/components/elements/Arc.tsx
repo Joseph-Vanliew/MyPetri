@@ -91,18 +91,18 @@ export const Arc = (props: ArcProps) => {
     
     if (props.type === "BIDIRECTIONAL") {
         // Adjust both ends for bidirectional arcs
-        adjustedSourceX = sourceAnchor.x + ndx * 6;  // Adjusted from 8 to 6
-        adjustedSourceY = sourceAnchor.y + ndy * 6;  // Adjusted from 8 to 6
-        adjustedTargetX = targetAnchor.x - ndx * 6;  // Adjusted from 8 to 6
-        adjustedTargetY = targetAnchor.y - ndy * 6;  // Adjusted from 8 to 6
+        adjustedSourceX = sourceAnchor.x + ndx * 6;
+        adjustedSourceY = sourceAnchor.y + ndy * 6;
+        adjustedTargetX = targetAnchor.x - ndx * 6;
+        adjustedTargetY = targetAnchor.y - ndy * 6;
     } else if (props.type === "REGULAR") {
         // Adjust only the target end for regular arcs
-        adjustedTargetX = targetAnchor.x - ndx * 6;  // Adjusted from 8 to 6
-        adjustedTargetY = targetAnchor.y - ndy * 6;  // Adjusted from 8 to 6
+        adjustedTargetX = targetAnchor.x - ndx * 6;
+        adjustedTargetY = targetAnchor.y - ndy * 6;
     } else if (props.type === "INHIBITOR") {
         // For inhibitor arcs, position the circle further from the target element
-        adjustedTargetX = targetAnchor.x - ndx * 15; // Adjusted from 20 to 15
-        adjustedTargetY = targetAnchor.y - ndy * 15; // Adjusted from 20 to 15
+        adjustedTargetX = targetAnchor.x - ndx * 15;
+        adjustedTargetY = targetAnchor.y - ndy * 15;
     }
 
     return (
@@ -111,13 +111,14 @@ export const Arc = (props: ArcProps) => {
             props.onSelect(props.id);  // Select arc when clicked
         }}>
             {/* Invisible stroke for easier selection */}
+            {/* for future use mainly for adding anchor points along the arc axis*/}
             <line
                 x1={sourceAnchor.x}
                 y1={sourceAnchor.y}
                 x2={targetAnchor.x}
                 y2={targetAnchor.y}
                 stroke="transparent"
-                strokeWidth="15"  // Adjusted from 20 to 15
+                strokeWidth="20"
             />
 
             {/* Main visible arc (white stroke) */}
@@ -127,7 +128,7 @@ export const Arc = (props: ArcProps) => {
                 x2={adjustedTargetX}
                 y2={adjustedTargetY}
                 stroke="#ddd"
-                strokeWidth="3"  // Adjusted from 4 to 3
+                strokeWidth="3"
                 markerEnd={
                     props.type === "INHIBITOR"
                         ? undefined
@@ -141,10 +142,10 @@ export const Arc = (props: ArcProps) => {
                 <circle
                     cx={adjustedTargetX}
                     cy={adjustedTargetY}
-                    r={8}  // Adjusted from 10 to 8
+                    r={8}
                     fill="#ff3333"
                     stroke="#ddd"
-                    strokeWidth="2"  // Adjusted from 3 to 2
+                    strokeWidth="2"
                 />
             )}
 
@@ -156,8 +157,8 @@ export const Arc = (props: ArcProps) => {
                     x2={adjustedTargetX}
                     y2={adjustedTargetY}
                     stroke="#007bff"
-                    strokeWidth="2"  // Adjusted from 3 to 2
-                    strokeDasharray="8,8"  // Adjusted from 10,10 to 8,8
+                    strokeWidth="2"
+                    strokeDasharray="8,8"
                 />
             )}
         </g>

@@ -23,10 +23,11 @@ export default function App() {
     const [conflictResolutionMode, setConflictResolutionMode] = useState(false);
     const [conflictingTransitions, setConflictingTransitions] = useState<string[]>([]);
     const [title, setTitle] = useState<string>("Untitled Petri Net");
-    // Add state to track recently fired transitions
     const [firedTransitions, setFiredTransitions] = useState<string[]>([]);
-    // Add a new state to track transition animation states
     const [animatingTransitions, setAnimatingTransitions] = useState<Record<string, boolean>>({});
+    
+    // Add state to track drag start positions for multi-drag
+    const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
     
     // Reference to the EditableTitle component
     const titleRef = useRef<EditableTitleRef>(null);
@@ -206,8 +207,37 @@ export default function App() {
 
     }, [selectedTool, places, transitions, saveToHistory]);
 
-    const handleSelectElement = (id: string) => {
-        setSelectedElements([id]);
+    const handleSelectElement = (id: string, event?: React.MouseEvent | KeyboardEvent) => {
+        // Check if shift key is pressed (from either mouse or keyboard event)
+        const isShift = event?.shiftKey;
+        
+        setSelectedElements(prevSelected => {
+            if (id === '') { // Special case to clear selection (e.g., background click)
+                return [];
+            }
+            if (isShift) {
+                // Shift+Click: Toggle selection
+                if (prevSelected.includes(id)) {
+                    // Remove if already selected
+                    return prevSelected.filter(elId => elId !== id);
+                } else {
+                    // Add if not selected
+                    return [...prevSelected, id];
+                }
+            } else {
+                // No Shift: Select only this element, unless it's already the *only* selected element
+                if (prevSelected.length === 1 && prevSelected[0] === id) {
+                    return prevSelected; // No change if clicking the already solely selected element
+                }
+                 // Otherwise, select just this one
+                return [id];
+            }
+        });
+    };
+    
+    // Handler for multi-selection (e.g., from drag-select box)
+    const handleMultiSelectElement = (ids: string[]) => {
+        setSelectedElements(ids);
     };
 
     // ===== ARC MANAGEMENT =====
@@ -537,24 +567,76 @@ export default function App() {
     };
 
     const updateElementPosition = (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end' = 'end') => {
-        // If this is the start of dragging, save the current state to history
+        
+        const isMultiSelect = selectedElements.length > 1 && selectedElements.includes(id);
+        let deltaX = 0;
+        let deltaY = 0;
+
         if (dragState === 'start') {
-            // Save the current state to history
+            // Save current state to history
             saveToHistory();
+            // Store starting positions for all selected elements
+            dragStartPositionsRef.current.clear();
+            const allElements = [...places, ...transitions];
+            selectedElements.forEach(selectedId => {
+                const element = allElements.find(el => el.id === selectedId);
+                if (element) {
+                    dragStartPositionsRef.current.set(selectedId, { x: element.x, y: element.y });
+                }
+            });
+            // For single element drag, store its start position too
+            if (!isMultiSelect) {
+                 const element = [...places, ...transitions].find(el => el.id === id);
+                 if (element) {
+                     dragStartPositionsRef.current.set(id, { x: element.x, y: element.y });
+                 }
+            }
+        }
+
+        // Calculate delta based on the initially dragged element
+        const startPos = dragStartPositionsRef.current.get(id);
+        if (startPos) {
+             deltaX = newX - startPos.x;
+             deltaY = newY - startPos.y;
+        } else {
+             // Fallback if startPos wasn't captured (shouldn't happen ideally)
+             // Calculate delta based on current position vs new position (less accurate for multi-drag)
+             const currentElement = [...places, ...transitions].find(el => el.id === id);
+             if (currentElement) {
+                 deltaX = newX - currentElement.x;
+                 deltaY = newY - currentElement.y;
+             }
         }
         
-        // Update the position (this happens for all position updates)
+        // Apply updates
         setPlaces((prevPlaces) =>
-            prevPlaces.map((p) =>
-                p.id === id ? { ...p, x: newX, y: newY } : p
-            )
+            prevPlaces.map((p) => {
+                const start = dragStartPositionsRef.current.get(p.id);
+                if (isMultiSelect && selectedElements.includes(p.id) && start) {
+                    return { ...p, x: start.x + deltaX, y: start.y + deltaY };
+                } else if (p.id === id && start) { // Handle single element drag
+                     return { ...p, x: start.x + deltaX, y: start.y + deltaY };
+                }
+                return p;
+            })
         );
 
         setTransitions((prevTransitions) =>
-            prevTransitions.map((t) =>
-                t.id === id ? { ...t, x: newX, y: newY } : t
-            )
+            prevTransitions.map((t) => {
+                const start = dragStartPositionsRef.current.get(t.id);
+                if (isMultiSelect && selectedElements.includes(t.id) && start) {
+                    return { ...t, x: start.x + deltaX, y: start.y + deltaY };
+                } else if (t.id === id && start) { // Handle single element drag
+                    return { ...t, x: start.x + deltaX, y: start.y + deltaY };
+                }
+                return t;
+            })
         );
+
+        // Clear start positions reference when drag ends
+        if (dragState === 'end') {
+            dragStartPositionsRef.current.clear();
+        }
     };
 
     const handleTokenUpdate = (id: string, newTokens: number) => {
@@ -748,9 +830,9 @@ export default function App() {
         }}>
             {/* Use the EditableTitle component */}
             <EditableTitle 
-                title={title} 
-                onTitleChange={setTitle} 
                 ref={titleRef}
+                title={title}
+                onTitleChange={setTitle}
             />
             
             {/* Menu Bar below the title */}
@@ -763,40 +845,40 @@ export default function App() {
                 highlightTitle={handleHighlightTitle}
             />
 
-            {/* Main content area */}
+            {/* Main content area - Restore the detailed layout */}
             <div style={{ 
                 display: 'flex', 
-                flex: 1, 
-                overflow: 'hidden',
-                position: 'relative' // Ensure children are positioned relative to this
+                flexGrow: 1, // Use flexGrow instead of flex: 1 for clarity
+                height: 'calc(100vh - 80px)', // Adjust height based on MenuBar/Title height (assuming 80px total)
+                overflow: 'hidden'
             }}>
-                {/* Left sidebar for tools */}
+                {/* Left sidebar (Restored from user input) */}
                 <div style={{ 
                     width: '200px', 
-                    borderRight: '1px solid #4a4a4a', // Lighter grey border
+                    borderRight: '1px solid #4a4a4a',
                     padding: '10px',
-                    flexShrink: 0, // Prevent sidebar from shrinking
+                    flexShrink: 0, 
                     display: 'flex',
                     flexDirection: 'column',
-                    overflow: 'hidden' // Prevent scrolling in the sidebar
+                    overflow: 'hidden'
                 }}>
                     {/* Toolbar section */}
                     <div style={{ flex: 'none', overflow: 'hidden' }}>
                         <Toolbar
                             selectedTool={selectedTool}
+                            // Use the logic provided by user to clear selection on ARC tool activation
                             setSelectedTool={(tool) => {
-                                // If switching to ARC tool, deselect any selected elements
                                 if (tool === 'ARC') {
                                     setSelectedElements([]);
                                 }
-                                setSelectedTool(tool);
+                                setSelectedTool(tool); // Call the actual state setter
                             }}
                             arcType={arcType}
                             setArcType={setArcType}
                         />
                     </div>
 
-                    {/* Simulation controls */}
+                    {/* Simulation controls (Restored from user input) */}
                     <div className="controls" style={{ 
                         marginTop: '2rem', 
                         display: 'flex', 
@@ -804,9 +886,9 @@ export default function App() {
                         gap: '10px',
                         padding: '10px',
                         borderTop: '1px solid #4a4a4a',
-                        overflow: 'hidden' // Prevent scrolling in controls
+                        overflow: 'hidden'
                     }}>
-                        {/* Deterministic Mode checkbox with hover effect */}
+                        {/* Deterministic Mode checkbox */}
                         <div 
                             style={{ 
                                 display: 'flex', 
@@ -817,30 +899,15 @@ export default function App() {
                                 cursor: 'pointer',
                                 transition: 'background-color 0.2s ease'
                             }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = '#2a2a2a';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#2a2a2a'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                             onClick={() => {
                                 const newValue = !deterministicMode;
-                                console.log("Setting deterministic mode to:", newValue);
-                                
-                                // If turning off deterministic mode and currently in conflict resolution mode
                                 if (!newValue && conflictResolutionMode) {
-                                    // First, clear the conflict resolution state
                                     setConflictResolutionMode(false);
                                     setConflictingTransitions([]);
-                                    
-                                    // Reset all transitions to not enabled (clear any red borders)
-                                    setTransitions(transitions.map(t => ({
-                                        ...t,
-                                        enabled: false
-                                    })));
+                                    setTransitions(transitions.map(t => ({ ...t, enabled: false })));
                                 }
-                                
-                                // Update deterministic mode state
                                 setDeterministicMode(newValue);
                             }}
                             title="When enabled, you can choose which transition to fire when multiple are enabled"
@@ -849,22 +916,13 @@ export default function App() {
                                 type="checkbox"
                                 id="deterministic-mode"
                                 checked={deterministicMode}
-                                onChange={(e) => {
-                                    // Prevent propagation to avoid double-triggering with the parent's onClick
-                                    e.stopPropagation();
-                                    
-                                    // No state change code here - let the parent handle it
-                                }}
+                                onChange={(e) => { e.stopPropagation(); }}
                                 style={{ marginRight: '5px', cursor: 'pointer' }}
                             />
                             <label 
                                 htmlFor="deterministic-mode" 
                                 style={{ cursor: 'pointer' }}
-                                onClick={(e) => {
-                                    // Prevent the label's default behavior (which would toggle the checkbox)
-                                    // so that we can handle it in the parent div's onClick
-                                    e.preventDefault();
-                                }}
+                                onClick={(e) => { e.preventDefault(); }}
                             >
                                 Deterministic Mode
                             </label>
@@ -874,21 +932,13 @@ export default function App() {
                         <button 
                             onClick={handleSimulate} 
                             className="simulate-button"
-                            style={{
-                                padding: '8px 12px',
-                                backgroundColor: '#2c5282',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
+                            style={{ /* styles */ 
+                                padding: '8px 12px', backgroundColor: '#2c5282', color: 'white',
+                                border: 'none', borderRadius: '4px', cursor: 'pointer',
                                 transition: 'background-color 0.2s ease'
                             }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = '#3a69a4';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = '#2c5282';
-                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#3a69a4'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#2c5282'; }}
                             title="Advance the Petri net to the next state"
                         >
                             Next State
@@ -904,7 +954,7 @@ export default function App() {
                     {/* Spacer to push reset button to bottom */}
                     <div style={{ flex: '1' }}></div>
                     
-                    {/* Reset button */}
+                    {/* Reset button (Restored from user input) */}
                     <div style={{ 
                         marginTop: '10px', 
                         borderTop: '1px solid #4a4a4a',
@@ -913,23 +963,13 @@ export default function App() {
                         <button 
                             onClick={handleReset} 
                             className="reset-button"
-                            style={{
-                                width: '100%',
-                                padding: '8px 12px',
-                                backgroundColor: '#822c2c',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.2s ease',
-                                fontWeight: 'bold'
+                            style={{ /* styles */ 
+                                width: '100%', padding: '8px 12px', backgroundColor: '#822c2c',
+                                color: 'white', border: 'none', borderRadius: '4px', 
+                                cursor: 'pointer', transition: 'background-color 0.2s ease', fontWeight: 'bold'
                             }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = '#a43a3a';
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = '#822c2c';
-                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#a43a3a'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#822c2c'; }}
                             title="Clear all elements from the canvas"
                         >
                             Reset Canvas
@@ -937,7 +977,7 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* Center area with canvas and page navigation */}
+                {/* Center area (Restored from user input, with Canvas added) */}
                 <div style={{ 
                     flex: 1,
                     display: 'flex',
@@ -948,33 +988,35 @@ export default function App() {
                     <div style={{ 
                         flex: 1,
                         overflow: 'hidden',
-                        minHeight: 0 // Important for flex child to respect parent's size
+                        minHeight: 0,
+                        position: 'relative' // Added for positioning context if needed
                     }}>
-                    <Canvas
-                        places={places}
-                        transitions={transitions}
-                        arcs={arcs}
-                        selectedElements={selectedElements}
-                        onCanvasClick={handleCanvasClick}
-                        onUpdatePlaceSize={updatePlaceSize}
-                        onUpdateTransitionSize={updateTransitionSize}
-                        onUpdateElementPosition={updateElementPosition}
-                        onSelectElement={handleSelectElement}
-                        selectedTool={selectedTool}
-                        onSelectTool={setSelectedTool}
-                        onArcPortClick={handleArcPortClick}
-                        arcType={arcType}
-                        onUpdateToken={handleTokenUpdate}
-                        onTypingChange={handleTypingChange}
-                        onUpdateName={handleNameUpdate}
-                        conflictResolutionMode={conflictResolutionMode}
-                        conflictingTransitions={conflictingTransitions}
-                        onConflictingTransitionSelect={continueSimulation}
-                        firedTransitions={firedTransitions}
-                    />
-                </div>
-
-                    {/* Space set aside for page navigation */}
+                        <Canvas
+                            places={places}
+                            transitions={transitions}
+                            arcs={arcs}
+                            selectedElements={selectedElements}
+                            onCanvasClick={handleCanvasClick}
+                            onSelectElement={handleSelectElement}
+                            onMultiSelectElement={handleMultiSelectElement}
+                            onUpdatePlaceSize={updatePlaceSize}
+                            onUpdateTransitionSize={updateTransitionSize}
+                            onUpdateElementPosition={updateElementPosition}
+                            onArcPortClick={handleArcPortClick}
+                            selectedTool={selectedTool}
+                            onSelectTool={setSelectedTool} // Pass the state setter
+                            arcType={arcType}
+                            onUpdateToken={handleTokenUpdate}
+                            onTypingChange={handleTypingChange}
+                            onUpdateName={handleNameUpdate}
+                            conflictResolutionMode={conflictResolutionMode}
+                            conflictingTransitions={conflictingTransitions}
+                            onConflictingTransitionSelect={continueSimulation}
+                            firedTransitions={firedTransitions}
+                        />
+                    </div>
+                    
+                    {/* Page Navigation Placeholder (Restored from user input) */}
                     <div style={{ 
                         height: '40px',
                         borderTop: '1px solid #4a4a4a',
@@ -982,32 +1024,33 @@ export default function App() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         backgroundColor: '#1a1a1a',
-                        padding: '0 15px'
+                        padding: '0 15px',
+                        flexShrink: 0 // Prevent shrinking
                     }}>
-                        {/* Page Navigation */}
                         <div style={{ color: '#777', fontSize: '14px' }}>
                             Page Tabs (Under Construction)
                         </div>
                     </div>
                 </div>
 
-                {/* Tabbed panel for JSON viewer and Validation tool */}
+                {/* Right Panel for TabbedPanel */}
                 <div style={{ 
-                    width: '390px', 
-                    borderLeft: '1px solid #4a4a4a',
-                    overflow: 'auto',
-                    flexShrink: 0, // Prevent shrinking
-                    marginRight: '2px' // Add a small margin to ensure scrollbar is visible
+                     width: '390px', // Width from previous layout assumption
+                     borderLeft: '1px solid #4a4a4a',
+                     overflow: 'auto',
+                     flexShrink: 0,
+                     height: '100%' // Ensure it takes full height
                 }}>
-                    <TabbedPanel
+                    <TabbedPanel 
                         data={petriNetDTO}
-                        width={390}
-                        height="100%"
+                        onValidationResult={handleValidationResult}
                         selectedElements={selectedElements}
                         autoScrollEnabled={autoScrollEnabled}
                         onAutoScrollToggle={setAutoScrollEnabled}
                         currentMode={currentMode}
-                        onValidationResult={handleValidationResult}
+                        // Explicitly set width/height to fill container
+                        width="100%" 
+                        height="100%"
                     />
                 </div>
             </div>

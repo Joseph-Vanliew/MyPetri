@@ -6,6 +6,7 @@ import { Grid } from './canvas/Grid';
 import { ArcPreview } from './canvas/ArcPreview';
 import { useZoomAndPan } from './canvas/hooks/useZoomAndPan';
 import { useMouseTracking } from './canvas/hooks/useMouseTracking';
+import { useSelectionBox } from './canvas/hooks/useSelectionBox';
 import { screenToSVGCoordinates, snapToGrid } from './canvas/utils/coordinateUtils';
 import { UIPlace, UITransition, UIArc } from '../types';
 
@@ -22,7 +23,8 @@ interface CanvasProps {
     arcs: UIArc[];
     selectedElements: string[];
     onCanvasClick: (x: number, y: number) => void;
-    onSelectElement: (id: string) => void;
+    onSelectElement: (id: string, event?: React.MouseEvent) => void;
+    onMultiSelectElement: (ids: string[]) => void;
     onUpdatePlaceSize: (id: string, newRadius: number) => void;
     onUpdateTransitionSize: (id: string, width: number, height: number) => void;
     onUpdateElementPosition: (id: string, newX: number, newY: number) => void;
@@ -42,6 +44,8 @@ interface CanvasProps {
 export const Canvas = (props: CanvasProps) => {
     // Create a ref for the SVG element
     const svgRef = useRef<SVGSVGElement>(null);
+    const [isShiftPressed, setIsShiftPressed] = useState(false);
+    const [isDraggingSelectionBox, setIsDraggingSelectionBox] = useState(false);
     
     // Get container dimensions
     const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
@@ -116,19 +120,57 @@ export const Canvas = (props: CanvasProps) => {
         }
     }, [props.selectedTool, props.selectedElements]);
     
+    // Instantiate the selection box hook
+    const { selectionRect } = useSelectionBox({
+        svgRef,
+        places: props.places,
+        transitions: props.transitions,
+        onSelectionChange: (selectedIds) => {
+            props.onMultiSelectElement(selectedIds);
+            setIsDraggingSelectionBox(false);
+        },
+        isEnabled: () => isShiftPressed,
+    });
+
+    // Add state for shift key
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Shift') {
+                setIsShiftPressed(true);
+            }
+        };
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.key === 'Shift') {
+                setIsShiftPressed(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
+    }, []);
+    
     // Handle canvas click
     const handleSvgClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
         e.preventDefault();
         
-        if (e.target === e.currentTarget && props.selectedElements.length > 0) {
+        if (isDraggingSelectionBox) {
+            setIsDraggingSelectionBox(false);
+            return;
+        }
+        
+        if (!isShiftPressed && e.target === e.currentTarget && props.selectedElements.length > 0) {
             props.onSelectElement('');
         }
         
-        const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
-        const snapped = snapToGrid(coords.x, coords.y);
-        
-        props.onCanvasClick(snapped.x, snapped.y);
-    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick]);
+        if (!isShiftPressed && (props.selectedTool === 'PLACE' || props.selectedTool === 'TRANSITION' || props.selectedTool === 'ARC')) {
+            const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
+            const snapped = snapToGrid(coords.x, coords.y);
+            props.onCanvasClick(snapped.x, snapped.y);
+        }
+    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick, props.selectedTool, isShiftPressed, isDraggingSelectionBox]);
     
     // Handle drag and drop
     const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {
@@ -172,13 +214,30 @@ export const Canvas = (props: CanvasProps) => {
                 onClick={handleSvgClick}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                onMouseDown={zoomAndPan.handleMouseDown}
+                onMouseDown={(e) => {
+                    if (isShiftPressed) {
+                        setIsDraggingSelectionBox(true);
+                    } else {
+                        zoomAndPan.handleMouseDown(e);
+                    }
+                }}
                 onMouseMove={(e) => {
                     mouseTracking.updateMousePosition(e.clientX, e.clientY);
-                    zoomAndPan.handlePan(e);
+                    
+                    if (!isDraggingSelectionBox) {
+                        zoomAndPan.handlePan(e);
+                    }
                 }}
-                onMouseUp={zoomAndPan.handleMouseUp}
-                onMouseLeave={zoomAndPan.handleMouseLeave}
+                onMouseUp={() => {
+                    zoomAndPan.handleMouseUp();
+                    
+                    if (isDraggingSelectionBox) {
+                        setIsDraggingSelectionBox(false);
+                    }
+                }}
+                onMouseLeave={() => {
+                    zoomAndPan.handleMouseLeave();
+                }}
                 style={{ 
                     backgroundColor: 'transparent',
                     display: 'block',
@@ -198,6 +257,20 @@ export const Canvas = (props: CanvasProps) => {
                 
                 {/* Grid Layer */}
                 <Grid viewBox={zoomAndPan.viewBox} />
+
+                {/* Selection Rectangle Layer (Render if active) */}
+                {selectionRect && (
+                    <rect
+                        x={selectionRect.x}
+                        y={selectionRect.y}
+                        width={selectionRect.width}
+                        height={selectionRect.height}
+                        fill="rgba(0, 116, 217, 0.3)"
+                        stroke="#0074D9"
+                        strokeWidth="1"
+                        pointerEvents="none"
+                    />
+                )}
 
                 {/* Arcs Layer */}
                 <g className="arcs-layer">
@@ -219,7 +292,7 @@ export const Canvas = (props: CanvasProps) => {
                                 source={sourceElement}
                                 target={targetElement}
                                 isSelected={props.selectedElements.includes(arc.id)}
-                                onSelect={props.onSelectElement}
+                                onSelect={(id: string) => props.onSelectElement(id)}
                             />
                         ) : null;
                     })}
@@ -242,7 +315,7 @@ export const Canvas = (props: CanvasProps) => {
                                 tokens={place.tokens}
                                 radius={place.radius}
                                 isSelected={props.selectedElements.includes(place.id)}
-                                onSelect={props.onSelectElement}
+                                onSelect={(id: string) => props.onSelectElement(id)}
                                 onUpdateSize={props.onUpdatePlaceSize}
                                 onUpdatePosition={props.onUpdateElementPosition}
                                 arcMode={props.selectedTool === 'ARC'}
@@ -273,7 +346,7 @@ export const Canvas = (props: CanvasProps) => {
                                 height={transition.height}
                                 enabled={transition.enabled}
                                 isSelected={props.selectedElements.includes(transition.id)}
-                                onSelect={props.onSelectElement}
+                                onSelect={(id: string) => props.onSelectElement(id)}
                                 onUpdateSize={props.onUpdateTransitionSize}
                                 onUpdatePosition={props.onUpdateElementPosition}
                                 arcMode={props.selectedTool === 'ARC'}

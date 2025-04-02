@@ -9,7 +9,7 @@ export const Grid: React.FC<GridProps> = ({ viewBox }) => {
   const lines = [];
   const gridPadding = 300;
   
-  // Define bounded grid area - 2000x2000 centered at origin
+  // Bounded grid area
   const GRID_BOUNDS = {
     minX: -800,
     maxX: 800,
@@ -17,7 +17,6 @@ export const Grid: React.FC<GridProps> = ({ viewBox }) => {
     maxY: 900
   };
   
-  // Add dark gray background for the grid area
   lines.push(
     <rect
       key="grid-background"

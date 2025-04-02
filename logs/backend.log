@@ -133,3 +133,145 @@ Service: processPetriNet called. Received deterministic mode: true
 Number of enabled transitions: 2
 Deterministic mode: returning all enabled transitions for user selection
 Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110065881
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110076581
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110067248
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743121630117
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124756596
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124797597
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 0
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110065881
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110076581
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110067248
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743121630117
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124756596
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124797597
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 0
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110065881
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110076581
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110067248
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743121630117
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124756596
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124797597
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 0
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110065881
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110076581
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110067248
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743121630117
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124756596
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743124797597
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+Service: processPetriNet called. Received deterministic mode: true
+Number of enabled transitions: 0
+Validator: Received processedState.
+Service: processPetriNet called. Received deterministic mode: false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110065881
+Service: processPetriNet called. Received deterministic mode: false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1743110065881
