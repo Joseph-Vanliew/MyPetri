@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useEffect, useRef} from 'react';
+import React, {useState, useCallback, useEffect, useMemo, useRef} from 'react';
 import { Place } from './elements/Place';
 import { Transition } from './elements/Transition';
 import { Arc } from './elements/arcs/Arc';
@@ -277,28 +277,57 @@ export const Canvas = (props: CanvasProps) => {
 
                 {/* Arcs Layer - used to render arcs*/}
                 <g className="arcs-layer">
-                    {props.arcs.map((arc: UIArc) => {
-                        const sourceElement =
-                            props.places.find(p => p.id === arc.incomingId) ||
-                            props.transitions.find(t => t.id === arc.incomingId);
-                        const targetElement =
-                            props.places.find(p => p.id === arc.outgoingId) ||
-                            props.transitions.find(t => t.id === arc.outgoingId);
-                        
-                        return sourceElement && targetElement ? (
-                            <Arc
-                                key={arc.id}
-                                id={arc.id}
-                                type={arc.type}
-                                incomingId={arc.incomingId}
-                                outgoingId={arc.outgoingId}
-                                source={sourceElement}
-                                target={targetElement}
-                                isSelected={props.selectedElements.includes(arc.id)}
-                                onSelect={(id: string) => props.onSelectElement(id)}
-                            />
-                        ) : null;
-                    })}
+                    {(() => { // Use IIFE to scope arcOffsets calculation
+                        const arcOffsets = useMemo(() => {
+                            const offsets: { [id: string]: number } = {};
+                            const groupedArcs: { [key: string]: UIArc[] } = {};
+                            const OFFSET_AMOUNT = 12; // Pixels to offset by
+
+                            props.arcs.forEach(arc => {
+                                const key = [arc.incomingId, arc.outgoingId].sort().join('-');
+                                if (!groupedArcs[key]) {
+                                    groupedArcs[key] = [];
+                                }
+                                groupedArcs[key].push(arc);
+                            });
+
+                            Object.values(groupedArcs).forEach(group => {
+                                if (group.length === 2) {
+                                    const regularArc = group.find(a => a.type === 'REGULAR');
+                                    const inhibitorArc = group.find(a => a.type === 'INHIBITOR');
+                                    if (regularArc && inhibitorArc) {
+                                        offsets[regularArc.id] = OFFSET_AMOUNT;
+                                        offsets[inhibitorArc.id] = -OFFSET_AMOUNT;
+                                    }
+                                }
+                            });
+                            return offsets;
+                        }, [props.arcs]);
+
+                        // Render arcs, passing the calculated offset
+                        return props.arcs.map((arc: UIArc) => {
+                            const sourceElement = 
+                                props.places.find(p => p.id === arc.incomingId) ||
+                                props.transitions.find(t => t.id === arc.incomingId);
+                            const targetElement = 
+                                props.places.find(p => p.id === arc.outgoingId) ||
+                                props.transitions.find(t => t.id === arc.outgoingId);
+                            
+                            const offset = arcOffsets[arc.id] || 0; // Get offset or default to 0
+                                
+                            return sourceElement && targetElement ? (
+                                <Arc 
+                                    key={arc.id} 
+                                    {...arc} // Spread other arc props
+                                    source={sourceElement} 
+                                    target={targetElement}
+                                    offset={offset} // Pass the calculated offset
+                                    isSelected={props.selectedElements.includes(arc.id)}
+                                    onSelect={(id: string) => props.onSelectElement(id)}
+                                />
+                            ) : null;
+                        });
+                    })()} 
                 </g>
 
                 {/* Marker definitions - used by arcs and arc previews*/}

@@ -1,6 +1,4 @@
 // frontend/src/components/elements/arcs/MarkerDefinitions.tsx
-import React from 'react';
-
 export const MarkerDefinitions = () => {
   return (
     <defs>

@@ -3,8 +3,28 @@
 > vite
 
 
-  VITE v6.2.0  ready in 136 ms
+  VITE v6.2.0  ready in 163 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-6:38:04 PM [vite] (client) hmr update /src/App.tsx
+7:09:50 PM [vite] (client) hmr update /src/components/elements/Place.tsx
+7:10:02 PM [vite] (client) hmr update /src/components/elements/Place.tsx
+7:13:39 PM [vite] (client) hmr update /src/components/styles/Place.css
+7:14:05 PM [vite] (client) hmr update /src/components/styles/Place.css
+7:14:28 PM [vite] (client) hmr update /src/components/elements/Place.tsx
+7:15:30 PM [vite] (client) hmr update /src/components/styles/Place.css
+7:15:32 PM [vite] (client) hmr update /src/components/elements/Place.tsx
+7:17:27 PM [vite] (client) hmr update /src/components/Toolbar.tsx
+7:18:25 PM [vite] (client) hmr update /src/index.css
+7:19:14 PM [vite] (client) hmr update /src/index.css
+7:20:03 PM [vite] (client) hmr update /src/components/Toolbar.tsx
+7:20:04 PM [vite] (client) hmr update /src/index.css
+7:20:23 PM [vite] (client) hmr update /src/components/Toolbar.tsx
+7:20:37 PM [vite] (client) hmr update /src/components/Toolbar.tsx
+7:21:52 PM [vite] (client) hmr update /src/components/elements/Place.tsx
+7:22:01 PM [vite] (client) hmr update /src/components/elements/Place.tsx
+7:25:41 PM [vite] (client) hmr update /src/components/Canvas.tsx
+7:25:54 PM [vite] (client) hmr update /src/components/Canvas.tsx
+7:26:14 PM [vite] (client) hmr update /src/components/elements/arcs/Arc.tsx
+7:26:57 PM [vite] (client) hmr update /src/components/Canvas.tsx
+7:26:58 PM [vite] (client) hmr update /src/components/elements/arcs/Arc.tsx

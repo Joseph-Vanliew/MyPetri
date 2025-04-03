@@ -127,8 +127,8 @@ code {
   position: relative;
   display: inline-flex; /* Use flex for alignment */
   align-items: center;
-  width: 44px; /* Adjust width */
-  height: 24px; /* Adjust height */
+  width: 28px; /* SMALLER: Was 34px */
+  height: 16px; /* SMALLER: Was 20px */
 }
 
 /* The slider track */
@@ -147,34 +147,35 @@ code {
 .switch-slider:before {
   position: absolute;
   content: "";
-  height: 18px; /* Size of the dot */
-  width: 18px;  /* Size of the dot */
-  left: 3px;    /* Initial position */
-  bottom: 3px;  /* Initial position */
+  height: 12px; /* SMALLER: Was 14px */
+  width: 12px;  /* SMALLER: Was 14px */
+  left: 2px;    /* Adjusted: Was 3px */
+  bottom: 2px;  /* Adjusted: Was 3px */
   background-color: white;
   transition: .4s;
 }
 
-/* Checked state: Blue background */
+/* Checked state: Darker gray background and glow */
 input:checked + .switch-slider {
-  background-color: #2196F3;
+  background-color: #404040; /* Darker Gray instead of blue */
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* White glow */
 }
 
 /* Checked state: Move the dot */
 input:checked + .switch-slider:before {
-  transform: translateX(20px); /* Distance to move the dot (width - dot width - 2*left_padding) */
+  transform: translateX(12px); /* SMALLER: Adjusted distance (28 - 12 - 2*2 = 12) */
 }
 
 /* Rounded sliders */
 .switch-slider.round {
-  border-radius: 24px; /* Make it rounded */
+  border-radius: 16px; /* SMALLER: Adjusted for new height */
 }
 
 .switch-slider.round:before {
   border-radius: 50%; /* Make the dot round */
 }
 
-/* Focus style (optional) */
+/* Focus style (optional) - removed blue glow */
 input:focus + .switch-slider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.5); /* Optional subtle white focus */
 }

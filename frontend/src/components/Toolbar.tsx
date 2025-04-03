@@ -433,33 +433,27 @@ export const Toolbar = ({
                 )}
             </div>
 
-            {/* NEW Global Bounded Mode Toggle */}
-            <div
-                className="tool-button" // Use existing styling or create new
-                style={{ display: 'flex', alignItems: 'center', marginTop: '15px', cursor: 'pointer' }}
-                onClick={() => onToggleCapacityEditorMode(!showCapacityEditorMode)}
+            {/* NEW Global Bounded Mode Toggle - Using Custom Switch */} 
+            <div 
+                style={{ display: 'flex', alignItems: 'center', marginTop: '15px' }}
                 title="Toggle visibility of place capacity editors"
             >
-                 {/* Basic Checkbox Example */}
-                 <input
-                    type="checkbox"
-                    id="capacity-mode-toggle"
-                    checked={showCapacityEditorMode}
-                    onChange={(e) => {
-                        e.stopPropagation(); // Prevent div click handler if needed
-                        onToggleCapacityEditorMode(e.target.checked);
-                    }}
-                    style={{ marginRight: '8px', cursor: 'pointer' }}
-                />
-                <label
-                    htmlFor="capacity-mode-toggle"
-                    style={{ cursor: 'pointer' }}
-                    onClick={(e) => e.preventDefault()} // Prevent label click from double-toggling if needed
-                >
-                    Bounded Petri Net
+                <label className="switch-container" htmlFor="capacity-mode-toggle" style={{ marginRight: '8px' }}>
+                    <input
+                        type="checkbox"
+                        id="capacity-mode-toggle"
+                        checked={showCapacityEditorMode}
+                        onChange={(e) => onToggleCapacityEditorMode(e.target.checked)}
+                        style={{ opacity: 0, width: 0, height: 0 }} // Hide original checkbox
+                    />
+                    <span className="switch-slider round"></span>
                 </label>
-
-                {/* OR use a styled switch component if you have one */}
+                <span 
+                    style={{ cursor: 'pointer' }} 
+                    onClick={() => onToggleCapacityEditorMode(!showCapacityEditorMode)}
+                >
+                    Show Bounding
+                </span>
             </div>
         </div>
     );

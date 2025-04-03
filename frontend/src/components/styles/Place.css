@@ -9,6 +9,11 @@
   stroke-width: 2;
 }
 
+/* ADDED: Style for bounded places */
+.place-circle.bounded {
+  stroke: #FF8C00; /* Deep Orange */
+}
+
 .place-token-count {
   text-anchor: middle;
   fill: white;

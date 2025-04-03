@@ -387,7 +387,7 @@ export const Place = (props : PlaceProps) => {
             {/* Original Circle */}
             <circle
                 r={props.radius}
-                className="place-circle"
+                className={`place-circle ${props.bounded ? 'bounded' : ''}`}
             />
 
             {/* Token Count Display */}
@@ -462,7 +462,7 @@ export const Place = (props : PlaceProps) => {
                                 y="12"
                                 className="place-capacity-label"
                                 onDoubleClick={handleCapacityDoubleClick}
-                                style={{ fill: 'white', cursor: 'text', fontSize: '16px', fontWeight: 'bold' }}
+                                style={{ fill: 'white', cursor: 'text', fontSize: '20px', fontWeight: 'bold' }}
                             >
                                 <title>Max Tokens (Double-click to edit, empty=unbounded)</title>
                                 {`<= ${props.capacity !== null ? props.capacity : 'n'}`}
