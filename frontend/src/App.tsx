@@ -25,6 +25,7 @@ export default function App() {
     const [title, setTitle] = useState<string>("Untitled Petri Net");
     const [firedTransitions, setFiredTransitions] = useState<string[]>([]);
     const [animatingTransitions, setAnimatingTransitions] = useState<Record<string, boolean>>({});
+    const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false);
     
     // Add state to track drag start positions for multi-drag
     const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
@@ -83,14 +84,18 @@ export default function App() {
 
     // ===== DERIVED STATE / CONSTANTS =====
     const petriNetDTO: PetriNetDTO = {
-        places: places.map((p) => ({ 
-            id: p.id, 
-            tokens: p.tokens,
-            name: p.name,
-            x: p.x,
-            y: p.y,
-            radius: p.radius
-        })),
+        places: places.map((p) => {
+            return {
+                id: p.id,
+                tokens: p.tokens,
+                name: p.name,
+                x: p.x,
+                y: p.y,
+                radius: p.radius,
+                bounded: p.bounded,
+                capacity: p.capacity
+            };
+        }),
         transitions: transitions.map((t) => ({
             id: t.id,
             enabled: t.enabled,
@@ -183,7 +188,9 @@ export default function App() {
                 tokens: 0,
                 x,
                 y,
-                radius: 46
+                radius: 46,
+                bounded: false,
+                capacity: null
             };
             setPlaces(prev => [...prev, newPlace]);
             setSelectedTool('NONE');
@@ -395,7 +402,9 @@ export default function App() {
                 name: p.name,
                 x: p.x,
                 y: p.y,
-                radius: p.radius
+                radius: p.radius,
+                bounded: p.bounded,
+                capacity: p.capacity
             })),
             transitions: transitions.map(t => ({
                 id: t.id,
@@ -416,8 +425,6 @@ export default function App() {
             deterministicMode: deterministicMode
         };
 
-        console.log("Sending PetriNet Request for simulation", requestBody);
-
         try {
             const response = await fetch(API_ENDPOINTS.PROCESS, {
                 method: 'POST',
@@ -426,7 +433,6 @@ export default function App() {
             });
 
             const responseData: PetriNetDTO = await response.json();
-            console.log("Received new state response:", responseData);
 
             // Update places state
             const newPlaces = places.map(p => {
@@ -440,8 +446,6 @@ export default function App() {
                 .filter(t => t.enabled)
                 .map(t => t.id);
                 
-            console.log("Enabled transitions:", enabledTransitions);
-            
             // In deterministic mode, handle potentially multiple enabled transitions
             if (deterministicMode && enabledTransitions.length > 1) {
                 console.log("Entering conflict resolution mode with transitions:", enabledTransitions);
@@ -469,23 +473,41 @@ export default function App() {
             });
             setTransitions([...newTransitions]);
             
-            // When setting animations, use a different approach
-            if (enabledTransitions.length > 0) {
-                // Create a copy of the current animation state
-                const newAnimatingTransitions = { ...animatingTransitions };
+            // Get the list of enabled transitions IDs from the *updated state*
+            const enabledTransitionsUpdated = newTransitions // Use the updated array
+                .filter(t => t.enabled)
+                .map(t => t.id);
+
+            // Check for deterministic conflict
+            if (deterministicMode && enabledTransitionsUpdated.length > 1) {
+                console.log("Entering conflict resolution mode with transitions:", enabledTransitionsUpdated);
                 
-                // Mark each enabled transition as animating
-                enabledTransitions.forEach(id => {
+                // Multiple enabled transitions - enter conflict resolution mode
+                setConflictingTransitions(enabledTransitionsUpdated);
+                setConflictResolutionMode(true);
+                
+                // Update transitions state without animation
+                const newTransitionsConflict = transitions.map(t => {
+                    const updated = responseData.transitions.find(rt => rt.id === t.id);
+                    return updated ? { ...t, enabled: updated.enabled } : t;
+                });
+                setTransitions([...newTransitionsConflict]);
+                
+                return; // Wait for user selection - don't animate
+            }
+            
+            // Check if any animation should happen
+            console.log("Checking animation condition (frontend): enabledTransitions.length =", enabledTransitionsUpdated.length);
+            if (enabledTransitionsUpdated.length > 0) {
+                console.log("!!! PROBLEM?: Entering animation block !!!"); // Log entry into animation block
+                const newAnimatingTransitions = { ...animatingTransitions };
+                enabledTransitionsUpdated.forEach(id => {
                     newAnimatingTransitions[id] = true;
                 });
-                
-                // Update the animation state
                 setAnimatingTransitions(newAnimatingTransitions);
-                
-                // Mark these transitions as fired for the animation
-                setFiredTransitions(prevFired => [...prevFired, ...enabledTransitions]);
-                
-                // Don't clear the animations - they will naturally complete
+                setFiredTransitions(prevFired => [...prevFired, ...enabledTransitionsUpdated]);
+            } else {
+                console.log("No enabled transitions found, animation block skipped (Correct)."); // Log correct path
             }
             
             // Exit conflict resolution mode
@@ -549,16 +571,13 @@ export default function App() {
     };
 
     const updateTransitionSize = (id: string, newWidth: number, newHeight: number) => {
-        console.log('App: Updating size to:', newWidth, newHeight);
         // Save current state before updating size
         saveToHistory();
         
         setTransitions((prevTransitions) =>
             prevTransitions.map((t) => {
                 if (t.id === id) {
-                    console.log('App: Before update:', t.width, t.height);
                     const updated = { ...t, width: newWidth, height: newHeight };
-                    console.log('App: After update:', updated.width, updated.height);
                     return updated;
                 }
                 return t;
@@ -678,7 +697,9 @@ export default function App() {
             tokens: place.tokens,
             x: place.x || 100, // Default position if not provided
             y: place.y || 100,
-            radius: place.radius || 46  // Doubled from 23 to 46
+            radius: place.radius || 46,
+            bounded: place.bounded ?? false,
+            capacity: place.capacity ?? null
         }));
         
         // Convert imported transitions to UITransition objects
@@ -791,8 +812,6 @@ export default function App() {
                 .filter((t: { enabled: boolean }) => t.enabled)
                 .map((t: { id: string }) => t.id);
                 
-            console.log("Enabled transitions after selection:", enabledTransitions);
-            
             // Do NOT add animations for newly enabled transitions in deterministic mode
             // Only exit conflict resolution mode if there are no more conflicts
             if (enabledTransitions.length <= 1 || !deterministicMode) {
@@ -817,7 +836,33 @@ export default function App() {
     // ===== VALIDATION HANDLERS =====
     const handleValidationResult = (result: ValidationResult) => {
         console.log('Validation result:', result);
-        // You can add logic here to display validation results or update UI based on results
+    };
+
+    // REVISED: Handler now just takes capacity, infers bounded state
+    const handleUpdatePlaceCapacity = (id: string, newCapacity: number | null) => {
+        saveToHistory();
+        setPlaces(prevPlaces =>
+            prevPlaces.map(place => {
+                if (place.id === id) {
+                    const newBounded = newCapacity !== null; // Determine bounded based on capacity presence
+                    let validCapacity = newCapacity;
+
+                    // Ensure capacity is non-negative if provided
+                    if (newBounded && (validCapacity === null || validCapacity < 0)) {
+                         validCapacity = 0;
+                    }
+
+                    // Adjust tokens if current tokens exceed new capacity
+                    let newTokens = place.tokens;
+                    if (newBounded && validCapacity !== null && newTokens > validCapacity) {
+                        newTokens = validCapacity;
+                    }
+
+                    return { ...place, bounded: newBounded, capacity: validCapacity, tokens: newTokens };
+                }
+                return place;
+            })
+        );
     };
 
     // ===== RENDER =====
@@ -875,6 +920,8 @@ export default function App() {
                             }}
                             arcType={arcType}
                             setArcType={setArcType}
+                            showCapacityEditorMode={showCapacityEditorMode}
+                            onToggleCapacityEditorMode={setShowCapacityEditorMode}
                         />
                     </div>
 
@@ -1013,6 +1060,8 @@ export default function App() {
                             conflictingTransitions={conflictingTransitions}
                             onConflictingTransitionSelect={continueSimulation}
                             firedTransitions={firedTransitions}
+                            onUpdatePlaceCapacity={handleUpdatePlaceCapacity}
+                            showCapacityEditorMode={showCapacityEditorMode}
                         />
                     </div>
                     

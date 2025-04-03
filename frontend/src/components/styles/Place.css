@@ -20,7 +20,8 @@
   text-anchor: start;
   dominant-baseline: hanging;
   fill: white;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .place-token-input {
@@ -35,8 +36,9 @@
   background-color: transparent;
   color: white;
   border: none;
-  font-size: 16px;
-  padding: 4px;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 0;
   outline: none;
 }
 
@@ -73,4 +75,74 @@
   stroke: rgba(0, 255, 0, 0.5);
   stroke-width: 6;
   cursor: pointer;
+}
+
+/* Add styles for the new elements */
+.place-capacity-input {
+  width: 50px; /* Adjust as needed */
+  text-align: center;
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  font-size: 14px;
+  padding: 2px;
+  outline: none;
+}
+
+/* Basic Toggle Switch CSS */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px; /* Smaller switch */
+  height: 20px;
+  vertical-align: middle;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px; /* Adjust size */
+  width: 14px;  /* Adjust size */
+  left: 3px;    /* Adjust position */
+  bottom: 3px;  /* Adjust position */
+  background-color: white;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3; /* Blue when checked */
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px); /* Adjust translation distance */
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 20px; /* Adjust for height */
+}
+
+.slider.round:before {
+  border-radius: 50%;
 } 

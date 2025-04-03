@@ -15,6 +15,8 @@ export interface PetriNetDTO {
         x?: number;
         y?: number;
         radius?: number;
+        bounded?: boolean;
+        capacity?: number | null;
     }[];
     transitions: {
         id: string;
@@ -63,6 +65,8 @@ export interface UIPlace extends PlaceDTO {
     x: number;
     y: number;
     radius: number;
+    bounded: boolean;
+    capacity: number | null;
 }
 
 export interface UITransition extends TransitionDTO {

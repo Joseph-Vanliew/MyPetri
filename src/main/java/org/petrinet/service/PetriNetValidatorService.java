@@ -226,7 +226,12 @@ public class PetriNetValidatorService {
     private PetriNetDTO createDeepCopy(PetriNetValidationDTO requestDTO) {
         // Copy places
         List<PlaceDTO> placesCopy = requestDTO.getPlaces().stream()
-            .map(p -> new PlaceDTO(p.getId(), p.getTokens()))
+            .map(p -> new PlaceDTO(
+                p.getId(),
+                p.getTokens(),
+                p.isBounded(),
+                p.getCapacity()
+            ))
             .collect(Collectors.toList());
         
         // Copy transitions

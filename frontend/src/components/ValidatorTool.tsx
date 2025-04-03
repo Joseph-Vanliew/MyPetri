@@ -376,7 +376,7 @@ export function ValidatorTool({
         </div>
         
         {inputConfigs.length === 0 ? (
-          <p className="validator-empty-message">No input places configured. Add an input place to start.</p>
+          <p className="validator-empty-message">No input places configured.</p>
         ) : (
           <div>
             {inputConfigs.map((config, index) => (
@@ -463,7 +463,7 @@ export function ValidatorTool({
         </div>
         
         {expectedOutputs.length === 0 ? (
-          <p className="validator-empty-message">No expected outputs configured. Add an output place to specify expected tokens.</p>
+          <p className="validator-empty-message">No expected outputs configured.</p>
         ) : (
           <div>
             {expectedOutputs.map((output, index) => (

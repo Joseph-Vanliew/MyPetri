@@ -8,6 +8,8 @@ interface ToolbarProps {
     setSelectedTool: (tool: 'PLACE' | 'TRANSITION' | 'ARC' | 'NONE') => void;
     arcType: UIArc['type'];
     setArcType: (type: UIArc['type']) => void;
+    showCapacityEditorMode: boolean;
+    onToggleCapacityEditorMode: (enabled: boolean) => void;
 }
 
 export const Toolbar = ({
@@ -15,6 +17,8 @@ export const Toolbar = ({
                             setSelectedTool,
                             arcType,
                             setArcType,
+                            showCapacityEditorMode,
+                            onToggleCapacityEditorMode,
                         }: ToolbarProps) => {
     // Add state to track if we're currently dragging
     const [isDragging, setIsDragging] = useState<'PLACE' | 'TRANSITION' | null>(null);
@@ -23,6 +27,14 @@ export const Toolbar = ({
     const placeRef = useRef<SVGSVGElement>(null);
     const transitionRef = useRef<SVGSVGElement>(null);
     
+    const handleToolSelect = (tool: ToolbarProps['selectedTool']) => {
+        setSelectedTool(tool);
+        // If selecting Place or Transition, reset Arc type (optional UX choice)
+        if (tool === 'PLACE' || tool === 'TRANSITION') {
+            setArcType('REGULAR');
+        }
+    };
+
     return (
         <div className="toolbar" style={{ 
             display: 'flex', 
@@ -39,7 +51,7 @@ export const Toolbar = ({
             {/* Place button with hover effect and tooltip */}
             <div 
                 className={`toolbar-item ${selectedTool === 'PLACE' || isDragging === 'PLACE' ? 'active' : ''}`}
-                onClick={() => setSelectedTool('PLACE')}
+                onClick={() => handleToolSelect('PLACE')}
                 draggable
                 onDragStart={(e) => {
                     // Set the data for transfer
@@ -122,7 +134,7 @@ export const Toolbar = ({
             {/* Transition button with hover effect and tooltip */}
             <div 
                 className={`toolbar-item ${selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? 'active' : ''}`}
-                onClick={() => setSelectedTool('TRANSITION')}
+                onClick={() => handleToolSelect('TRANSITION')}
                 draggable
                 onDragStart={(e) => {
                     // Set the data for transfer
@@ -419,6 +431,35 @@ export const Toolbar = ({
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* NEW Global Bounded Mode Toggle */}
+            <div
+                className="tool-button" // Use existing styling or create new
+                style={{ display: 'flex', alignItems: 'center', marginTop: '15px', cursor: 'pointer' }}
+                onClick={() => onToggleCapacityEditorMode(!showCapacityEditorMode)}
+                title="Toggle visibility of place capacity editors"
+            >
+                 {/* Basic Checkbox Example */}
+                 <input
+                    type="checkbox"
+                    id="capacity-mode-toggle"
+                    checked={showCapacityEditorMode}
+                    onChange={(e) => {
+                        e.stopPropagation(); // Prevent div click handler if needed
+                        onToggleCapacityEditorMode(e.target.checked);
+                    }}
+                    style={{ marginRight: '8px', cursor: 'pointer' }}
+                />
+                <label
+                    htmlFor="capacity-mode-toggle"
+                    style={{ cursor: 'pointer' }}
+                    onClick={(e) => e.preventDefault()} // Prevent label click from double-toggling if needed
+                >
+                    Bounded Petri Net
+                </label>
+
+                {/* OR use a styled switch component if you have one */}
             </div>
         </div>
     );

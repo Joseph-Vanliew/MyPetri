@@ -14,264 +14,68 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.4)
 
-2025-04-01T17:17:59.904-04:00  INFO 24024 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 24024 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
-2025-04-01T17:17:59.905-04:00  INFO 24024 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
-2025-04-01T17:18:00.237-04:00  INFO 24024 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-04-01T17:18:00.242-04:00  INFO 24024 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-04-01T17:18:00.242-04:00  INFO 24024 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
-2025-04-01T17:18:00.259-04:00  INFO 24024 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-04-01T17:18:00.259-04:00  INFO 24024 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 335 ms
-2025-04-01T17:18:00.292-04:00  INFO 24024 --- [PATS] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
-2025-04-01T17:18:00.369-04:00  INFO 24024 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
-2025-04-01T17:18:00.372-04:00  INFO 24024 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.629 seconds (process running for 0.79)
+2025-04-03T18:36:28.405-04:00  INFO 6454 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 6454 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
+2025-04-03T18:36:28.407-04:00  INFO 6454 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
+2025-04-03T18:36:28.817-04:00  INFO 6454 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-04-03T18:36:28.824-04:00  INFO 6454 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-04-03T18:36:28.824-04:00  INFO 6454 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
+2025-04-03T18:36:28.847-04:00  INFO 6454 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-04-03T18:36:28.848-04:00  INFO 6454 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 409 ms
+2025-04-03T18:36:28.892-04:00  INFO 6454 --- [PATS] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-04-03T18:36:29.037-04:00  INFO 6454 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-04-03T18:36:29.040-04:00  INFO 6454 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.757 seconds (process running for 0.87)
 PatsApplication started
-2025-04-01T17:18:11.644-04:00  INFO 24024 --- [PATS] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-04-01T17:18:11.645-04:00  INFO 24024 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-04-01T17:18:11.647-04:00  INFO 24024 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 2
-Deterministic mode: returning all enabled transitions for user selection
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110076581
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110067248
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110080390
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 2
-Deterministic mode: returning all enabled transitions for user selection
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 2
-Deterministic mode: returning all enabled transitions for user selection
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 2
-Deterministic mode: returning all enabled transitions for user selection
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110076581
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110067248
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743121630117
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124756596
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124797597
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
+2025-04-03T18:36:38.352-04:00  INFO 6454 --- [PATS] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-03T18:36:38.353-04:00  INFO 6454 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-04-03T18:36:38.354-04:00  INFO 6454 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+DEBUG Controller: Received /api/process request DTO:
+{
+  "places" : [ {
+    "id" : "place_1743719790546",
+    "tokens" : 0,
+    "bounded" : false,
+    "capacity" : null
+  } ],
+  "transitions" : [ {
+    "id" : "trans_1743719791979",
+    "enabled" : false,
+    "arcIds" : [ "arc_1743719794830" ]
+  } ],
+  "arcs" : [ {
+    "id" : "arc_1743719794830",
+    "type" : "REGULAR",
+    "incomingId" : "place_1743719790546",
+    "outgoingId" : "trans_1743719791979"
+  } ],
+  "selectedTransitionId" : null,
+  "deterministicMode" : false
+}
+--- End of DTO Log ---
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1743719790546, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1743719790546: isBounded() called, returning false
+DEBUG Place place_1743719790546: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1743719790546, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Transition trans_1743719791979: Checking Input Tokens. Requirements: {place_1743719790546=1}
+    - Place place_1743719790546: Has=0, Needs=1. Condition (tokens < required): true
+    - Evaluation failed due to insufficient tokens.
+DEBUG Transition trans_1743719791979: Final Evaluation Result: false
 Number of enabled transitions: 0
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110076581
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110067248
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743121630117
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124756596
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124797597
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 0
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110076581
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110067248
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743121630117
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124756596
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124797597
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 0
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110076581
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110067248
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743121630117
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124756596
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743124797597
-Validator: Received processedState.
-Validator: Calling processPetriNet. Deterministic mode: true
-Service: processPetriNet called. Received deterministic mode: true
-Number of enabled transitions: 0
-Validator: Received processedState.
-Service: processPetriNet called. Received deterministic mode: false
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
-Service: processPetriNet called. Received deterministic mode: false
-Number of enabled transitions: 1
-Only one transition enabled: trans_1743110065881
+DEBUG Place place_1743719790546: isBounded() called, returning false
+DEBUG Place place_1743719790546: getCapacity() called, returning null
+
+> Task :bootRun FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':bootRun'.
+> Process 'command '/Users/josephvanliew/Library/Java/JavaVirtualMachines/corretto-21.0.2/Contents/Home/bin/java'' finished with non-zero exit value 137
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 9m 58s
+5 actionable tasks: 1 executed, 4 up-to-date

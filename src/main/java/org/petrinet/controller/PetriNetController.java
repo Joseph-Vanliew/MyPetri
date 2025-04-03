@@ -20,6 +20,24 @@ public class PetriNetController {
 
     @PostMapping("/api/process")
     public ResponseEntity<?> processPetriNet(@RequestBody PetriNetDTO petriNetDTO) {
+        /* INSERT START */
+        System.out.println("DEBUG Controller: Received /api/process request DTO:");
+        try {
+            // Attempt to log JSON using Jackson if available (add import com.fasterxml.jackson.databind.ObjectMapper;)
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(petriNetDTO));
+        } catch (Exception e) {
+            // Fallback logging if Jackson fails or is not easily available
+            System.out.println("    (Basic toString): " + petriNetDTO);
+            // Consider logging place details manually if needed
+            if (petriNetDTO != null && petriNetDTO.getPlaces() != null) {
+                petriNetDTO.getPlaces().forEach(p -> 
+                    System.out.println("        Place ID: " + p.getId() + ", Tokens: " + p.getTokens() + ", Bounded: " + p.isBounded() + ", Capacity: " + p.getCapacity())
+                );
+            }
+        }
+        System.out.println("--- End of DTO Log ---");
+        /* INSERT END */
         try {
             PetriNetDTO updatedPetriNetDTO = petriNetService.processPetriNet(petriNetDTO);
             return ResponseEntity.ok(updatedPetriNetDTO);

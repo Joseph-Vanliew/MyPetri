@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { UIPlace, UITransition, UIArc } from '../../types';
-import { getElementAnchorPoint } from './utils/anchorPointUtils';
+import { UIPlace, UITransition, UIArc } from '../../../types';
+import { getElementAnchorPoint } from '../../canvas/utils/anchorPointUtils';
 
 interface ArcPreviewProps {
   selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';

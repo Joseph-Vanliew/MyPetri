@@ -64,7 +64,17 @@ public class PetriNetService {
         if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
             System.out.println("Deterministic mode: returning all enabled transitions for user selection");
             // Pass original DTO to preserve mode
-            return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
+            PetriNetDTO resultDTO = convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
+            try {
+                // Attempt to log JSON using Jackson if available (add import com.fasterxml.jackson.databind.ObjectMapper;)
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                System.out.println("DEBUG processPetriNet: Returning DTO: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultDTO));
+            } catch (Exception e) {
+                // Fallback logging if Jackson fails or is not easily available
+                System.out.println("DEBUG processPetriNet: Returning DTO (basic toString): " + resultDTO);
+                // Consider logging place/transition details manually if needed
+            }
+            return resultDTO;
         }
         
         if (!enabledTransitions.isEmpty()) {
@@ -92,12 +102,24 @@ public class PetriNetService {
     }
 
     /**
-     * Evaluates whether a single transition can fire based on the current token distribution and arc types.
-     * Checks inhibitor arcs first (require 0 tokens in connected place).
-     * Then checks regular and bidirectional arcs (require sufficient tokens in connected places).
-     * A bidirectional arc requires the connected place to have at least one token, regardless of the arc's definition direction.
-     * A transition with no regular/bidirectional arcs requiring tokens (only inhibitor or none) is considered enabled
-     * if inhibitor conditions are met.
+     * Evaluates whether a single transition can fire based on the current token distribution,
+     * arc types, and place capacities. The evaluation proceeds in the following order:
+     * <ol>
+     *     <li><b>Inhibitor Arcs:</b> Checks if any connected inhibitor arc (Place -> Transition) originates
+     *         from a place with more than 0 tokens. If so, the transition is disabled.</li>
+     *     <li><b>Bidirectional Arc Preconditions:</b> Checks if any connected bidirectional arc is linked
+     *         to a place with 0 tokens. If so, the transition is disabled.</li>
+     *     <li><b>Input Token Requirements:</b> Calculates the total number of tokens required from each input
+     *         place based on incoming Regular (Place -> Transition) and Bidirectional arcs.</li>
+     *     <li><b>Input Token Availability:</b> Checks if all input places have sufficient tokens to meet
+     *         the calculated requirements. If not, the transition is disabled.</li>
+     *     <li><b>Output Place Capacity:</b> Calculates the net number of tokens that would be added to each
+     *         output place after firing (considering outgoing Regular (Transition -> Place) and Bidirectional arcs).
+     *         Checks if adding these tokens would exceed the capacity of any bounded output place. If so,
+     *         the transition is disabled.</li>
+     * </ol>
+     * The transition is considered enabled only if all the above checks pass. This method also updates
+     * the `enabled` state of the provided {@code transition} object based on the evaluation result.
      *
      * @param transition The {@link Transition} to evaluate.
      * @param arcsMap A map of arc IDs to {@link Arc} domain models.
@@ -105,67 +127,104 @@ public class PetriNetService {
      * @return {@code true} if the transition is enabled (can fire), {@code false} otherwise.
      */
     public boolean evaluateTransition(Transition transition, Map<String, Arc> arcsMap, Map<String, Place> placesMap) {
-
-        
+        // Local variable to track if evaluation passed, defaults to true
+        boolean evaluationPassed = true; 
         Map<String, Integer> requiredTokensPerPlace = new HashMap<>();
         boolean hasAnyTokenRequirement = false;
 
         // Iterate through all arcs connected to this transition
         for (String arcId : transition.getArcIds()) {
+            if (!evaluationPassed) break; // Stop checking if already failed
             Arc arc = arcsMap.get(arcId);
-            if (arc == null) continue; 
+            if (arc == null) continue;
 
-            // --- Check Inhibitor Arcs ---
-            // Inhibitor arcs *must* be Place -> Transition
+            // 1. Inhibitor Check
             if (arc instanceof Arc.InhibitorArc && arc.getOutgoingId().equals(transition.getId())) {
                 Place sourcePlace = placesMap.get(arc.getIncomingId());
-                
                 if (sourcePlace != null && sourcePlace.getTokens() > 0) {
-                    transition.setEnabled(false);
-                    return false;
+                    evaluationPassed = false;
                 }
             }
-            // --- Check Bidirectional Arcs ---
+            // 2. Bidirectional Precondition & Requirement Calc
             else if (arc instanceof Arc.BidirectionalArc) {
-                hasAnyTokenRequirement = true; // Bidirectional always implies a token need
+                hasAnyTokenRequirement = true;
                 String placeId = arc.getIncomingId().equals(transition.getId()) ? arc.getOutgoingId() : arc.getIncomingId();
-                
                 Place connectedPlace = placesMap.get(placeId);
-                // Bidirectional requires at least one token in the connected place
+                // BiDi requires at least 1 token in the connected place to be enabled
                 if (connectedPlace == null || connectedPlace.getTokens() < 1) {
-                     transition.setEnabled(false);
-                     return false;
+                     evaluationPassed = false;
                 }
-                // For requirement check, it consumes 1 token if Place -> Transition
-                 if (arc.getOutgoingId().equals(transition.getId())) {
+                // P -> T direction consumes a token
+                if (arc.getOutgoingId().equals(transition.getId())) {
                      requiredTokensPerPlace.merge(placeId, 1, Integer::sum);
-                 }
+                }
             }
-            // --- Check Regular Arcs (Place -> Transition only) ---
+            // 3. Regular Arc Requirement Calc (P -> T only)
             else if (arc instanceof Arc.RegularArc && arc.getOutgoingId().equals(transition.getId())) {
-                hasAnyTokenRequirement = true; // Regular incoming arc implies a token need
-                String placeId = arc.getIncomingId();
-                // Increment required token count for this place
-                requiredTokensPerPlace.merge(placeId, 1, Integer::sum);
+                hasAnyTokenRequirement = true;
+                requiredTokensPerPlace.merge(arc.getIncomingId(), 1, Integer::sum);
             }
         }
 
-        // --- Final Check for Required Tokens ---
-        if (hasAnyTokenRequirement) {
+        // --- Check Input Token Availability ---
+        if (evaluationPassed && hasAnyTokenRequirement) {
+             System.out.println("DEBUG Transition " + transition.getId() + ": Checking Input Tokens. Requirements: " + requiredTokensPerPlace);
              for (Map.Entry<String, Integer> entry : requiredTokensPerPlace.entrySet()) {
                  String placeId = entry.getKey();
                  int requiredTokens = entry.getValue();
-                 
                  Place place = placesMap.get(placeId);
+                 int currentTokens = (place != null) ? place.getTokens() : -1; // Handle null place
+                 boolean conditionMet = (place == null || currentTokens < requiredTokens);
+                 System.out.println("    - Place " + placeId + ": Has=" + currentTokens + ", Needs=" + requiredTokens + ". Condition (tokens < required): " + conditionMet);
+
                  if (place == null || place.getTokens() < requiredTokens) {
-                     transition.setEnabled(false);
-                     return false;
+                     evaluationPassed = false;
+                     System.out.println("    - Evaluation failed due to insufficient tokens.");
+                     break;
                  }
              }
         }
-        
-        transition.setEnabled(true);
-        return true;
+
+        // 4. Check Output Place Capacity
+        if (evaluationPassed) {
+            Map<String, Integer> tokensToAddPerPlace = new HashMap<>();
+            // Calculate tokens to add for T->P arcs (Regular & BiDi) and P->T (BiDi only)
+             for (String arcId : transition.getArcIds()) {
+                Arc arc = arcsMap.get(arcId);
+                if (arc == null) continue;
+                if (arc.getIncomingId().equals(transition.getId())) { // T -> P direction
+                     if (arc instanceof Arc.RegularArc || arc instanceof Arc.BidirectionalArc) {
+                          tokensToAddPerPlace.merge(arc.getOutgoingId(), 1, Integer::sum);
+                     }
+                } else if (arc.getOutgoingId().equals(transition.getId()) && arc instanceof Arc.BidirectionalArc) { // P -> T direction (BiDi adds back)
+                     tokensToAddPerPlace.merge(arc.getIncomingId(), 1, Integer::sum);
+                }
+             }
+
+            // Check actual capacity
+            for (Map.Entry<String, Integer> entry : tokensToAddPerPlace.entrySet()) {
+                String placeId = entry.getKey();
+                int tokensToAdd = entry.getValue();
+                Place targetPlace = placesMap.get(placeId);
+
+                if (targetPlace != null && targetPlace.isBounded()) {
+                    Integer placeCapacity = targetPlace.getCapacity();
+                    if (placeCapacity != null && (targetPlace.getTokens() + tokensToAdd > placeCapacity)) {
+                        evaluationPassed = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!evaluationPassed) {
+                transition.setEnabled(false); // Ensure domain model state is consistent
+                return false;
+            }
+        }
+
+        System.out.println("DEBUG Transition " + transition.getId() + ": Final Evaluation Result: " + evaluationPassed);
+        transition.setEnabled(evaluationPassed);
+        return evaluationPassed;
     }
 
     /**
@@ -192,8 +251,10 @@ public class PetriNetService {
                 // Handle regular consumption (Place -> Transition)
                 if (arc.getOutgoingId().equals(transition.getId())) {
                     Place sourcePlace = placesMap.get(arc.getIncomingId());
+                    System.out.println("DEBUG UpdateTokens: Attempting to consume from Place " + arc.getIncomingId() + " (Current Tokens: " + (sourcePlace != null ? sourcePlace.getTokens() : "N/A") + ") for Transition " + transition.getId());
                     if (sourcePlace != null && sourcePlace.getTokens() > 0) {
                         sourcePlace.removeTokens();
+                        System.out.println("DEBUG UpdateTokens: After consumption from Place " + arc.getIncomingId() + " - New Tokens: " + sourcePlace.getTokens());
                     }
                 }
                 // Handle regular production (Transition -> Place)
@@ -211,10 +272,13 @@ public class PetriNetService {
                 Place connectedPlace = placesMap.get(placeId);
 
                 if (connectedPlace != null) {
+                    System.out.println("DEBUG UpdateTokens: Handling Bidirectional for Place " + placeId + " (Current Tokens: " + connectedPlace.getTokens() + ")");
                     if (connectedPlace.getTokens() > 0) {
                          connectedPlace.removeTokens(); 
+                        System.out.println("    -> After BiDi consumption: " + connectedPlace.getTokens());
                     }
                      connectedPlace.addToken();
+                    System.out.println("    -> After BiDi production: " + connectedPlace.getTokens());
                 }
             }
         }
@@ -237,7 +301,10 @@ public class PetriNetService {
         List<PlaceDTO> placeDTOs = placesMap.values().stream()
                 .map(place -> new PlaceDTO(
                         place.getId(),
-                        place.getTokens()))
+                        place.getTokens(),
+                        place.isBounded(),
+                        place.getCapacity()
+                ))
                 .collect(Collectors.toList());
         //These should really be in the mapper class
         List<TransitionDTO> transitionDTOs = transitions.stream()
@@ -336,3 +403,4 @@ public class PetriNetService {
         return convertDomainModelsToDTO(placesMap, transitions, arcsMap, petriNetDTO);
     }
 }
+

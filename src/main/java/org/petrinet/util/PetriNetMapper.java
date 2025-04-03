@@ -15,7 +15,10 @@ public class PetriNetMapper {
 
 
     public static Place dtoToPlace(PlaceDTO dto) {
-        return new Place(dto.getId(), dto.getTokens());
+        System.out.println("DEBUG Mapper: Mapping PlaceDTO (ID: " + dto.getId() + ", Tokens: " + dto.getTokens() + ", Bounded: " + dto.isBounded() + ", Capacity: " + dto.getCapacity() + ")");
+        Place mappedPlace = new Place(dto.getId(), dto.getTokens(), dto.isBounded(), dto.getCapacity());
+        System.out.println("DEBUG Mapper: Created Place Model (ID: " + mappedPlace.getId() + ", Tokens: " + mappedPlace.getTokens() + ", Bounded: " + mappedPlace.isBounded() + ", Capacity: " + mappedPlace.getCapacity() + ")");
+        return mappedPlace;
     }
 
     public static Transition dtoToTransition(TransitionDTO dto) {

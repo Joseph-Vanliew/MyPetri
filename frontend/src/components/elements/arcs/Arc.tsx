@@ -1,6 +1,6 @@
 // src/components/elements/Arc.tsx
 import { useEffect, useState } from 'react';
-import type { UIArc, UIPlace, UITransition } from '../../types';
+import type { UIArc, UIPlace, UITransition } from '../../../types';
 
 interface ArcProps extends UIArc {
     source: UIPlace | UITransition;

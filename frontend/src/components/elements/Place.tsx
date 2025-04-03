@@ -9,11 +9,13 @@ interface PlaceProps extends UIPlace {
     onUpdatePosition: (id: string, x: number, y: number, dragState?: 'start' | 'dragging' | 'end') => void;
     onUpdateSize: (id: string, newRadius: number) => void;
     onUpdateTokens: (id: string, newTokens: number) => void;
-    onArcPortClick: (id:string) => void;
+    onArcPortClick: (id: string) => void;
     arcMode?: boolean;
     arcType?: UIArc['type'];
     onTypingChange: (isTyping: boolean) => void;
     onUpdateName?: (id: string, newName: string) => void;
+    onUpdatePlaceCapacity?: (id: string, capacity: number | null) => void;
+    showCapacityEditorMode: boolean;
 }
 
 export const Place = (props : PlaceProps) => {
@@ -38,6 +40,12 @@ export const Place = (props : PlaceProps) => {
     // Name editing states
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(props.name || '');
+
+    // Capacity editing states
+    const [isEditingCapacity, setIsEditingCapacity] = useState(false);
+    const [tempCapacity, setTempCapacity] = useState<string>(
+        props.capacity !== null ? String(props.capacity) : ''
+    );
 
     // Compute the current visual position (either from local state during dragging or from props)
     const visualPosition = isDragging ? localPosition : { x: props.x, y: props.y };
@@ -66,6 +74,13 @@ export const Place = (props : PlaceProps) => {
             (groupRef.current as any).visualPosition = visualPosition;
         }
     }, [visualPosition]);
+
+    // Update tempCapacity when props.capacity changes externally ONLY if not currently editing
+    useEffect(() => {
+        if (!isEditingCapacity) {
+            setTempCapacity(props.capacity !== null ? String(props.capacity) : '');
+        }
+    }, [props.capacity, isEditingCapacity]);
 
     // Handle resizing
     useEffect(() => {
@@ -278,6 +293,65 @@ export const Place = (props : PlaceProps) => {
         setTempName(props.name || '');
     };
 
+    // Capacity editing handlers
+    const handleCapacityDoubleClick = (e: React.MouseEvent) => {
+        // Allow editing only if global mode is on and place is selected
+        if (props.arcMode || !props.showCapacityEditorMode || !props.isSelected) return;
+        e.stopPropagation();
+        setIsEditingCapacity(true);
+        // Initialize with current value or empty string if null/n
+        setTempCapacity(props.capacity !== null ? String(props.capacity) : '');
+        props.onTypingChange(true);
+    };
+
+    const handleCapacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setTempCapacity(event.target.value);
+    };
+
+    const handleCapacityKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            finishCapacityEdit();
+        } else if (event.key === "Escape") {
+            cancelCapacityEdit();
+        }
+    };
+
+    const finishCapacityEdit = () => {
+        setIsEditingCapacity(false);
+        props.onTypingChange(false);
+        const trimmedCapacity = tempCapacity.trim();
+
+        if (trimmedCapacity === '') {
+            // Empty input means unbounded
+            if (props.onUpdatePlaceCapacity) {
+                props.onUpdatePlaceCapacity(props.id, null);
+            }
+        } else {
+            let newCapacityValue = parseInt(trimmedCapacity, 10);
+            if (!isNaN(newCapacityValue) && newCapacityValue >= 0) {
+                // Valid non-negative number means bounded with this capacity
+                if (props.onUpdatePlaceCapacity) {
+                    props.onUpdatePlaceCapacity(props.id, newCapacityValue);
+                }
+            } else {
+                // Invalid input, treat as unbounded (or revert, depending on desired UX)
+                // Option 1: Treat as unbounded
+                 if (props.onUpdatePlaceCapacity) {
+                     props.onUpdatePlaceCapacity(props.id, null);
+                 }
+                // Option 2: Revert to previous value (use cancelCapacityEdit logic)
+                // cancelCapacityEdit();
+            }
+        }
+    };
+
+    const cancelCapacityEdit = () => {
+        setIsEditingCapacity(false);
+        props.onTypingChange(false);
+        // Reset temp state based on the actual prop value
+        setTempCapacity(props.capacity !== null ? String(props.capacity) : '');
+    };
+
     // ===== RENDER =====
     return (
         <g
@@ -353,7 +427,7 @@ export const Place = (props : PlaceProps) => {
                 </foreignObject>
             )}
 
-            {/* Label Below - Only show when not editing */}
+            {/* Label Below - Only show when not editing name */}
             {!isEditingName && (
                 <text 
                     x={props.radius + 10}
@@ -364,13 +438,47 @@ export const Place = (props : PlaceProps) => {
                 </text>
             )}
             
+            {/* REVISED: Capacity Display/Editor */}
+            {/* Show only if global mode is ON and not in arc mode */}
+            {props.showCapacityEditorMode && !props.arcMode && (
+                <g transform={`translate(${props.radius + 10}, ${props.radius - 15})`}>
+                    <foreignObject x="0" y="0" width="100" height="30">
+                        {isEditingCapacity ? (
+                            <input
+                                type="number"
+                                value={tempCapacity}
+                                onChange={handleCapacityChange}
+                                onKeyDown={handleCapacityKeyDown}
+                                onBlur={finishCapacityEdit}
+                                className="place-capacity-input"
+                                autoFocus
+                                placeholder="n"
+                                min="0"
+                                style={{ width: '60px' }}
+                            />
+                        ) : (
+                            <text
+                                x="0"
+                                y="12"
+                                className="place-capacity-label"
+                                onDoubleClick={handleCapacityDoubleClick}
+                                style={{ fill: 'white', cursor: 'text', fontSize: '16px', fontWeight: 'bold' }}
+                            >
+                                <title>Max Tokens (Double-click to edit, empty=unbounded)</title>
+                                {`<= ${props.capacity !== null ? props.capacity : 'n'}`}
+                            </text>
+                        )}
+                    </foreignObject>
+                </g>
+            )}
+            
             {/* Name editing input - Only show when editing name */}
             {isEditingName && (
                 <foreignObject 
                     x={props.radius + 10}
-                    y={-props.radius - 20}
+                    y={-props.radius + 8}
                     width="150"
-                    height="40"
+                    height="25"
                 >
                     <input
                         type="text"

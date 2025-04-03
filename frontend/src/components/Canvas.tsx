@@ -1,9 +1,10 @@
 import React, {useState, useCallback, useEffect, useRef} from 'react';
 import { Place } from './elements/Place';
 import { Transition } from './elements/Transition';
-import { Arc } from './elements/Arc';
+import { Arc } from './elements/arcs/Arc';
 import { Grid } from './canvas/Grid';
-import { ArcPreview } from './canvas/ArcPreview';
+import { ArcPreview } from './elements/arcs/ArcPreview';
+import { MarkerDefinitions } from './elements/arcs/MarkerDefinitions';
 import { useZoomAndPan } from './canvas/hooks/useZoomAndPan';
 import { useMouseTracking } from './canvas/hooks/useMouseTracking';
 import { useSelectionBox } from './canvas/hooks/useSelectionBox';
@@ -39,6 +40,8 @@ interface CanvasProps {
     conflictingTransitions?: string[];
     onConflictingTransitionSelect?: (id: string) => void;
     firedTransitions?: string[];
+    onUpdatePlaceCapacity?: (id: string, capacity: number | null) => void;
+    showCapacityEditorMode?: boolean;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -245,7 +248,7 @@ export const Canvas = (props: CanvasProps) => {
                     height: '100%'
                 }}
             >
-                {/* Canvas Background */}
+                {/* Canvas Background - used to fill the canvas with a background color*/}
                 <rect
                     x={zoomAndPan.viewBox.x - 2000}
                     y={zoomAndPan.viewBox.y - 2000}
@@ -272,9 +275,9 @@ export const Canvas = (props: CanvasProps) => {
                     />
                 )}
 
-                {/* Arcs Layer */}
+                {/* Arcs Layer - used to render arcs*/}
                 <g className="arcs-layer">
-                    {props.arcs.map(arc => {
+                    {props.arcs.map((arc: UIArc) => {
                         const sourceElement =
                             props.places.find(p => p.id === arc.incomingId) ||
                             props.transitions.find(t => t.id === arc.incomingId);
@@ -298,7 +301,20 @@ export const Canvas = (props: CanvasProps) => {
                     })}
                 </g>
 
-                {/* Elements Layer */}
+                {/* Marker definitions - used by arcs and arc previews*/}
+                <MarkerDefinitions />
+
+                {/* Arc Preview - used to preview arc placement*/}
+                <ArcPreview
+                    selectedTool={props.selectedTool}
+                    selectedElements={props.selectedElements}
+                    places={props.places}
+                    transitions={props.transitions}
+                    arcType={props.arcType}
+                    mousePosition={mouseTracking.mousePosition}
+                />
+
+                {/* Elements Layer - used to render places and transitions*/}
                 <g className="elements-layer">
                     {props.places.map(place => {
                         if (!elementRefs[place.id]) {
@@ -314,6 +330,8 @@ export const Canvas = (props: CanvasProps) => {
                                 y={place.y}
                                 tokens={place.tokens}
                                 radius={place.radius}
+                                bounded={place.bounded}
+                                capacity={place.capacity}
                                 isSelected={props.selectedElements.includes(place.id)}
                                 onSelect={(id: string) => props.onSelectElement(id)}
                                 onUpdateSize={props.onUpdatePlaceSize}
@@ -324,6 +342,8 @@ export const Canvas = (props: CanvasProps) => {
                                 onUpdateTokens={props.onUpdateToken}
                                 onTypingChange={props.onTypingChange}
                                 onUpdateName={props.onUpdateName}
+                                onUpdatePlaceCapacity={props.onUpdatePlaceCapacity}
+                                showCapacityEditorMode={props.showCapacityEditorMode ?? false}
                             />
                         );
                     })}
@@ -362,54 +382,6 @@ export const Canvas = (props: CanvasProps) => {
                         );
                     })}
                 </g>
-
-                {/* Arc Preview */}
-                <ArcPreview
-                    selectedTool={props.selectedTool}
-                    selectedElements={props.selectedElements}
-                    places={props.places}
-                    transitions={props.transitions}
-                    arcType={props.arcType}
-                    mousePosition={mouseTracking.mousePosition}
-                />
-
-                {/* Marker definitions */}
-                <defs>
-                    <marker
-                        id="arrow"
-                        viewBox="0 0 10 10"
-                        refX="9"
-                        refY="5"
-                        markerWidth="8"
-                        markerHeight="8"
-                        orient="auto-start-reverse"
-                    >
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
-                    </marker>
-
-                    <marker
-                        id="inhibitor"
-                        viewBox="0 0 10 10"
-                        refX="9"
-                        refY="5"
-                        markerWidth="8"
-                        markerHeight="8"
-                    >
-                        <circle cx="5" cy="5" r="4" fill="#ff3333" />
-                    </marker>
-
-                    <marker
-                        id="bidirectional"
-                        viewBox="0 0 10 10"
-                        refX="1"
-                        refY="5"
-                        markerWidth="8"
-                        markerHeight="8"
-                        orient="auto-start-reverse"
-                    >
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#ddd" />
-                    </marker>
-                </defs>
             </svg>
         </div>
     );

@@ -360,10 +360,10 @@ export const Transition = (props: TransitionProps) => {
             {/* Name editing input - Only show when editing name */}
             {isEditingName && (
                 <foreignObject 
-                    x={-75}
-                    y={-20}
-                    width="150"
-                    height="40"
+                    x={-54}
+                    y={-13}
+                    width="120"
+                    height="30"
                 >
                     <input
                         type="text"
