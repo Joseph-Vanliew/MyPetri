@@ -1,0 +1,29 @@
+name: Java CI with Gradle
+
+on:
+  push:
+    branches: [ main ] # Runs on pushes to the main branch
+  pull_request:
+    branches: [ main ] # Runs on pull requests targeting the main branch
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest # Use a standard Linux environment
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4 # Gets your code from the repo
+
+    - name: Set up JDK 21 # Using version from build.gradle
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin' # A popular OpenJDK distribution
+        cache: 'gradle' # Speeds up builds by caching dependencies
+
+    - name: Grant execute permission for gradlew # Needed on Linux/Mac runners
+      run: chmod +x ./gradlew
+
+    - name: Build and Test with Gradle
+      # Runs the tests using the Gradle wrapper
+      run: ./gradlew test
