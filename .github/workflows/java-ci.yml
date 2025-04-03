@@ -2,9 +2,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ main ] # Runs on pushes to the main branch
+    branches: [ master ] # Runs on pushes to the main branch
   pull_request:
-    branches: [ main ] # Runs on pull requests targeting the main branch
+    branches: [ master ] # Runs on pull requests targeting the main branch
 
 jobs:
   build-and-test:
