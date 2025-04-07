@@ -1,5 +1,5 @@
 // src/App.tsx
-import {useState, useCallback, useEffect, useRef} from 'react';
+import React, {useState, useCallback, useEffect, useRef} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
 import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult} from './types';
@@ -139,14 +139,13 @@ export default function App() {
             }
 
             if (e.key === 'Delete' || e.key === 'Backspace') {
-                // If in arc mode with a source selected, just clear the selection
-                // but stay in arc mode
-                if (selectedTool === 'ARC' && selectedElements.length > 0) {
+                // If actively drawing an arc (source selected), cancel the drawing by clearing selection.
+                if (selectedTool === 'ARC' && selectedElements.length === 1) {
                     setSelectedElements([]);
-                    return;
+                    return; 
                 }
                 
-                // Otherwise proceed with normal deletion
+                // Otherwise (not actively drawing an arc, or multiple elements selected), proceed with deletion.
                 saveToHistory();
                 handleDelete();
             }
@@ -219,27 +218,36 @@ export default function App() {
         const isShift = event?.shiftKey;
         
         setSelectedElements(prevSelected => {
+            // Determine the next state based on id and isShift
+            let nextSelected: string[];
             if (id === '') { // Special case to clear selection (e.g., background click)
-                return [];
-            }
-            if (isShift) {
+                nextSelected = [];
+            } else if (isShift) {
                 // Shift+Click: Toggle selection
                 if (prevSelected.includes(id)) {
                     // Remove if already selected
-                    return prevSelected.filter(elId => elId !== id);
+                    nextSelected = prevSelected.filter(elId => elId !== id);
                 } else {
                     // Add if not selected
-                    return [...prevSelected, id];
+                    nextSelected = [...prevSelected, id];
                 }
             } else {
                 // No Shift: Select only this element, unless it's already the *only* selected element
                 if (prevSelected.length === 1 && prevSelected[0] === id) {
-                    return prevSelected; // No change if clicking the already solely selected element
+                    nextSelected = prevSelected; // No change if clicking the already solely selected element
+                } else {
+                    // Otherwise, select just this one
+                    nextSelected = [id];
                 }
-                 // Otherwise, select just this one
-                return [id];
             }
+            return nextSelected; // Return the calculated next state
         });
+
+        // If we just selected exactly one element (not clearing selection, not shift-clicking)
+        // then deactivate any active creation tool by setting it back to NONE.
+        if (!isShift && id !== '') {
+             setSelectedTool('NONE'); 
+        }
     };
     
     // Handler for multi-selection (e.g., from drag-select box)
@@ -497,9 +505,7 @@ export default function App() {
             }
             
             // Check if any animation should happen
-            console.log("Checking animation condition (frontend): enabledTransitions.length =", enabledTransitionsUpdated.length);
             if (enabledTransitionsUpdated.length > 0) {
-                console.log("!!! PROBLEM?: Entering animation block !!!"); // Log entry into animation block
                 const newAnimatingTransitions = { ...animatingTransitions };
                 enabledTransitionsUpdated.forEach(id => {
                     newAnimatingTransitions[id] = true;
@@ -507,7 +513,7 @@ export default function App() {
                 setAnimatingTransitions(newAnimatingTransitions);
                 setFiredTransitions(prevFired => [...prevFired, ...enabledTransitionsUpdated]);
             } else {
-                console.log("No enabled transitions found, animation block skipped (Correct)."); // Log correct path
+                console.log("No enabled transitions found.");
             }
             
             // Exit conflict resolution mode
@@ -710,19 +716,16 @@ export default function App() {
             arcIds: transition.arcIds,
             x: transition.x || 200, // Default position if not provided
             y: transition.y || 200,
-            width: transition.width || 120,  // Doubled from 60 to 120
-            height: transition.height || 54   // Doubled from 27 to 54
+            width: transition.width || 120,
+            height: transition.height || 54 
         }));
         
         // Set the imported data
         setPlaces(importedPlaces);
         setTransitions(importedTransitions);
         setArcs(importedData.arcs);
+        setTitle(importedData.title || "Untitled Petri Net");
         
-        // If the imported data has a title, use it
-        if (importedData.title) {
-            setTitle(importedData.title);
-        }
     };
 
     const continueSimulation = async (selectedTransitionId: string) => {
@@ -821,7 +824,6 @@ export default function App() {
             } else {
                 // Still have conflicts, update the conflicting transitions list
                 setConflictingTransitions(enabledTransitions);
-                // We're already in conflict resolution mode, so no need to set it again
             }
             
             setTransitions(newTransitions);
@@ -1088,7 +1090,7 @@ export default function App() {
                      borderLeft: '1px solid #4a4a4a',
                      overflow: 'auto',
                      flexShrink: 0,
-                     height: '100%' // Ensure it takes full height
+                     height: '100%'
                 }}>
                     <TabbedPanel 
                         data={petriNetDTO}

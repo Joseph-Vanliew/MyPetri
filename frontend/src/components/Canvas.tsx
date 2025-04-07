@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useState, useCallback, useEffect, useRef} from 'react';
 import { Place } from './elements/Place';
 import { Transition } from './elements/Transition';
 import { Arc } from './elements/arcs/Arc';
@@ -45,15 +45,11 @@ interface CanvasProps {
 }
 
 export const Canvas = (props: CanvasProps) => {
-    // Create a ref for the SVG element
     const svgRef = useRef<SVGSVGElement>(null);
     const [isShiftPressed, setIsShiftPressed] = useState(false);
-    const [isDraggingSelectionBox, setIsDraggingSelectionBox] = useState(false);
     
-    // Get container dimensions
     const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
     
-    // Use custom hooks for zoom/pan and mouse tracking
     const zoomAndPan = useZoomAndPan(svgRef, {
         initialViewBox: { x: -500, y: -500, w: 1000, h: 1000 }
     });
@@ -62,9 +58,15 @@ export const Canvas = (props: CanvasProps) => {
         enabled: props.selectedTool === 'ARC' && props.selectedElements.length > 0
     });
     
-    // Add a new state to store refs to elements
     const [elementRefs, setElementRefs] = useState<{[id: string]: React.RefObject<SVGGElement>}>({});
     
+    const { selectionRect, isSelecting, didJustSelect } = useSelectionBox({
+        svgRef,
+        places: props.places,
+        transitions: props.transitions,
+        onSelectionChange: props.onMultiSelectElement,
+    });
+
     // Update dimensions on resize
     useEffect(() => {
         const updateDimensions = () => {
@@ -121,21 +123,9 @@ export const Canvas = (props: CanvasProps) => {
                 mouseTracking.setMousePosition(coords);
             }
         }
-    }, [props.selectedTool, props.selectedElements]);
+    }, [props.selectedTool, props.selectedElements.length, mouseTracking.setMousePosition, svgRef]);
     
-    // Instantiate the selection box hook
-    const { selectionRect } = useSelectionBox({
-        svgRef,
-        places: props.places,
-        transitions: props.transitions,
-        onSelectionChange: (selectedIds) => {
-            props.onMultiSelectElement(selectedIds);
-            setIsDraggingSelectionBox(false);
-        },
-        isEnabled: () => isShiftPressed,
-    });
-
-    // Add state for shift key
+    // state for shift key
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Shift') {
@@ -155,25 +145,27 @@ export const Canvas = (props: CanvasProps) => {
         };
     }, []);
     
-    // Handle canvas click
+    // Update handleSvgClick to check the didJustSelect flag from the hook
     const handleSvgClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
         e.preventDefault();
-        
-        if (isDraggingSelectionBox) {
-            setIsDraggingSelectionBox(false);
-            return;
+
+        // If the hook indicates selection just finished, ignore this click.
+        if (didJustSelect) {
+            return; // Hook will auto-reset the flag
         }
         
+        // Original logic for background deselect and placing elements
         if (!isShiftPressed && e.target === e.currentTarget && props.selectedElements.length > 0) {
-            props.onSelectElement('');
+            props.onSelectElement(''); 
         }
         
         if (!isShiftPressed && (props.selectedTool === 'PLACE' || props.selectedTool === 'TRANSITION' || props.selectedTool === 'ARC')) {
+            if (!svgRef.current) return;
             const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
             const snapped = snapToGrid(coords.x, coords.y);
             props.onCanvasClick(snapped.x, snapped.y);
         }
-    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick, props.selectedTool, isShiftPressed, isDraggingSelectionBox]);
+    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick, props.selectedTool, isShiftPressed, didJustSelect]); 
     
     // Handle drag and drop
     const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {
@@ -186,6 +178,7 @@ export const Canvas = (props: CanvasProps) => {
         const type = e.dataTransfer.getData("application/petri-item");
         if(!type) return;
         
+        if (!svgRef.current) return;
         const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
         const snapped = snapToGrid(coords.x, coords.y);
         
@@ -197,7 +190,7 @@ export const Canvas = (props: CanvasProps) => {
         
         props.onCanvasClick(snapped.x, snapped.y);
     }, [props.onSelectTool, props.onCanvasClick]);
-    
+
     return (
         <div className="canvas-container" style={{ 
             width: '100%', 
@@ -218,28 +211,24 @@ export const Canvas = (props: CanvasProps) => {
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onMouseDown={(e) => {
-                    if (isShiftPressed) {
-                        setIsDraggingSelectionBox(true);
-                    } else {
+                    if (!isShiftPressed) {
                         zoomAndPan.handleMouseDown(e);
                     }
                 }}
                 onMouseMove={(e) => {
                     mouseTracking.updateMousePosition(e.clientX, e.clientY);
                     
-                    if (!isDraggingSelectionBox) {
+                    if (!isSelecting) {
                         zoomAndPan.handlePan(e);
                     }
                 }}
                 onMouseUp={() => {
-                    zoomAndPan.handleMouseUp();
-                    
-                    if (isDraggingSelectionBox) {
-                        setIsDraggingSelectionBox(false);
+                    if (!isSelecting) {
+                         zoomAndPan.handleMouseUp();
                     }
                 }}
                 onMouseLeave={() => {
-                    zoomAndPan.handleMouseLeave();
+                    zoomAndPan.handleMouseLeave(); 
                 }}
                 style={{ 
                     backgroundColor: 'transparent',
@@ -248,7 +237,6 @@ export const Canvas = (props: CanvasProps) => {
                     height: '100%'
                 }}
             >
-                {/* Canvas Background - used to fill the canvas with a background color*/}
                 <rect
                     x={zoomAndPan.viewBox.x - 2000}
                     y={zoomAndPan.viewBox.y - 2000}
@@ -258,10 +246,8 @@ export const Canvas = (props: CanvasProps) => {
                     pointerEvents="none"
                 />
                 
-                {/* Grid Layer */}
                 <Grid viewBox={zoomAndPan.viewBox} />
 
-                {/* Selection Rectangle Layer (Render if active) */}
                 {selectionRect && (
                     <rect
                         x={selectionRect.x}
@@ -275,53 +261,20 @@ export const Canvas = (props: CanvasProps) => {
                     />
                 )}
 
-                {/* Arcs Layer - used to render arcs*/}
                 <g className="arcs-layer">
-                    {(() => { // Use IIFE to scope arcOffsets calculation
-                        const arcOffsets = useMemo(() => {
-                            const offsets: { [id: string]: number } = {};
-                            const groupedArcs: { [key: string]: UIArc[] } = {};
-                            const OFFSET_AMOUNT = 12; // Pixels to offset by
-
-                            props.arcs.forEach(arc => {
-                                const key = [arc.incomingId, arc.outgoingId].sort().join('-');
-                                if (!groupedArcs[key]) {
-                                    groupedArcs[key] = [];
-                                }
-                                groupedArcs[key].push(arc);
-                            });
-
-                            Object.values(groupedArcs).forEach(group => {
-                                if (group.length === 2) {
-                                    const regularArc = group.find(a => a.type === 'REGULAR');
-                                    const inhibitorArc = group.find(a => a.type === 'INHIBITOR');
-                                    if (regularArc && inhibitorArc) {
-                                        offsets[regularArc.id] = OFFSET_AMOUNT;
-                                        offsets[inhibitorArc.id] = -OFFSET_AMOUNT;
-                                    }
-                                }
-                            });
-                            return offsets;
-                        }, [props.arcs]);
-
-                        // Render arcs, passing the calculated offset
+                    {(() => { 
+                        // Render arcs, passing the full arcs list for internal calculation
                         return props.arcs.map((arc: UIArc) => {
-                            const sourceElement = 
-                                props.places.find(p => p.id === arc.incomingId) ||
-                                props.transitions.find(t => t.id === arc.incomingId);
-                            const targetElement = 
-                                props.places.find(p => p.id === arc.outgoingId) ||
-                                props.transitions.find(t => t.id === arc.outgoingId);
+                            const sourceElement = props.places.find(p => p.id === arc.incomingId) || props.transitions.find(t => t.id === arc.incomingId);
+                            const targetElement = props.places.find(p => p.id === arc.outgoingId) || props.transitions.find(t => t.id === arc.outgoingId);
                             
-                            const offset = arcOffsets[arc.id] || 0; // Get offset or default to 0
-                                
                             return sourceElement && targetElement ? (
                                 <Arc 
                                     key={arc.id} 
-                                    {...arc} // Spread other arc props
+                                    {...arc} // Pass original arc props (includes id, incomingId, outgoingId)
                                     source={sourceElement} 
                                     target={targetElement}
-                                    offset={offset} // Pass the calculated offset
+                                    allArcs={props.arcs} // Pass the full list
                                     isSelected={props.selectedElements.includes(arc.id)}
                                     onSelect={(id: string) => props.onSelectElement(id)}
                                 />
@@ -330,10 +283,8 @@ export const Canvas = (props: CanvasProps) => {
                     })()} 
                 </g>
 
-                {/* Marker definitions - used by arcs and arc previews*/}
-                <MarkerDefinitions />
+                <MarkerDefinitions/>
 
-                {/* Arc Preview - used to preview arc placement*/}
                 <ArcPreview
                     selectedTool={props.selectedTool}
                     selectedElements={props.selectedElements}
@@ -343,7 +294,6 @@ export const Canvas = (props: CanvasProps) => {
                     mousePosition={mouseTracking.mousePosition}
                 />
 
-                {/* Elements Layer - used to render places and transitions*/}
                 <g className="elements-layer">
                     {props.places.map(place => {
                         if (!elementRefs[place.id]) {
@@ -378,7 +328,6 @@ export const Canvas = (props: CanvasProps) => {
                     })}
 
                     {props.transitions.map(transition => {
-                        // Create a ref for this transition if it doesn't exist
                         if (!elementRefs[transition.id]) {
                             setElementRefs(prev => ({...prev, [transition.id]: React.createRef()}));
                         }

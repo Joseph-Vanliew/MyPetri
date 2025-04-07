@@ -312,6 +312,17 @@
   color: #c62828;
 }
 
+/* Add styles for warning list items */
+.validator-result-list-item.warning {
+  padding: 6px 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  background-color: #4a3d24; 
+  color: #ffdd99; 
+  border-left: 3px solid #dd6b20; 
+}
+
 .validator-footer {
   margin-top: auto;
   padding-top: 12px;

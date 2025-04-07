@@ -1,5 +1,5 @@
 // src/components/elements/Arc.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { UIArc, UIPlace, UITransition } from '../../../types';
 
 interface ArcProps extends UIArc {
@@ -7,11 +7,11 @@ interface ArcProps extends UIArc {
     target: UIPlace | UITransition;
     isSelected: boolean;
     onSelect: (id: string) => void;
-    offset?: number;
+    allArcs: UIArc[];
 }
 
 // Deciding which helper to use based on the element type.
-function getElementAnchorPoint(element: UIPlace | UITransition, otherCenter: { x: number; y: number }) {
+export function getElementAnchorPoint(element: UIPlace | UITransition, otherCenter: { x: number; y: number }) {
     const center = { x: element.x, y: element.y };
     if (element.id.startsWith('place')) {
         // For a place, use its radius.
@@ -53,19 +53,51 @@ function getRectAnchorPoint(center: { x: number; y: number }, width: number, hei
 }
 
 export const Arc = (props: ArcProps) => {
-    const { offset = 0 } = props;
-
-    // Use state to track the current positions
     const [sourcePos, setSourcePos] = useState({ x: props.source.x, y: props.source.y });
     const [targetPos, setTargetPos] = useState({ x: props.target.x, y: props.target.y });
     
-    // Update positions when props change
     useEffect(() => {
         setSourcePos({ x: props.source.x, y: props.source.y });
         setTargetPos({ x: props.target.x, y: props.target.y });
     }, [props.source.x, props.source.y, props.target.x, props.target.y]);
     
-    // Compute initial anchor points 
+    // Calculate dynamic offset using useMemo based on all arcs
+    const offset = useMemo(() => {
+        const OFFSET_AMOUNT = 18; // Keep the increased amount
+        
+        // Find siblings by filtering all arcs
+        const siblings = props.allArcs.filter(a => {
+            const keyA = [a.incomingId, a.outgoingId].sort().join('-');
+            const keyCurrent = [props.incomingId, props.outgoingId].sort().join('-');
+            return keyA === keyCurrent;
+        });
+
+        const n = siblings.length;
+        if (n <= 1) return 0; // No offset if only one arc
+
+        // Sort siblings by ID for consistent ordering
+        siblings.sort((a, b) => a.id.localeCompare(b.id)); 
+        const index = siblings.findIndex(a => a.id === props.id);
+        
+        // Check if index was found (should always be found)
+        if (index === -1) return 0; 
+
+        const startFactor = -(n - 1) / 2.0;
+        const factor = startFactor + index;
+        let calculatedOffset = factor * OFFSET_AMOUNT;
+        
+        // Determine canonical direction and flip offset if necessary
+        const sortedIds = [props.incomingId, props.outgoingId].sort();
+        const canonicalSourceId = sortedIds[0];
+        if (props.incomingId !== canonicalSourceId) {
+            calculatedOffset *= -1;
+        }
+        
+        return calculatedOffset;
+
+    // Depend on all arcs and the specific arc's identity/endpoints
+    }, [props.allArcs, props.id, props.incomingId, props.outgoingId]);
+
     let sourceAnchor = getElementAnchorPoint(
         { ...props.source, x: sourcePos.x, y: sourcePos.y } as UIPlace | UITransition, 
         targetPos
@@ -74,21 +106,17 @@ export const Arc = (props: ArcProps) => {
         { ...props.target, x: targetPos.x, y: targetPos.y } as UIPlace | UITransition, 
         sourcePos
     );
-
-    // Calculate direction vector and length
+    
     const dx = targetAnchor.x - sourceAnchor.x;
     const dy = targetAnchor.y - sourceAnchor.y;
     const length = Math.sqrt(dx * dx + dy * dy);
     
-    // Normalize direction vector
-    const ndx = dx / length;
-    const ndy = dy / length;
+    const ndx = length > 0 ? dx / length : 0;
+    const ndy = length > 0 ? dy / length : 0;
 
-    // Calculate perpendicular vector for offset
     const perpDx = -ndy;
     const perpDy = ndx;
 
-    // Apply offset if needed
     if (offset !== 0 && length > 0) {
         sourceAnchor.x += perpDx * offset;
         sourceAnchor.y += perpDy * offset;
@@ -96,18 +124,18 @@ export const Arc = (props: ArcProps) => {
         targetAnchor.y += perpDy * offset;
     }
 
-    // For all arc types, we need to adjust the line slightly to accommodate markers
     let adjustedSourceX = sourceAnchor.x;
     let adjustedSourceY = sourceAnchor.y;
     let adjustedTargetX = targetAnchor.x;
     let adjustedTargetY = targetAnchor.y;
     
-    // Adjust endpoints for markers (using the potentially offset vector)
     const adjDx = adjustedTargetX - adjustedSourceX;
     const adjDy = adjustedTargetY - adjustedSourceY;
     const adjLength = Math.sqrt(adjDx * adjDx + adjDy * adjDy);
     const adjNdx = adjLength > 0 ? adjDx / adjLength : 0;
     const adjNdy = adjLength > 0 ? adjDy / adjLength : 0;
+    
+    const markerUrl = "url(#arrow)";
     
     if (props.type === "BIDIRECTIONAL") {
         adjustedSourceX = sourceAnchor.x + adjNdx * 6;
@@ -118,28 +146,23 @@ export const Arc = (props: ArcProps) => {
         adjustedTargetX = targetAnchor.x - adjNdx * 6;
         adjustedTargetY = targetAnchor.y - adjNdy * 6;
     } else if (props.type === "INHIBITOR") {
-        adjustedTargetX = targetAnchor.x - adjNdx * 15;
-        adjustedTargetY = targetAnchor.y - adjNdy * 15;
+        adjustedTargetX = targetAnchor.x - adjNdx * 16; 
+        adjustedTargetY = targetAnchor.y - adjNdy * 16;
     }
 
-    // Calculate control point for quadratic bezier curve if offset
     let controlX: number | null = null;
     let controlY: number | null = null;
     if (offset !== 0 && length > 0) {
         const midX = (sourceAnchor.x + targetAnchor.x) / 2;
         const midY = (sourceAnchor.y + targetAnchor.y) / 2;
-        // Control point offset perpendicularly from the midpoint
-        // The amount of curve can be adjusted by changing the multiplier (e.g., offset * 0.5)
         controlX = midX + perpDx * offset * 0.4;
         controlY = midY + perpDy * offset * 0.4;
     }
 
-    // Path data string: Use Q for quadratic bezier if offset, M L for straight line otherwise
     const pathData = controlX !== null && controlY !== null
         ? `M ${adjustedSourceX},${adjustedSourceY} Q ${controlX},${controlY} ${adjustedTargetX},${adjustedTargetY}`
         : `M ${adjustedSourceX},${adjustedSourceY} L ${adjustedTargetX},${adjustedTargetY}`;
 
-    // Selection path data (follows the same curve)
     const selectionPathData = controlX !== null && controlY !== null
         ? `M ${sourceAnchor.x},${sourceAnchor.y} Q ${controlX},${controlY} ${targetAnchor.x},${targetAnchor.y}`
         : `M ${sourceAnchor.x},${sourceAnchor.y} L ${targetAnchor.x},${targetAnchor.y}`;
@@ -147,44 +170,40 @@ export const Arc = (props: ArcProps) => {
     return (
         <g onClick={(e) => {
             e.stopPropagation();
-            props.onSelect(props.id);  // Select arc when clicked
+            props.onSelect(props.id);
         }}>
-            {/* Invisible path for easier selection, now following the curve */}
             <path
                 d={selectionPathData}
                 fill="none"
                 stroke="transparent"
-                strokeWidth="20" // Wider invisible stroke for easier clicking
-                pointerEvents="stroke" // Make only the stroke clickable
+                strokeWidth="20"
+                pointerEvents="stroke"
             />
-
-            {/* Main visible arc path */}
             <path
                 d={pathData}
                 fill="none"
-                stroke="#ddd"
+                stroke="#fff"
                 strokeWidth="3"
-                markerEnd={
-                    props.type === "INHIBITOR"
-                        ? undefined
-                        : "url(#arrow)"
-                }
-                markerStart={props.type === "BIDIRECTIONAL" ? "url(#arrow)" : undefined}
+                markerEnd={props.type === "INHIBITOR" ? undefined : markerUrl}
+                markerStart={props.type === "BIDIRECTIONAL" ? markerUrl : undefined}
             />
-
-            {/* Custom circle for inhibitor arcs (position adjusted for curve) */}
-            {props.type === "INHIBITOR" && (
-                <circle
-                    cx={adjustedTargetX}
-                    cy={adjustedTargetY}
-                    r={8}
-                    fill="#ff3333"
-                    stroke="#ddd"
-                    strokeWidth="2"
-                />
-            )}
-
-            {/* Overlay dashed blue path when selected */}
+            {/* Custom circle logic for inhibitor arcs */}
+            {(() => {
+                // Log inhibitor rendering attempt
+                if (props.type === "INHIBITOR") {
+                    return (
+                        <circle
+                            cx={adjustedTargetX}
+                            cy={adjustedTargetY}
+                            r={8} 
+                            fill="#ff3333" // Revert to red fill for visibility
+                            stroke="#fff" 
+                            strokeWidth="2"
+                        />
+                    );
+                }
+                return null; // Return null if not inhibitor type
+            })()}
             {props.isSelected && (
                 <path
                     d={pathData}

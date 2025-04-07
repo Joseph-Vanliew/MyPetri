@@ -380,18 +380,21 @@ export function ValidatorTool({
         ) : (
           <div>
             {inputConfigs.map((config, index) => (
-              <div key={index} className="validator-config-item">
+              <div key={`input-${index}`} className="validator-config-item">
                 <select
                   className="validator-select"
                   value={config.placeId}
                   onChange={(e) => updateInputConfig(index, 'placeId', e.target.value)}
                   disabled={isValidating}
                 >
-                  {namedPlaces.map(place => (
-                    <option key={place.id} value={place.id}>
-                      {place.name || place.id}
-                    </option>
-                  ))}
+                  {namedPlaces.map(place => {
+                    const displayText = place.name || place.id;
+                    return (
+                      <option key={place.id} value={place.id}>
+                        {displayText}
+                      </option>
+                    );
+                  })}
                 </select>
                 
                 <div className="validator-tokens-control">
@@ -467,18 +470,21 @@ export function ValidatorTool({
         ) : (
           <div>
             {expectedOutputs.map((output, index) => (
-              <div key={index} className="validator-config-item">
+              <div key={`output-${index}`} className="validator-config-item">
                 <select
                   className="validator-select"
                   value={output.placeId}
                   onChange={(e) => updateExpectedOutput(index, 'placeId', e.target.value)}
                   disabled={isValidating}
                 >
-                  {namedPlaces.map(place => (
-                    <option key={place.id} value={place.id}>
-                      {place.name || place.id}
-                    </option>
-                  ))}
+                  {namedPlaces.map(place => {
+                    const displayText = place.name || place.id;
+                    return (
+                      <option key={place.id} value={place.id}>
+                        {displayText}
+                      </option>
+                    );
+                  })}
                 </select>
                 
                 <div className="validator-tokens-control">
@@ -554,42 +560,79 @@ export function ValidatorTool({
         </button>
       </div>
 
-      {/* Validation Results */}
+      {/* Validation Result Display */}
       {validationResult && (
-        <div 
-          className={`validator-result ${validationResult.valid ? 'success' : 'error'}`}
-        >
-          <h4 className={`validator-result-title ${validationResult.valid ? 'success' : 'error'}`}>
-            {validationResult.valid ? 'Validation Successful' : 'Validation Failed'}
-          </h4>
-          <p>{validationResult.message}</p>
+        <div className="validator-result">
+          {/* Determine overall status and message */} 
+          {(() => {
+            let displaySuccess = validationResult.valid; // Use the primary flag from the result
+            let displayMessage = validationResult.message || '';
+            
+            // If outputMatches exist, use them to refine the status and message
+            if (validationResult.outputMatches && Object.keys(validationResult.outputMatches).length > 0) {
+              const allMatched = Object.values(validationResult.outputMatches).every(match => match === true);
+              if (!allMatched) {
+                displaySuccess = false; // Override success if any output didn't match
+                displayMessage = "Output does not match expectations."; // Set specific message
+              } else {
+                // Only set to success if the backend also agreed (or didn't explicitly disagree)
+                displaySuccess = validationResult.valid; 
+                displayMessage = "Output matches expectations."; 
+              }
+            } else if (displaySuccess && !displayMessage) {
+                // Handle case where backend says success but gives no specific message or outputMatches
+                displayMessage = "Validation reported success.";
+            } else if (!displaySuccess && !displayMessage) {
+                // If backend failed and gave no message
+                displayMessage = "Validation failed (no specific details provided).";
+            }
+            
+            return (
+              <h4 className={`validator-result-title ${displaySuccess ? 'success' : 'error'}`}>
+                {/* Use the determined message, fallback to generic based on final success status */}
+                {displayMessage || (displaySuccess ? 'Validation Successful' : 'Validation Failed')}
+              </h4>
+            );
+          })()}
           
-          {validationResult.conflictingTransitions && validationResult.conflictingTransitions.length > 0 && (
+          {/* Display detailed output matches (already implemented correctly) */}
+          {validationResult.outputMatches && Object.keys(validationResult.outputMatches).length > 0 && (
             <div>
-              <h5 className="validator-result-section-title">Conflicting Transitions:</h5>
+              <h5 className="validator-result-section-title">Output:</h5>
               <ul className="validator-result-list">
-                {validationResult.conflictingTransitions.map((transitionId, index) => (
-                  <li key={index}>{getTransitionName(transitionId)}</li>
-                ))}
+                {Object.entries(validationResult.outputMatches).map(([placeId, matched], index) => {
+                  // Get the place name using the helper function
+                  const placeName = getPlaceName(placeId);
+                  const matchStatus = matched ? 'Matched' : 'Did not match';
+                  const listItemClass = `validator-result-list-item ${matched ? 'success' : 'error'}`;
+
+                  return (
+                    <li 
+                      key={index} 
+                      className={listItemClass}
+                    >
+                      {`${placeName}: ${matchStatus}`}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
           
-          {validationResult.outputMatches && Object.keys(validationResult.outputMatches).length > 0 && (
+          {/* Display conflicting transitions if they exist */}
+          {validationResult.conflictingTransitions && validationResult.conflictingTransitions.length > 0 && (
             <div>
-              <h5 className="validator-result-section-title">Output Matches:</h5>
-              <ul className="validator-result-list">
-                {Object.entries(validationResult.outputMatches).map(([placeId, matched], index) => (
-                  <li 
-                    key={index} 
-                    className={`validator-result-list-item ${matched ? 'success' : 'error'}`}
-                  >
-                    {getPlaceName(placeId)}: {matched ? 'Matched' : 'Did not match'}
+              <h5 className="validator-result-section-title">Conflicting Transitions Detected:</h5>
+              <ul className="validator-result-list warning">
+                {validationResult.conflictingTransitions.map((transitionId, index) => (
+                  <li key={index} className="validator-result-list-item warning">
+                    {getTransitionName(transitionId)} {}
                   </li>
                 ))}
               </ul>
             </div>
           )}
+          
         </div>
       )}
       

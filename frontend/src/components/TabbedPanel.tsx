@@ -27,7 +27,7 @@ export function TabbedPanel({
   currentMode = '',
   onValidationResult
 }: TabbedPanelProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('json');
+  const [activeTab, setActiveTab] = useState<Tab>('validator');
   
   // Maintain validator state between tab switches
   const [inputConfigs, setInputConfigs] = useState<PlaceConfig[]>([]);
@@ -56,14 +56,14 @@ export function TabbedPanel({
       {/* Tab header */}
       <div className="tab-header">
         <TabButton 
-          label="JSON Viewer" 
-          isActive={activeTab === 'json'} 
-          onClick={() => setActiveTab('json')}
-        />
-        <TabButton 
           label="Validator" 
           isActive={activeTab === 'validator'} 
           onClick={() => setActiveTab('validator')}
+        />
+        <TabButton 
+          label="Viewer" 
+          isActive={activeTab === 'json'} 
+          onClick={() => setActiveTab('json')}
         />
       </div>
       

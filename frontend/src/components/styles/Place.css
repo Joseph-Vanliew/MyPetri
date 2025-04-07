@@ -24,9 +24,15 @@
 .place-label {
   text-anchor: start;
   dominant-baseline: hanging;
-  fill: white;
-  font-size: 20px;
   font-weight: bold;
+  fill: white; /* Light grey for visibility */
+  font-size: 20px;
+  font-family: sans-serif;
+  pointer-events: none; /* Allow clicks to pass through */
+  user-select: none; /* Prevent text selection */
+  text-anchor: start; /* Align text starting from the x coordinate */
+  /* Add drop shadow matching grid background */
+  text-shadow: 1px 1px 2px #141414;
 }
 
 .place-token-input {
@@ -82,23 +88,50 @@
   cursor: pointer;
 }
 
+.place-capacity-label {
+  /* Styles for the span inside foreignObject */
+  color: #fff; 
+  font-size: 20px; 
+  font-weight: bold; 
+  display: inline-block; 
+  vertical-align: middle;
+  cursor: text; 
+  text-shadow: 1px 1px 2px #141414; /* Added drop shadow */
+}
+
 /* Add styles for the new elements */
 .place-capacity-input {
-  width: 50px; /* Adjust as needed */
   text-align: center;
-  background-color: #333;
+  background-color: #333; 
   color: white;
   border: 1px solid #555;
-  font-size: 14px;
-  padding: 2px;
-  outline: none;
+  border-radius: 3px;
+  font-size: 14px; 
+  padding: 2px 4px; 
+  box-sizing: border-box; 
+  width: 100%; 
+
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0; /* Reset default margin */
+}
+
+.place-capacity-input::-webkit-outer-spin-button,
+.place-capacity-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide spinner arrows for Firefox */
+.place-capacity-input[type=number] {
+  appearance: textfield;
 }
 
 /* Basic Toggle Switch CSS */
 .switch {
   position: relative;
   display: inline-block;
-  width: 34px; /* Smaller switch */
+  width: 34px;
   height: 20px;
   vertical-align: middle;
 }
@@ -123,10 +156,10 @@
 .slider:before {
   position: absolute;
   content: "";
-  height: 14px; /* Adjust size */
-  width: 14px;  /* Adjust size */
-  left: 3px;    /* Adjust position */
-  bottom: 3px;  /* Adjust position */
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
   background-color: white;
   transition: .4s;
 }

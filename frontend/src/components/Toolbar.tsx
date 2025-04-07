@@ -94,7 +94,9 @@ export const Toolbar = ({
                     marginBottom: '-1px',
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '#333' : 'transparent',
-                    border: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
+                    borderTop: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
+                    borderLeft: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
+                    borderRight: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
                     borderBottom: 'none',
                     transition: 'background-color 0.2s ease',
                     zIndex: selectedTool === 'PLACE' || isDragging === 'PLACE' ? 1 : 'auto'

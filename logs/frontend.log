@@ -3,28 +3,31 @@
 > vite
 
 
-  VITE v6.2.0  ready in 163 ms
+  VITE v6.2.0  ready in 156 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-7:09:50 PM [vite] (client) hmr update /src/components/elements/Place.tsx
-7:10:02 PM [vite] (client) hmr update /src/components/elements/Place.tsx
-7:13:39 PM [vite] (client) hmr update /src/components/styles/Place.css
-7:14:05 PM [vite] (client) hmr update /src/components/styles/Place.css
-7:14:28 PM [vite] (client) hmr update /src/components/elements/Place.tsx
-7:15:30 PM [vite] (client) hmr update /src/components/styles/Place.css
-7:15:32 PM [vite] (client) hmr update /src/components/elements/Place.tsx
-7:17:27 PM [vite] (client) hmr update /src/components/Toolbar.tsx
-7:18:25 PM [vite] (client) hmr update /src/index.css
-7:19:14 PM [vite] (client) hmr update /src/index.css
-7:20:03 PM [vite] (client) hmr update /src/components/Toolbar.tsx
-7:20:04 PM [vite] (client) hmr update /src/index.css
-7:20:23 PM [vite] (client) hmr update /src/components/Toolbar.tsx
-7:20:37 PM [vite] (client) hmr update /src/components/Toolbar.tsx
-7:21:52 PM [vite] (client) hmr update /src/components/elements/Place.tsx
-7:22:01 PM [vite] (client) hmr update /src/components/elements/Place.tsx
-7:25:41 PM [vite] (client) hmr update /src/components/Canvas.tsx
-7:25:54 PM [vite] (client) hmr update /src/components/Canvas.tsx
-7:26:14 PM [vite] (client) hmr update /src/components/elements/arcs/Arc.tsx
-7:26:57 PM [vite] (client) hmr update /src/components/Canvas.tsx
-7:26:58 PM [vite] (client) hmr update /src/components/elements/arcs/Arc.tsx
+10:49:16 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
+10:49:48 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
+10:49:53 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
+10:50:07 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
+10:52:56 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:53:01 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:53:06 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:53:07 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:53:20 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:54:05 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:54:06 PM [vite] (client) hmr update /src/components/Canvas.tsx
+10:54:13 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:54:49 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:57:40 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:57:56 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:58:04 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:58:21 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:59:09 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+11:01:48 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+11:01:57 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+11:02:44 PM [vite] (client) hmr update /src/components/styles/ValidatorTool.css
+11:04:53 PM [vite] (client) hmr update /src/components/styles/ValidatorTool.css
+11:05:23 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+11:09:29 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx

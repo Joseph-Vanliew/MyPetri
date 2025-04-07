@@ -295,9 +295,12 @@ export const Place = (props : PlaceProps) => {
 
     // Capacity editing handlers
     const handleCapacityDoubleClick = (e: React.MouseEvent) => {
-        // Allow editing only if global mode is on and place is selected
-        if (props.arcMode || !props.showCapacityEditorMode || !props.isSelected) return;
-        e.stopPropagation();
+
+        e.stopPropagation(); // Stop propagation immediately
+        
+        // Select the element first on double click attempt
+        props.onSelect(props.id);
+       
         setIsEditingCapacity(true);
         // Initialize with current value or empty string if null/n
         setTempCapacity(props.capacity !== null ? String(props.capacity) : '');
@@ -316,40 +319,31 @@ export const Place = (props : PlaceProps) => {
         }
     };
 
+    const cancelCapacityEdit = () => {
+        setIsEditingCapacity(false);
+        props.onTypingChange(false);
+        setTempCapacity(props.capacity !== null ? String(props.capacity) : '');
+    };
+
     const finishCapacityEdit = () => {
         setIsEditingCapacity(false);
         props.onTypingChange(false);
         const trimmedCapacity = tempCapacity.trim();
 
         if (trimmedCapacity === '') {
-            // Empty input means unbounded
             if (props.onUpdatePlaceCapacity) {
                 props.onUpdatePlaceCapacity(props.id, null);
             }
         } else {
             let newCapacityValue = parseInt(trimmedCapacity, 10);
             if (!isNaN(newCapacityValue) && newCapacityValue >= 0) {
-                // Valid non-negative number means bounded with this capacity
                 if (props.onUpdatePlaceCapacity) {
                     props.onUpdatePlaceCapacity(props.id, newCapacityValue);
                 }
             } else {
-                // Invalid input, treat as unbounded (or revert, depending on desired UX)
-                // Option 1: Treat as unbounded
-                 if (props.onUpdatePlaceCapacity) {
-                     props.onUpdatePlaceCapacity(props.id, null);
-                 }
-                // Option 2: Revert to previous value (use cancelCapacityEdit logic)
-                // cancelCapacityEdit();
+                cancelCapacityEdit();
             }
         }
-    };
-
-    const cancelCapacityEdit = () => {
-        setIsEditingCapacity(false);
-        props.onTypingChange(false);
-        // Reset temp state based on the actual prop value
-        setTempCapacity(props.capacity !== null ? String(props.capacity) : '');
     };
 
     // ===== RENDER =====
@@ -428,18 +422,17 @@ export const Place = (props : PlaceProps) => {
             )}
 
             {/* Label Below - Only show when not editing name */}
-            {!isEditingName && (
+            {!isEditingName && props.name && (
                 <text 
                     x={props.radius + 10}
                     y={-props.radius + 10}
                     className="place-label"
+                    filter="url(#labelDropShadow)"
                 >
                     {props.name}
                 </text>
             )}
             
-            {/* REVISED: Capacity Display/Editor */}
-            {/* Show only if global mode is ON and not in arc mode */}
             {props.showCapacityEditorMode && !props.arcMode && (
                 <g transform={`translate(${props.radius + 10}, ${props.radius - 15})`}>
                     <foreignObject x="0" y="0" width="100" height="30">
@@ -458,11 +451,10 @@ export const Place = (props : PlaceProps) => {
                             />
                         ) : (
                             <text
-                                x="0"
-                                y="12"
                                 className="place-capacity-label"
                                 onDoubleClick={handleCapacityDoubleClick}
-                                style={{ fill: 'white', cursor: 'text', fontSize: '20px', fontWeight: 'bold' }}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', display: 'inline-block', verticalAlign: 'middle' }}
                             >
                                 <title>Max Tokens (Double-click to edit, empty=unbounded)</title>
                                 {`<= ${props.capacity !== null ? props.capacity : 'n'}`}

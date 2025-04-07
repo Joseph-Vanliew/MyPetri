@@ -65,15 +65,6 @@ public class PetriNetService {
             System.out.println("Deterministic mode: returning all enabled transitions for user selection");
             // Pass original DTO to preserve mode
             PetriNetDTO resultDTO = convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
-            try {
-                // Attempt to log JSON using Jackson if available (add import com.fasterxml.jackson.databind.ObjectMapper;)
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                System.out.println("DEBUG processPetriNet: Returning DTO: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(resultDTO));
-            } catch (Exception e) {
-                // Fallback logging if Jackson fails or is not easily available
-                System.out.println("DEBUG processPetriNet: Returning DTO (basic toString): " + resultDTO);
-                // Consider logging place/transition details manually if needed
-            }
             return resultDTO;
         }
         
@@ -134,23 +125,23 @@ public class PetriNetService {
 
         // Iterate through all arcs connected to this transition
         for (String arcId : transition.getArcIds()) {
-            if (!evaluationPassed) break; // Stop checking if already failed
+            if (!evaluationPassed) break;
             Arc arc = arcsMap.get(arcId);
             if (arc == null) continue;
 
-            // 1. Inhibitor Check
+            // Inhibitor Check
             if (arc instanceof Arc.InhibitorArc && arc.getOutgoingId().equals(transition.getId())) {
                 Place sourcePlace = placesMap.get(arc.getIncomingId());
                 if (sourcePlace != null && sourcePlace.getTokens() > 0) {
                     evaluationPassed = false;
                 }
             }
-            // 2. Bidirectional Precondition & Requirement Calc
+            // Bidirectional Precondition & Requirement Calc
             else if (arc instanceof Arc.BidirectionalArc) {
                 hasAnyTokenRequirement = true;
                 String placeId = arc.getIncomingId().equals(transition.getId()) ? arc.getOutgoingId() : arc.getIncomingId();
                 Place connectedPlace = placesMap.get(placeId);
-                // BiDi requires at least 1 token in the connected place to be enabled
+                // BiDirectional arcs require at least 1 token in the connected place to be enabled
                 if (connectedPlace == null || connectedPlace.getTokens() < 1) {
                      evaluationPassed = false;
                 }
@@ -159,7 +150,7 @@ public class PetriNetService {
                      requiredTokensPerPlace.merge(placeId, 1, Integer::sum);
                 }
             }
-            // 3. Regular Arc Requirement Calc (P -> T only)
+            // Regular Arc Requirement Calc (P -> T only)
             else if (arc instanceof Arc.RegularArc && arc.getOutgoingId().equals(transition.getId())) {
                 hasAnyTokenRequirement = true;
                 requiredTokensPerPlace.merge(arc.getIncomingId(), 1, Integer::sum);
@@ -168,7 +159,6 @@ public class PetriNetService {
 
         // --- Check Input Token Availability ---
         if (evaluationPassed && hasAnyTokenRequirement) {
-             System.out.println("DEBUG Transition " + transition.getId() + ": Checking Input Tokens. Requirements: " + requiredTokensPerPlace);
              for (Map.Entry<String, Integer> entry : requiredTokensPerPlace.entrySet()) {
                  String placeId = entry.getKey();
                  int requiredTokens = entry.getValue();
@@ -179,7 +169,6 @@ public class PetriNetService {
 
                  if (place == null || place.getTokens() < requiredTokens) {
                      evaluationPassed = false;
-                     System.out.println("    - Evaluation failed due to insufficient tokens.");
                      break;
                  }
              }
@@ -222,7 +211,6 @@ public class PetriNetService {
             }
         }
 
-        System.out.println("DEBUG Transition " + transition.getId() + ": Final Evaluation Result: " + evaluationPassed);
         transition.setEnabled(evaluationPassed);
         return evaluationPassed;
     }
@@ -251,10 +239,8 @@ public class PetriNetService {
                 // Handle regular consumption (Place -> Transition)
                 if (arc.getOutgoingId().equals(transition.getId())) {
                     Place sourcePlace = placesMap.get(arc.getIncomingId());
-                    System.out.println("DEBUG UpdateTokens: Attempting to consume from Place " + arc.getIncomingId() + " (Current Tokens: " + (sourcePlace != null ? sourcePlace.getTokens() : "N/A") + ") for Transition " + transition.getId());
                     if (sourcePlace != null && sourcePlace.getTokens() > 0) {
                         sourcePlace.removeTokens();
-                        System.out.println("DEBUG UpdateTokens: After consumption from Place " + arc.getIncomingId() + " - New Tokens: " + sourcePlace.getTokens());
                     }
                 }
                 // Handle regular production (Transition -> Place)
@@ -272,13 +258,10 @@ public class PetriNetService {
                 Place connectedPlace = placesMap.get(placeId);
 
                 if (connectedPlace != null) {
-                    System.out.println("DEBUG UpdateTokens: Handling Bidirectional for Place " + placeId + " (Current Tokens: " + connectedPlace.getTokens() + ")");
                     if (connectedPlace.getTokens() > 0) {
                          connectedPlace.removeTokens(); 
-                        System.out.println("    -> After BiDi consumption: " + connectedPlace.getTokens());
                     }
                      connectedPlace.addToken();
-                    System.out.println("    -> After BiDi production: " + connectedPlace.getTokens());
                 }
             }
         }
@@ -384,23 +367,28 @@ public class PetriNetService {
         }
         
         else if (!enabledTransitions.isEmpty()) {
-            Transition nextTransition;
-            
-            if (enabledTransitions.size() == 1) {
-                nextTransition = enabledTransitions.get(0);
-            } else {
-                // Random selection for non-deterministic mode
-                Random random = new Random();
-                nextTransition = enabledTransitions.get(random.nextInt(enabledTransitions.size()));
-            }
-            
-            // Only enable the selected/random transition
-            nextTransition.setEnabled(true);
+            Transition nextTransition = getTransition(enabledTransitions);
             System.out.println("Selected transition for next state: " + nextTransition.getId());
         }
         
         // Pass original DTO to preserve mode
         return convertDomainModelsToDTO(placesMap, transitions, arcsMap, petriNetDTO);
+    }
+
+    private static Transition getTransition(List<Transition> enabledTransitions) {
+        Transition nextTransition;
+
+        if (enabledTransitions.size() == 1) {
+            nextTransition = enabledTransitions.get(0);
+        } else {
+            // Random selection for non-deterministic mode
+            Random random = new Random();
+            nextTransition = enabledTransitions.get(random.nextInt(enabledTransitions.size()));
+        }
+
+        // Only enable the selected/random transition
+        nextTransition.setEnabled(true);
+        return nextTransition;
     }
 }
 
