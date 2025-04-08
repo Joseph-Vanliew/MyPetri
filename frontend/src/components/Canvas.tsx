@@ -167,18 +167,19 @@ export const Canvas = (props: CanvasProps) => {
             return; // Hook will auto-reset the flag
         }
         
-        // Original logic for background deselect and placing elements
-        if (!isShiftPressed && e.target === e.currentTarget && props.selectedElements.length > 0) {
-            props.onSelectElement(''); 
+        // Background Deselection Logic: Use e.shiftKey directly
+        if (!e.shiftKey && e.target === e.currentTarget && props.selectedElements.length > 0) {
+            props.onSelectElement('');
         }
         
-        if (!isShiftPressed && (props.selectedTool === 'PLACE' || props.selectedTool === 'TRANSITION' || props.selectedTool === 'ARC')) {
+        // Logic for placing new elements: Use e.shiftKey directly
+        if (!e.shiftKey && e.target === e.currentTarget && (props.selectedTool === 'PLACE' || props.selectedTool === 'TRANSITION' || props.selectedTool === 'ARC')) {
             if (!svgRef.current) return;
             const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
             const snapped = snapToGrid(coords.x, coords.y);
             props.onCanvasClick(snapped.x, snapped.y);
         }
-    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick, props.selectedTool, isShiftPressed, didJustSelect]); 
+    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick, props.selectedTool, didJustSelect]); 
     
     // Handle drag and drop
     const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {

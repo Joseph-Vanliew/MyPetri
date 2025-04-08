@@ -370,13 +370,20 @@ export const Place = (props : PlaceProps) => {
             onClick={(e) => {
                 // Stop propagation so that this click doesn't trigger other canvas clicks.
                 e.stopPropagation();
-                
-                // If in arc mode and hovered, trigger arc creation
-                if (props.arcMode && isHovered) {
+
+                const targetElement = e.target as SVGElement;
+                // Check if the click target is the main circle shape
+                const isMainCircle = targetElement.classList?.contains('place-circle');
+
+                // ONLY trigger arc port click if in arcMode AND clicking the main circle
+                if (props.arcMode && isHovered && isMainCircle) {
                     props.onArcPortClick(props.id);
-                } else {
+                }
+                // If NOT in arc mode, select the element regardless of where the click occurred within the group
+                else if (!props.arcMode) {
                     props.onSelect(props.id);
                 }
+                // Implicit else: If in arcMode but click was not on the main circle, do nothing.
             }}
             onDoubleClick={handleDoubleClick}
             onMouseDown={handleDragStart}
@@ -400,21 +407,26 @@ export const Place = (props : PlaceProps) => {
 
             {/* Token Count Display - Show when NOT editing tokens */}
             {!isEditingTokens && (
-                <text 
-                    x="0" 
+                <text
+                    x="0"
                     y={props.showCapacityEditorMode ? -10 : 0}
-                    className="place-token-count" 
-                    dominantBaseline="central" 
+                    className="place-token-count"
+                    dominantBaseline="central"
                     onClick={(e) => {
-                        e.stopPropagation(); 
-                        props.onSelect(props.id); 
+                        e.stopPropagation();
+                        // Only select if NOT in arc mode (handler only runs if pointer-events != none)
+                        if (!props.arcMode) {
+                            props.onSelect(props.id);
+                        }
                     }}
                     onDoubleClick={(e) => {
                         e.stopPropagation();
-                        if (!props.arcMode) { 
-                            setIsEditingTokens(true); 
+                        if (!props.arcMode) {
+                            setIsEditingTokens(true);
                         }
                     }}
+                    // Add pointer-events: none when in arc mode
+                    style={props.arcMode ? { pointerEvents: 'none' } : undefined}
                 >
                     {tokenCount}
                 </text>
@@ -449,7 +461,7 @@ export const Place = (props : PlaceProps) => {
 
             {/* Label Below - Only show when not editing name */}
             {!isEditingName && props.name && (
-                <text 
+                <text
                     x={props.radius + 6}
                     y={-props.radius + 10}
                     className="place-label"
@@ -457,6 +469,8 @@ export const Place = (props : PlaceProps) => {
                         e.stopPropagation();
                         handleDoubleClick(e);
                     }}
+                    // Add pointer-events: none when in arc mode
+                    style={props.arcMode ? { pointerEvents: 'none' } : undefined}
                 >
                     {props.name}
                 </text>
@@ -470,8 +484,12 @@ export const Place = (props : PlaceProps) => {
                     className="place-capacity-label"
                     fill="#fff"
                     onDoubleClick={handleCapacityDoubleClick}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                        e.stopPropagation(); // Keep stopping propagation for double-click handling
+                    }}
                     textAnchor="middle"
+                    // Add pointer-events: none when in arc mode
+                    style={props.arcMode ? { pointerEvents: 'none' } : undefined}
                 >
                     <title>Max Tokens (Double-click to edit, empty=unbounded)</title>
                     {`<= ${props.capacity !== null ? props.capacity : 'n'}`}
