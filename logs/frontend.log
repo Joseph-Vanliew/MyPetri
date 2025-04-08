@@ -3,12 +3,25 @@
 > vite
 
 
-  VITE v6.2.0  ready in 737 ms
+  VITE v6.2.0  ready in 170 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-4:20:27 PM [vite] (client) hmr update /src/components/MenuBar.tsx
-4:20:46 PM [vite] (client) hmr update /src/components/FileMenu.tsx
-4:20:58 PM [vite] (client) hmr update /src/App.tsx
-4:21:20 PM [vite] (client) hmr update /src/components/MenuBar.tsx
-4:21:40 PM [vite] (client) hmr update /src/App.tsx
+4:43:45 PM [vite] (client) hmr update /src/components/elements/arcs/Arc.tsx
+4:43:45 PM [vite] (client) hmr invalidate /src/components/elements/arcs/Arc.tsx Could not Fast Refresh ("getElementAnchorPoint" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+4:43:45 PM [vite] (client) hmr update /src/components/Canvas.tsx, /src/components/elements/arcs/ArcPreview.tsx
+4:46:21 PM [vite] (client) hmr update /src/components/Canvas.tsx
+4:47:28 PM [vite] (client) hmr update /src/components/elements/arcs/Arc.tsx
+4:47:28 PM [vite] (client) hmr invalidate /src/components/elements/arcs/Arc.tsx Could not Fast Refresh ("getElementAnchorPoint" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+4:47:28 PM [vite] (client) hmr update /src/components/Canvas.tsx, /src/components/elements/arcs/ArcPreview.tsx
+4:48:36 PM [vite] (client) hmr update /src/components/Canvas.tsx
+4:49:05 PM [vite] (client) hmr update /src/components/Canvas.tsx
+4:51:39 PM [vite] (client) hmr update /src/App.tsx
+4:54:12 PM [vite] (client) hmr update /src/components/elements/Place.tsx
+4:54:31 PM [vite] (client) hmr update /src/App.tsx
+4:54:38 PM [vite] (client) hmr update /src/components/FileMenu.tsx
+4:54:43 PM [vite] (client) hmr update /src/components/elements/arcs/Arc.tsx
+4:54:43 PM [vite] (client) hmr invalidate /src/components/elements/arcs/Arc.tsx Could not Fast Refresh ("getElementAnchorPoint" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+4:54:43 PM [vite] (client) hmr update /src/components/Canvas.tsx, /src/components/elements/arcs/ArcPreview.tsx
+4:54:45 PM [vite] (client) hmr update /src/components/Canvas.tsx
+4:54:51 PM [vite] (client) hmr update /src/components/elements/Place.tsx

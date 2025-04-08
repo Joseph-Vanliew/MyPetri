@@ -262,7 +262,7 @@ export default function App() {
         } else {
             const sourceId = selectedElements[0];
             const targetId = clickedId;
-            if (isValidArcConnection(sourceId, targetId, arcType)) {
+            if (isValidArcConnection(sourceId, targetId, arcType, places, transitions)) {
                 // Save current state before adding arc
                 saveToHistory();
                 
@@ -274,13 +274,16 @@ export default function App() {
                 };
                 setArcs(prev => [...prev, newArc]);
 
-                // Update transitions:
-                if (sourceId.startsWith('trans')) {
+                // Update transitions using property check
+                const sourceElement = places.find(p => p.id === sourceId) || transitions.find(t => t.id === sourceId);
+                const targetElement = places.find(p => p.id === targetId) || transitions.find(t => t.id === targetId);
+
+                if (sourceElement && 'width' in sourceElement) { // Check if source is transition
                     setTransitions(prev => prev.map(t =>
                         t.id === sourceId ? { ...t, arcIds: [...t.arcIds, newArc.id] } : t
                     ));
                 }
-                if (targetId.startsWith('trans')) {
+                if (targetElement && 'width' in targetElement) { // Check if target is transition
                     setTransitions(prev => prev.map(t =>
                         t.id === targetId ? { ...t, arcIds: [...t.arcIds, newArc.id] } : t
                     ));
@@ -309,8 +312,8 @@ export default function App() {
             const sourceId = selectedElements[0];
             const targetId = clickedElement.id;
 
-            // Use isValidArcConnection with the arcType
-            if (isValidArcConnection(sourceId, targetId, arcType)) {
+            // Pass places and transitions arrays to validation function
+            if (isValidArcConnection(sourceId, targetId, arcType, places, transitions)) {
                 // Save current state before adding arc
                 saveToHistory();
                 
@@ -323,15 +326,18 @@ export default function App() {
 
                 setArcs(prev => [...prev, newArc]);
 
-                // Update transition arcIds if necessary
-                if (sourceId.startsWith('trans')) {
+                // Update transition arcIds using property check
+                const sourceElement = places.find(p => p.id === sourceId) || transitions.find(t => t.id === sourceId);
+                const targetElement = places.find(p => p.id === targetId) || transitions.find(t => t.id === targetId);
+
+                if (sourceElement && 'width' in sourceElement) { // Check if source is transition
                     setTransitions(prev => prev.map(t =>
                         t.id === sourceId
                             ? { ...t, arcIds: [...t.arcIds, newArc.id] }
                             : t
                     ));
                 }
-                if (targetId.startsWith('trans')) {
+                if (targetElement && 'width' in targetElement) { // Check if target is transition
                     setTransitions(prev => prev.map(t =>
                         t.id === targetId
                             ? { ...t, arcIds: [...t.arcIds, newArc.id] }
@@ -368,22 +374,40 @@ export default function App() {
         return null;
     };
 
-    function isValidArcConnection(sourceId: string, targetId: string, arcType: UIArc['type']): boolean {
+    // Modify function signature to accept element arrays
+    function isValidArcConnection(
+        sourceId: string,
+        targetId: string,
+        arcType: UIArc['type'],
+        allPlaces: UIPlace[],
+        allTransitions: UITransition[]
+    ): boolean {
         // Disallow self-loop (same node for source & target)
         if (sourceId === targetId) {
             return false;
         }
 
-        const isSourcePlace = sourceId.startsWith('place');
-        const isSourceTrans = sourceId.startsWith('trans');
-        const isTargetPlace = targetId.startsWith('place');
-        const isTargetTrans = targetId.startsWith('trans');
+        // Find the actual elements
+        const sourceElement = allPlaces.find(p => p.id === sourceId) || allTransitions.find(t => t.id === sourceId);
+        const targetElement = allPlaces.find(p => p.id === targetId) || allTransitions.find(t => t.id === targetId);
+
+        // Check if elements were found
+        if (!sourceElement || !targetElement) {
+            console.error("Could not find source or target element for arc validation.");
+            return false; 
+        }
+
+        // Determine types based on properties
+        const isSourcePlace = 'radius' in sourceElement;
+        const isSourceTrans = 'width' in sourceElement;
+        const isTargetPlace = 'radius' in targetElement;
+        const isTargetTrans = 'width' in targetElement;
 
         // Inhibitor arcs must ONLY go from a Place to a Transition
         if (arcType === 'INHIBITOR') {
             return isSourcePlace && isTargetTrans;
         }
-            // REGULAR or BIDIRECTIONAL arcs can be:
+        // REGULAR or BIDIRECTIONAL arcs can be:
         // (Place -> Transition) OR (Transition -> Place)
         else {
             return (

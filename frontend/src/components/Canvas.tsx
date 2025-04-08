@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useEffect, useRef} from 'react';
+import React, {useState, useCallback, useEffect, useRef, useMemo} from 'react';
 import { Place } from './elements/Place';
 import { Transition } from './elements/Transition';
 import { Arc } from './elements/arcs/Arc';
@@ -66,6 +66,19 @@ export const Canvas = (props: CanvasProps) => {
         transitions: props.transitions,
         onSelectionChange: props.onMultiSelectElement,
     });
+
+    // Create lookup maps for efficient element finding
+    const placesMap = useMemo(() => {
+        const map = new Map<string, UIPlace>();
+        props.places.forEach(p => map.set(p.id, p));
+        return map;
+    }, [props.places]);
+
+    const transitionsMap = useMemo(() => {
+        const map = new Map<string, UITransition>();
+        props.transitions.forEach(t => map.set(t.id, t));
+        return map;
+    }, [props.transitions]);
 
     // Update dimensions on resize
     useEffect(() => {
@@ -262,25 +275,25 @@ export const Canvas = (props: CanvasProps) => {
                 )}
 
                 <g className="arcs-layer">
-                    {(() => { 
-                        // Render arcs, passing the full arcs list for internal calculation
+                    {(() => {
                         return props.arcs.map((arc: UIArc) => {
-                            const sourceElement = props.places.find(p => p.id === arc.incomingId) || props.transitions.find(t => t.id === arc.incomingId);
-                            const targetElement = props.places.find(p => p.id === arc.outgoingId) || props.transitions.find(t => t.id === arc.outgoingId);
-                            
+                            // Use maps for lookup
+                            const sourceElement = placesMap.get(arc.incomingId) || transitionsMap.get(arc.incomingId);
+                            const targetElement = placesMap.get(arc.outgoingId) || transitionsMap.get(arc.outgoingId);
+
                             return sourceElement && targetElement ? (
-                                <Arc 
-                                    key={arc.id} 
-                                    {...arc} // Pass original arc props (includes id, incomingId, outgoingId)
-                                    source={sourceElement} 
+                                <Arc
+                                    key={arc.id}
+                                    {...arc}
+                                    source={sourceElement}
                                     target={targetElement}
-                                    allArcs={props.arcs} // Pass the full list
+                                    allArcs={props.arcs}
                                     isSelected={props.selectedElements.includes(arc.id)}
                                     onSelect={(id: string) => props.onSelectElement(id)}
                                 />
                             ) : null;
                         });
-                    })()} 
+                    })()}
                 </g>
 
                 <MarkerDefinitions/>

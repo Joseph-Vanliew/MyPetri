@@ -1,5 +1,5 @@
 // src/components/elements/Arc.tsx
-import { useEffect, useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import type { UIArc, UIPlace, UITransition } from '../../../types';
 
 interface ArcProps extends UIArc {
@@ -13,13 +13,19 @@ interface ArcProps extends UIArc {
 // Deciding which helper to use based on the element type.
 export function getElementAnchorPoint(element: UIPlace | UITransition, otherCenter: { x: number; y: number }) {
     const center = { x: element.x, y: element.y };
-    if (element.id.startsWith('place')) {
+
+    // Check for radius property to identify Place
+    if ('radius' in element) {
         // For a place, use its radius.
-        return getCircleAnchorPoint(center, (element as UIPlace).radius, otherCenter);
-    } else if (element.id.startsWith('trans')) {
+        return getCircleAnchorPoint(center, element.radius, otherCenter);
+    // Check for width property to identify Transition (assuming width/height always exist for transitions)
+    } else if ('width' in element) {
         // For a transition, use its width and height.
-        return getRectAnchorPoint(center, (element as UITransition).width, (element as UITransition).height, otherCenter);
+        return getRectAnchorPoint(center, element.width, element.height, otherCenter);
     }
+    
+    // Fallback if type cannot be determined (should ideally not happen)
+    console.warn("Could not determine element type for anchor point calculation:", element);
     return center;
 }
 
@@ -53,14 +59,6 @@ function getRectAnchorPoint(center: { x: number; y: number }, width: number, hei
 }
 
 export const Arc = (props: ArcProps) => {
-    const [sourcePos, setSourcePos] = useState({ x: props.source.x, y: props.source.y });
-    const [targetPos, setTargetPos] = useState({ x: props.target.x, y: props.target.y });
-    
-    useEffect(() => {
-        setSourcePos({ x: props.source.x, y: props.source.y });
-        setTargetPos({ x: props.target.x, y: props.target.y });
-    }, [props.source.x, props.source.y, props.target.x, props.target.y]);
-    
     // Calculate dynamic offset using useMemo based on all arcs
     const offset = useMemo(() => {
         const OFFSET_AMOUNT = 18; // Keep the increased amount
@@ -98,13 +96,18 @@ export const Arc = (props: ArcProps) => {
     // Depend on all arcs and the specific arc's identity/endpoints
     }, [props.allArcs, props.id, props.incomingId, props.outgoingId]);
 
+    // Use props directly for center coordinates
+    const sourceCenter = { x: props.source.x, y: props.source.y };
+    const targetCenter = { x: props.target.x, y: props.target.y };
+
+    // Calculate anchor points using props directly
     let sourceAnchor = getElementAnchorPoint(
-        { ...props.source, x: sourcePos.x, y: sourcePos.y } as UIPlace | UITransition, 
-        targetPos
+        props.source, // Pass the whole source object
+        targetCenter  // Pass the other element's center from props
     );
     let targetAnchor = getElementAnchorPoint(
-        { ...props.target, x: targetPos.x, y: targetPos.y } as UIPlace | UITransition, 
-        sourcePos
+        props.target, // Pass the whole target object
+        sourceCenter  // Pass the other element's center from props
     );
     
     const dx = targetAnchor.x - sourceAnchor.x;

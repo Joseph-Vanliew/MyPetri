@@ -463,10 +463,10 @@ export const Place = (props : PlaceProps) => {
             )}
             
             {/* Capacity TEXT Label - Positioned directly */}
-            {props.showCapacityEditorMode && !props.arcMode && !isEditingCapacity && (
+            {props.showCapacityEditorMode && !isEditingCapacity && (
                 <text
-                    x="0" 
-                    y="30" 
+                    x="0"
+                    y="30"
                     className="place-capacity-label"
                     fill="#fff"
                     onDoubleClick={handleCapacityDoubleClick}
@@ -479,12 +479,9 @@ export const Place = (props : PlaceProps) => {
             )}
             
             {/* Capacity INPUT Box - Group positioned to align with where text WAS */}
-            {props.showCapacityEditorMode && !props.arcMode && isEditingCapacity && (
-                // Position this group so the foreignObject/input appears where the text label is
-                <g transform={`translate(0, 25)`}> {/* Use the same base coords as the text */} 
-                    {/* ForeignObject holds the input, positioned relative to the group */}
-                    {/* Size defines the input box, x/y center it around the group's origin */}
-                    <foreignObject x="-20" y="-12" width="40" height="20"> {/* Centered x, adjusted y to center input vertically */} 
+            {props.showCapacityEditorMode && isEditingCapacity && (
+                <g transform={`translate(0, 25)`}>
+                    <foreignObject x="-20" y="-12" width="40" height="20">
                         <input
                             type="number"
                             value={tempCapacity}
@@ -495,7 +492,7 @@ export const Place = (props : PlaceProps) => {
                             autoFocus
                             placeholder="n"
                             min="0"
-                            style={{ width: '100%', height: '100%', boxSizing: 'border-box' }} 
+                            style={{ width: '100%', height: '100%', boxSizing: 'border-box' }}
                         />
                     </foreignObject>
                 </g>
