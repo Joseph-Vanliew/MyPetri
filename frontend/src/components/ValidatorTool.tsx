@@ -157,29 +157,69 @@ export function ValidatorTool({
   // Add a place to input configurations
   const addInputPlace = () => {
     if (namedPlaces.length === 0) return;
+
+    const usedPlaceIds = new Set([
+      ...inputConfigs.map(c => c.placeId),
+      ...expectedOutputs.map(c => c.placeId)
+    ]);
     
+    const availablePlaces = namedPlaces.filter(p => !usedPlaceIds.has(p.id));
+    
+    let placeIdToAdd: string;
+    if (availablePlaces.length > 0) {
+      // Prioritize places starting with 'input' (case-insensitive)
+      const priorityPlace = availablePlaces.find(p => 
+        p.name?.toLowerCase().startsWith('input')
+      );
+      // Fallback to the first available place if no priority place found
+      placeIdToAdd = priorityPlace ? priorityPlace.id : availablePlaces[0].id;
+    } else {
+      // Fallback to the very first named place if no places are available
+      placeIdToAdd = namedPlaces[0].id;
+    }
+
     const newInput: PlaceConfig = {
-      placeId: namedPlaces[0].id,
+      placeId: placeIdToAdd,
       tokens: 0
     };
     
     const newIndex = inputConfigs.length;
     setInputConfigs([...inputConfigs, newInput]);
-    setEmptyInputFields({ ...emptyInputFields, [newIndex]: true });
+    setEmptyInputFields({ ...emptyInputFields, [newIndex]: false });
   };
 
   // Add a place to expected outputs
   const addOutputPlace = () => {
     if (namedPlaces.length === 0) return;
+
+    const usedPlaceIds = new Set([
+      ...inputConfigs.map(c => c.placeId),
+      ...expectedOutputs.map(c => c.placeId)
+    ]);
     
+    const availablePlaces = namedPlaces.filter(p => !usedPlaceIds.has(p.id));
+    
+    let placeIdToAdd: string;
+    if (availablePlaces.length > 0) {
+      // Prioritize places starting with 'output' (case-insensitive)
+      const priorityPlace = availablePlaces.find(p => 
+        p.name?.toLowerCase().startsWith('output')
+      );
+      // Fallback to the first available place if no priority place found
+      placeIdToAdd = priorityPlace ? priorityPlace.id : availablePlaces[0].id;
+    } else {
+      // Fallback to the very first named place if no places are available
+      placeIdToAdd = namedPlaces[0].id;
+    }
+
     const newOutput: PlaceConfig = {
-      placeId: namedPlaces[0].id,
+      placeId: placeIdToAdd,
       tokens: 0
     };
     
     const newIndex = expectedOutputs.length;
     setExpectedOutputs([...expectedOutputs, newOutput]);
-    setEmptyOutputFields({ ...emptyOutputFields, [newIndex]: true });
+    setEmptyOutputFields({ ...emptyOutputFields, [newIndex]: false });
   };
 
   // Update input configuration
@@ -220,10 +260,6 @@ export function ValidatorTool({
     if (updatedInputs[index].tokens > 0) {
       updatedInputs[index].tokens -= 1;
       setInputConfigs(updatedInputs);
-      // Mark as empty if decremented to 0
-      if (updatedInputs[index].tokens === 0) {
-        setEmptyInputFields({ ...emptyInputFields, [index]: true });
-      }
     }
   };
 
@@ -241,10 +277,10 @@ export function ValidatorTool({
     if (updatedOutputs[index].tokens > 0) {
       updatedOutputs[index].tokens -= 1;
       setExpectedOutputs(updatedOutputs);
-      // Mark as empty if decremented to 0
-      if (updatedOutputs[index].tokens === 0) {
-        setEmptyOutputFields({ ...emptyOutputFields, [index]: true });
-      }
+      // No longer set to empty when decrementing to 0
+      // if (updatedOutputs[index].tokens === 0) {
+      //   setEmptyOutputFields({ ...emptyOutputFields, [index]: true });
+      // }
     }
   };
 
@@ -379,75 +415,87 @@ export function ValidatorTool({
           <p className="validator-empty-message">No input places configured.</p>
         ) : (
           <div>
-            {inputConfigs.map((config, index) => (
-              <div key={`input-${index}`} className="validator-config-item">
-                <select
-                  className="validator-select"
-                  value={config.placeId}
-                  onChange={(e) => updateInputConfig(index, 'placeId', e.target.value)}
-                  disabled={isValidating}
-                >
-                  {namedPlaces.map(place => {
-                    const displayText = place.name || place.id;
-                    return (
-                      <option key={place.id} value={place.id}>
-                        {displayText}
-                      </option>
-                    );
-                  })}
-                </select>
-                
-                <div className="validator-tokens-control">
-                  <input
-                    className="validator-input"
-                    type="text"
-                    value={emptyInputFields[index] ? '' : config.tokens}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      updateInputConfig(index, 'tokens', value);
-                      if (value === '') {
-                        setEmptyInputFields({ ...emptyInputFields, [index]: true });
-                      } else {
-                        setEmptyInputFields({ ...emptyInputFields, [index]: false });
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    min="0"
+            {inputConfigs.map((config, index) => {
+              // Determine available places for this specific dropdown
+              const otherInputPlaceIds = new Set(
+                inputConfigs
+                  .filter((_, i) => i !== index) // Exclude current row
+                  .map(c => c.placeId)
+              );
+              const availableInputPlaces = namedPlaces.filter(
+                p => p.id === config.placeId || !otherInputPlaceIds.has(p.id)
+              );
+              
+              return (
+                <div key={`input-${index}`} className="validator-config-item">
+                  <select
+                    className="validator-select"
+                    value={config.placeId}
+                    onChange={(e) => updateInputConfig(index, 'placeId', e.target.value)}
                     disabled={isValidating}
-                  />
-                  <div className="validator-button-controls">
-                    <button
-                      className="validator-button-increment"
-                      onClick={() => incrementInputTokens(index)}
+                  >
+                    {availableInputPlaces.map(place => {
+                      const displayText = place.name || place.id;
+                      return (
+                        <option key={place.id} value={place.id}>
+                          {displayText}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  
+                  <div className="validator-tokens-control">
+                    <input
+                      className="validator-input"
+                      type="text"
+                      value={emptyInputFields[index] ? '' : config.tokens}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        updateInputConfig(index, 'tokens', value);
+                        if (value === '') {
+                          setEmptyInputFields({ ...emptyInputFields, [index]: true });
+                        } else {
+                          setEmptyInputFields({ ...emptyInputFields, [index]: false });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      min="0"
                       disabled={isValidating}
-                      title="Increase tokens"
-                    >
-                      +
-                    </button>
-                    <button
-                      className="validator-button-decrement"
-                      onClick={() => decrementInputTokens(index)}
-                      disabled={isValidating || config.tokens <= 0}
-                      title="Decrease tokens"
-                    >
-                      -
-                    </button>
+                    />
+                    <div className="validator-button-controls">
+                      <button
+                        className="validator-button-increment"
+                        onClick={() => incrementInputTokens(index)}
+                        disabled={isValidating}
+                        title="Increase tokens"
+                      >
+                        +
+                      </button>
+                      <button
+                        className="validator-button-decrement"
+                        onClick={() => decrementInputTokens(index)}
+                        disabled={isValidating || config.tokens <= 0}
+                        title="Decrease tokens"
+                      >
+                        -
+                      </button>
+                    </div>
                   </div>
+                  
+                  <button
+                    className="validator-button-remove"
+                    onClick={() => removeInputConfig(index)}
+                    disabled={isValidating}
+                  >
+                    ✕
+                  </button>
                 </div>
-                
-                <button
-                  className="validator-button-remove"
-                  onClick={() => removeInputConfig(index)}
-                  disabled={isValidating}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -469,75 +517,87 @@ export function ValidatorTool({
           <p className="validator-empty-message">No expected outputs configured.</p>
         ) : (
           <div>
-            {expectedOutputs.map((output, index) => (
-              <div key={`output-${index}`} className="validator-config-item">
-                <select
-                  className="validator-select"
-                  value={output.placeId}
-                  onChange={(e) => updateExpectedOutput(index, 'placeId', e.target.value)}
-                  disabled={isValidating}
-                >
-                  {namedPlaces.map(place => {
-                    const displayText = place.name || place.id;
-                    return (
-                      <option key={place.id} value={place.id}>
-                        {displayText}
-                      </option>
-                    );
-                  })}
-                </select>
-                
-                <div className="validator-tokens-control">
-                  <input
-                    className="validator-input"
-                    type="text"
-                    value={emptyOutputFields[index] ? '' : output.tokens}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      updateExpectedOutput(index, 'tokens', value);
-                      if (value === '') {
-                        setEmptyOutputFields({ ...emptyOutputFields, [index]: true });
-                      } else {
-                        setEmptyOutputFields({ ...emptyOutputFields, [index]: false });
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    min="0"
+            {expectedOutputs.map((output, index) => {
+              // Determine available places for this specific dropdown
+              const otherOutputPlaceIds = new Set(
+                expectedOutputs
+                  .filter((_, i) => i !== index) // Exclude current row
+                  .map(o => o.placeId)
+              );
+              const availableOutputPlaces = namedPlaces.filter(
+                p => p.id === output.placeId || !otherOutputPlaceIds.has(p.id)
+              );
+              
+              return (
+                <div key={`output-${index}`} className="validator-config-item">
+                  <select
+                    className="validator-select"
+                    value={output.placeId}
+                    onChange={(e) => updateExpectedOutput(index, 'placeId', e.target.value)}
                     disabled={isValidating}
-                  />
-                  <div className="validator-button-controls">
-                    <button
-                      className="validator-button-increment"
-                      onClick={() => incrementOutputTokens(index)}
+                  >
+                    {availableOutputPlaces.map(place => {
+                      const displayText = place.name || place.id;
+                      return (
+                        <option key={place.id} value={place.id}>
+                          {displayText}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  
+                  <div className="validator-tokens-control">
+                    <input
+                      className="validator-input"
+                      type="text"
+                      value={emptyOutputFields[index] ? '' : output.tokens}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        updateExpectedOutput(index, 'tokens', value);
+                        if (value === '') {
+                          setEmptyOutputFields({ ...emptyOutputFields, [index]: true });
+                        } else {
+                          setEmptyOutputFields({ ...emptyOutputFields, [index]: false });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      min="0"
                       disabled={isValidating}
-                      title="Increase tokens"
-                    >
-                      +
-                    </button>
-                    <button
-                      className="validator-button-decrement"
-                      onClick={() => decrementOutputTokens(index)}
-                      disabled={isValidating || output.tokens <= 0}
-                      title="Decrease tokens"
-                    >
-                      -
-                    </button>
+                    />
+                    <div className="validator-button-controls">
+                      <button
+                        className="validator-button-increment"
+                        onClick={() => incrementOutputTokens(index)}
+                        disabled={isValidating}
+                        title="Increase tokens"
+                      >
+                        +
+                      </button>
+                      <button
+                        className="validator-button-decrement"
+                        onClick={() => decrementOutputTokens(index)}
+                        disabled={isValidating || output.tokens <= 0}
+                        title="Decrease tokens"
+                      >
+                        -
+                      </button>
+                    </div>
                   </div>
+                  
+                  <button
+                    className="validator-button-remove"
+                    onClick={() => removeExpectedOutput(index)}
+                    disabled={isValidating}
+                  >
+                    ✕
+                  </button>
                 </div>
-                
-                <button
-                  className="validator-button-remove"
-                  onClick={() => removeExpectedOutput(index)}
-                  disabled={isValidating}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -570,7 +630,7 @@ export function ValidatorTool({
             
             // If outputMatches exist, use them to refine the status and message
             if (validationResult.outputMatches && Object.keys(validationResult.outputMatches).length > 0) {
-              const allMatched = Object.values(validationResult.outputMatches).every(match => match === true);
+              const allMatched = Object.values(validationResult.outputMatches).every(match => match);
               if (!allMatched) {
                 displaySuccess = false; // Override success if any output didn't match
                 displayMessage = "Output does not match expectations."; // Set specific message
@@ -595,23 +655,31 @@ export function ValidatorTool({
             );
           })()}
           
-          {/* Display detailed output matches (already implemented correctly) */}
+          {/* Display detailed output matches with final counts integrated */}
           {validationResult.outputMatches && Object.keys(validationResult.outputMatches).length > 0 && (
             <div>
-              <h5 className="validator-result-section-title">Output:</h5>
+              <h5 className="validator-result-section-title">Output Comparison:</h5>
               <ul className="validator-result-list">
                 {Object.entries(validationResult.outputMatches).map(([placeId, matched], index) => {
-                  // Get the place name using the helper function
+                  // Get the place name
                   const placeName = getPlaceName(placeId);
                   const matchStatus = matched ? 'Matched' : 'Did not match';
                   const listItemClass = `validator-result-list-item ${matched ? 'success' : 'error'}`;
+
+                  const finalPlace = validationResult.finalState?.places?.find(p => p.id === placeId);
+                  const finalTokens = finalPlace?.tokens ?? 'N/A';
+                  
+          
+                  const expectedConfig = expectedOutputs.find(eo => eo.placeId === placeId);
+                  const expectedTokens = expectedConfig?.tokens ?? 'N/A';
 
                   return (
                     <li 
                       key={index} 
                       className={listItemClass}
+                      title={`Expected: ${expectedTokens}`}
                     >
-                      {`${placeName}: ${matchStatus}`}
+                      {`${placeName}: ${matchStatus} (Tokens: ${finalTokens})`}
                     </li>
                   );
                 })}

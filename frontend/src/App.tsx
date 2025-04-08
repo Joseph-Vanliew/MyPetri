@@ -695,37 +695,62 @@ export default function App() {
     };
 
     // ===== MENU HANDLERS =====
-    const handleImport = (importedData: PetriNetDTO) => {
+    // Function to process data from various import/load methods
+    const processLoadedData = (loadedData: PetriNetDTO, sourceTitle?: string) => {
+        // Save current state before loading new data
+        saveToHistory();
+
         // Convert imported places to UIPlace objects
-        const importedPlaces = importedData.places.map(place => ({
+        const loadedPlaces: UIPlace[] = loadedData.places.map(place => ({
             id: place.id,
             name: place.name || '',
             tokens: place.tokens,
-            x: place.x || 100, // Default position if not provided
-            y: place.y || 100,
-            radius: place.radius || 46,
+            x: place.x ?? 100, // Use nullish coalescing for defaults
+            y: place.y ?? 100,
+            radius: place.radius ?? 46,
             bounded: place.bounded ?? false,
             capacity: place.capacity ?? null
         }));
-        
+
         // Convert imported transitions to UITransition objects
-        const importedTransitions = importedData.transitions.map(transition => ({
+        const loadedTransitions: UITransition[] = loadedData.transitions.map(transition => ({
             id: transition.id,
             name: transition.name || '',
-            enabled: transition.enabled,
-            arcIds: transition.arcIds,
-            x: transition.x || 200, // Default position if not provided
-            y: transition.y || 200,
-            width: transition.width || 120,
-            height: transition.height || 54 
+            enabled: transition.enabled ?? false, // Default enabled state if missing
+            arcIds: transition.arcIds || [], // Default arcIds if missing
+            x: transition.x ?? 200,
+            y: transition.y ?? 200,
+            width: transition.width ?? 120,
+            height: transition.height ?? 54
         }));
-        
+
+        // Convert imported arcs to UIArc objects (ensure all fields)
+        const loadedArcs: UIArc[] = loadedData.arcs.map(arc => ({
+            id: arc.id,
+            type: arc.type ?? 'REGULAR', // Default type if missing
+            incomingId: arc.incomingId,
+            outgoingId: arc.outgoingId,
+        }));
+
         // Set the imported data
-        setPlaces(importedPlaces);
-        setTransitions(importedTransitions);
-        setArcs(importedData.arcs);
-        setTitle(importedData.title || "Untitled Petri Net");
-        
+        setPlaces(loadedPlaces);
+        setTransitions(loadedTransitions);
+        setArcs(loadedArcs);
+        // Use title from loaded data, fallback to sourceTitle, then default
+        setTitle(loadedData.title || sourceTitle || "Untitled Petri Net");
+
+        // Clear selection and history related to the previous state
+        setSelectedElements([]);
+        setConflictResolutionMode(false);
+        setConflictingTransitions([]);
+        setFiredTransitions([]);
+        // Consider if history should be cleared or kept
+        setHistory({ places: [], transitions: [], arcs: [] }); // Clear history for the new net
+    };
+
+    // Handler for importing from pre-defined examples (if any)
+    const handleImport = (importedData: PetriNetDTO) => {
+        processLoadedData(importedData);
     };
 
     const continueSimulation = async (selectedTransitionId: string) => {
@@ -870,10 +895,10 @@ export default function App() {
     // ===== RENDER =====
     return (
         <div className="app" style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
+            display: 'flex',
+            flexDirection: 'column',
             height: '100vh',
-            overflow: 'hidden' // Prevent scrolling at the app level
+            overflow: 'hidden'
         }}>
             {/* Use the EditableTitle component */}
             <EditableTitle 
@@ -895,11 +920,11 @@ export default function App() {
             {/* Main content area - Restore the detailed layout */}
             <div style={{ 
                 display: 'flex', 
-                flexGrow: 1, // Use flexGrow instead of flex: 1 for clarity
-                height: 'calc(100vh - 80px)', // Adjust height based on MenuBar/Title height (assuming 80px total)
+                flexGrow: 1,
+                height: 'calc(100vh - 80px)', // Adjust height based on MenuBar/Title height
                 overflow: 'hidden'
             }}>
-                {/* Left sidebar (Restored from user input) */}
+                {/* Left sidebar */}
                 <div style={{ 
                     width: '200px', 
                     borderRight: '1px solid #4a4a4a',
@@ -1067,7 +1092,7 @@ export default function App() {
                         />
                     </div>
                     
-                    {/* Page Navigation Placeholder (Restored from user input) */}
+                    {/* Page Navigation Placeholder */}
                     <div style={{ 
                         height: '40px',
                         borderTop: '1px solid #4a4a4a',

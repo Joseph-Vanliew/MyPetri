@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { JSONViewer } from './JSONViewer';
 import { ValidatorTool } from './ValidatorTool';
+import { AnalysisTool } from './AnalysisTool';
 import { PetriNetDTO, ValidationResult, PlaceConfig } from '../types';
 import './styles/TabbedPanel.css';
 
-type Tab = 'json' | 'validator';
+type Tab = 'json' | 'validator' | 'analysis';
 
 interface TabbedPanelProps {
   data: PetriNetDTO;
@@ -65,6 +66,11 @@ export function TabbedPanel({
           isActive={activeTab === 'json'} 
           onClick={() => setActiveTab('json')}
         />
+        <TabButton 
+          label="Analysis" 
+          isActive={activeTab === 'analysis'} 
+          onClick={() => setActiveTab('analysis')}
+        />
       </div>
       
       {/* Tab content */}
@@ -97,6 +103,13 @@ export function TabbedPanel({
             setEmptyInputFields={setEmptyInputFields}
             emptyOutputFields={emptyOutputFields}
             setEmptyOutputFields={setEmptyOutputFields}
+          />
+        )}
+        {activeTab === 'analysis' && (
+          <AnalysisTool
+            data={data}
+            width="100%"
+            height="100%"
           />
         )}
       </div>

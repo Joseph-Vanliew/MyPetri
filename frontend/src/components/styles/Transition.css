@@ -4,7 +4,7 @@
 }
 
 .transition-rectangle {
-  rx: 8;
+  /* rx: 8; */ /* REMOVED - Set directly in JSX */
   fill: #0f0f0f;
   stroke: #ffffff;
   stroke-width: 2;
@@ -35,6 +35,7 @@
   fill: #fff;
   font-size: 20px;
   font-weight: bold;
+  font-family: sans-serif;
 }
 
 .transition-name-input {
@@ -45,6 +46,7 @@
   border: none;
   font-size: 20px;
   font-weight: bold;
+  font-family: sans-serif;
   padding: 0;
   outline: none;
 }

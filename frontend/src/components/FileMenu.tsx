@@ -87,7 +87,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport, onSa
         onImport(importedData);
       } catch (error) {
         console.error('Error parsing imported file:', error);
-        alert('Invalid file format. Please select a valid .pats file.');
+        alert('Invalid file format or structure. Please select a valid .pats or .json file.');
       }
     };
     reader.readAsText(file);
@@ -204,7 +204,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport, onSa
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept=".pats,application/json"
+        accept=".pats,.json,application/json"
         style={{ display: 'none' }}
       />
     </div>

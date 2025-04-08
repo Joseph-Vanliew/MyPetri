@@ -1,0 +1,106 @@
+.analysis-container {
+  /* Mimic validator-container */
+  padding: 15px;
+  background-color: #242424;;
+  border-radius: 5px;
+  margin: 10px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.analysis-title {
+          margin: 0 0 16px 0;
+          color: rgba(255, 255, 255, 0.87);
+          font-size: 16px;
+          font-weight: 600;
+}
+
+.analysis-section {
+  /* Mimic validator-section */
+  background-color: #1a1a1a;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.analysis-section-title {
+  /* Mimic validator-section-title */
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: #eee;
+  padding-bottom: 5px;
+}
+
+.analysis-overview ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 5px;
+}
+
+.analysis-overview li {
+  padding: 3px 0;
+}
+
+/* Keep specific button styling separate and simple */
+.analysis-button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 10px;
+}
+
+.analysis-button-group button {
+  margin-bottom: 8px;
+  min-width: 200px;
+  padding: 8px 12px;
+}
+
+.analysis-results-placeholder {
+  margin-top: 20px;
+  font-style: italic;
+  border-top: 1px solid #eee;
+  color: #555;
+  background-color: #1a1a1a;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+
+/*--------------------- Remove when done --------------------- */
+/* Overlay Styles */
+.analysis-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(27, 26, 26, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: 5px;
+}
+
+.analysis-overlay-text {
+  color: white;
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 2px black;
+}
+
+.analysis-overlay-cross {
+  color: red;
+  font-size: 10em; 
+  font-weight: bold;
+  line-height: 1;
+  text-shadow: 2px 2px 3px rgba(0,0,0,0.5);
+} 

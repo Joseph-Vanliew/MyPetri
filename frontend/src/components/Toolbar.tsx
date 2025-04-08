@@ -91,15 +91,11 @@ export const Toolbar = ({
                     alignItems: 'center',
                     padding: '8px',
                     borderRadius: '4px 4px 0 0',
-                    marginBottom: '-1px',
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '#333' : 'transparent',
-                    borderTop: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
-                    borderLeft: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
-                    borderRight: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
-                    borderBottom: 'none',
-                    transition: 'background-color 0.2s ease',
-                    zIndex: selectedTool === 'PLACE' || isDragging === 'PLACE' ? 1 : 'auto'
+                    border: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '1px solid #555' : '1px solid transparent',
+                    borderBottomColor: selectedTool === 'PLACE' || isDragging === 'PLACE' ? '#555' : 'transparent',
+                    transition: 'background-color 0.2s ease, border-color 0.2s ease',
                 }}
                 onMouseOver={(e) => {
                     if (selectedTool !== 'PLACE' && isDragging !== 'PLACE') {
@@ -179,8 +175,8 @@ export const Toolbar = ({
                     cursor: 'pointer',
                     backgroundColor: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? '#333' : 'transparent',
                     border: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? '1px solid #555' : '1px solid transparent',
-                    transition: 'background-color 0.2s ease',
-                    zIndex: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? 1 : 'auto'
+                    borderTopColor: selectedTool === 'TRANSITION' || isDragging === 'TRANSITION' ? '#555' : 'transparent',
+                    transition: 'background-color 0.2s ease, border-color 0.2s ease',
                 }}
                 onMouseOver={(e) => {
                     if (selectedTool !== 'TRANSITION' && isDragging !== 'TRANSITION') {
@@ -454,7 +450,7 @@ export const Toolbar = ({
                     style={{ cursor: 'pointer' }} 
                     onClick={() => onToggleCapacityEditorMode(!showCapacityEditorMode)}
                 >
-                    Show Bounding
+                    Show Capacity
                 </span>
             </div>
         </div>

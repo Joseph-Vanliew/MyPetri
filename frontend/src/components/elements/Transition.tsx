@@ -339,6 +339,7 @@ export const Transition = (props: TransitionProps) => {
                 y={-props.height / 2}
                 width={props.width}
                 height={props.height}
+                rx="8"
                 className={`transition-rectangle ${
                     props.isSelected ? 'selected' : 
                     (props.conflictResolutionMode && props.isConflicting) ? 'conflicting' : 
@@ -391,24 +392,28 @@ export const Transition = (props: TransitionProps) => {
                     <circle
                         cx={-props.width / 2}
                         cy={-props.height / 2}
+                        r={8}
                         className="transition-resize-handle top-left"
                         onMouseDown={(e) => handleResizeStart('top-left', e)}
                     />
                     <circle
                         cx={props.width / 2}
                         cy={-props.height / 2}
+                        r={8}
                         className="transition-resize-handle top-right"
                         onMouseDown={(e) => handleResizeStart('top-right', e)}
                     />
                     <circle
                         cx={-props.width / 2}
                         cy={props.height / 2}
+                        r={8}
                         className="transition-resize-handle bottom-left"
                         onMouseDown={(e) => handleResizeStart('bottom-left', e)}
                     />
                     <circle
                         cx={props.width / 2}
                         cy={props.height / 2}
+                        r={8}
                         className="transition-resize-handle bottom-right"
                         onMouseDown={(e) => handleResizeStart('bottom-right', e)}
                     />

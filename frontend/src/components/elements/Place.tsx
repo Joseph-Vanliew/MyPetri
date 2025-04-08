@@ -35,7 +35,7 @@ export const Place = (props : PlaceProps) => {
     // Token states
     const [tokenCount, setTokenCount] = useState<number>(props.tokens);
     const [tempTokenCount, setTempTokenCount] = useState<string>(props.tokens.toString());
-    const [, setIsTyping] = useState(false);
+    const [isEditingTokens, setIsEditingTokens] = useState(false);
     
     // Name editing states
     const [isEditingName, setIsEditingName] = useState(false);
@@ -217,46 +217,60 @@ export const Place = (props : PlaceProps) => {
         };
     }, [isDragging, dragOffset, localPosition, props]);
 
+    // Effect to turn off token editing when deselected
+    useEffect(() => {
+        if (!props.isSelected) {
+            setIsEditingTokens(false);
+        }
+    }, [props.isSelected]);
+
     // ===== EVENT HANDLERS =====
-    // Token input handlers
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Token input handlers (modified/new)
+    const handleTokenFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         e.stopPropagation();
-        setIsTyping(true);
-        setTempTokenCount("");
         props.onTypingChange(true);
     };
 
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const handleTokenBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         e.stopPropagation();
-        setIsTyping(false);
-        props.onTypingChange(false);
-        setTempTokenCount(tokenCount.toString());
+        finishTokenEdit(); // Finish edit on blur
     };
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTokenKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        event.stopPropagation();
+        if (event.key === "Enter") {
+            finishTokenEdit();
+        } else if (event.key === "Escape") {
+            cancelTokenEdit();
+        }
+    };
+
+    const finishTokenEdit = () => {
+        let newTokenCount = parseInt(tempTokenCount, 10);
+        if (isNaN(newTokenCount) || newTokenCount < 0) {
+            newTokenCount = props.tokens;
+        }
+        setTokenCount(newTokenCount);
+        if (newTokenCount !== props.tokens) {
+             props.onUpdateTokens(props.id, newTokenCount);
+        }
+        setIsEditingTokens(false);
+        props.onTypingChange(false);
+    };
+
+    const cancelTokenEdit = () => {
+        setTempTokenCount(props.tokens.toString());
+        setIsEditingTokens(false);
+        props.onTypingChange(false);
+    };
+    
+    const handleTokenInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.stopPropagation();
         setTempTokenCount(event.target.value);
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        event.stopPropagation();
-        if (event.key === "Enter") {
-            let newTokenCount = parseInt(tempTokenCount, 10);
-
-            if (isNaN(newTokenCount) || newTokenCount < 0) {
-                newTokenCount = 0; // Ensure a non-negative number
-            }
-
-            setTokenCount(newTokenCount);
-            props.onUpdateTokens(props.id, newTokenCount);
-            setIsTyping(false);
-        }
-    };
-
-    // Add a specific handler for token input clicks
     const handleTokenInputClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        // Prevent event bubbling to avoid triggering other click handlers
     };
 
     // Name editing handlers
@@ -384,82 +398,105 @@ export const Place = (props : PlaceProps) => {
                 className={`place-circle ${props.bounded ? 'bounded' : ''}`}
             />
 
-            {/* Token Count Display */}
-            <text 
-                x="0" 
-                y="10"
-                className="place-token-count"
-            >
-                {tokenCount}
-            </text>
-
-            {/*Token Input - Only renders when selected */}
-            {props.isSelected && !props.arcMode && (
-                <foreignObject 
-                    x="-30"
-                    y="50"
-                    width="60"
-                    height="30"
+            {/* Token Count Display - Show when NOT editing tokens */}
+            {!isEditingTokens && (
+                <text 
+                    x="0" 
+                    y={props.showCapacityEditorMode ? -10 : 0}
+                    className="place-token-count" 
+                    dominantBaseline="central" 
+                    onClick={(e) => {
+                        e.stopPropagation(); 
+                        props.onSelect(props.id); 
+                    }}
+                    onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        if (!props.arcMode) { 
+                            setIsEditingTokens(true); 
+                        }
+                    }}
                 >
-                    <div 
-                        onClick={handleTokenInputClick} 
-                        onDoubleClick={(e) => e.stopPropagation()}
-                        style={{ width: '100%', height: '100%' }}
-                    >
-                        <input
-                            type="number"
-                            value={tempTokenCount}
-                            onChange={handleInputChange}
-                            className="place-token-input"
-                            min="0"
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            onKeyDown={handleKeyDown}
-                            onClick={(e) => e.stopPropagation()}
-                        />
-                    </div>
-                </foreignObject>
+                    {tokenCount}
+                </text>
+            )}
+
+            {/*Token Input - Show ONLY when editing tokens and not in arc mode */}
+            {isEditingTokens && !props.arcMode && (
+                 <g transform={`translate(0, ${props.showCapacityEditorMode ? -10 : 0})`}> 
+                     <foreignObject x="-20" y="-12" width="40" height="24"> 
+                         <div 
+                             onClick={handleTokenInputClick} 
+                             onDoubleClick={(e) => e.stopPropagation()}
+                             style={{ width: '100%', height: '100%' }}
+                         >
+                             <input
+                                 type="number"
+                                 value={tempTokenCount}
+                                 onChange={handleTokenInputChange} 
+                                 className="place-token-input" 
+                                 min="0"
+                                 onFocus={handleTokenFocus} 
+                                 onBlur={handleTokenBlur} 
+                                 onKeyDown={handleTokenKeyDown} 
+                                 onClick={(e) => e.stopPropagation()}
+                                 autoFocus 
+                                 style={{ width: '100%', height: '100%', boxSizing: 'border-box', textAlign: 'center' }} 
+                             />
+                         </div>
+                     </foreignObject>
+                 </g>
             )}
 
             {/* Label Below - Only show when not editing name */}
             {!isEditingName && props.name && (
                 <text 
-                    x={props.radius + 10}
+                    x={props.radius + 6}
                     y={-props.radius + 10}
                     className="place-label"
-                    filter="url(#labelDropShadow)"
+                    onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        handleDoubleClick(e);
+                    }}
                 >
                     {props.name}
                 </text>
             )}
             
-            {props.showCapacityEditorMode && !props.arcMode && (
-                <g transform={`translate(${props.radius + 10}, ${props.radius - 15})`}>
-                    <foreignObject x="0" y="0" width="100" height="30">
-                        {isEditingCapacity ? (
-                            <input
-                                type="number"
-                                value={tempCapacity}
-                                onChange={handleCapacityChange}
-                                onKeyDown={handleCapacityKeyDown}
-                                onBlur={finishCapacityEdit}
-                                className="place-capacity-input"
-                                autoFocus
-                                placeholder="n"
-                                min="0"
-                                style={{ width: '60px' }}
-                            />
-                        ) : (
-                            <text
-                                className="place-capacity-label"
-                                onDoubleClick={handleCapacityDoubleClick}
-                                onClick={(e) => e.stopPropagation()}
-                                style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold', display: 'inline-block', verticalAlign: 'middle' }}
-                            >
-                                <title>Max Tokens (Double-click to edit, empty=unbounded)</title>
-                                {`<= ${props.capacity !== null ? props.capacity : 'n'}`}
-                            </text>
-                        )}
+            {/* Capacity TEXT Label - Positioned directly */}
+            {props.showCapacityEditorMode && !props.arcMode && !isEditingCapacity && (
+                <text
+                    x="0" 
+                    y="30" 
+                    className="place-capacity-label"
+                    fill="#fff"
+                    onDoubleClick={handleCapacityDoubleClick}
+                    onClick={(e) => e.stopPropagation()}
+                    textAnchor="middle"
+                >
+                    <title>Max Tokens (Double-click to edit, empty=unbounded)</title>
+                    {`<= ${props.capacity !== null ? props.capacity : 'n'}`}
+                </text>
+            )}
+            
+            {/* Capacity INPUT Box - Group positioned to align with where text WAS */}
+            {props.showCapacityEditorMode && !props.arcMode && isEditingCapacity && (
+                // Position this group so the foreignObject/input appears where the text label is
+                <g transform={`translate(0, 25)`}> {/* Use the same base coords as the text */} 
+                    {/* ForeignObject holds the input, positioned relative to the group */}
+                    {/* Size defines the input box, x/y center it around the group's origin */}
+                    <foreignObject x="-20" y="-12" width="40" height="20"> {/* Centered x, adjusted y to center input vertically */} 
+                        <input
+                            type="number"
+                            value={tempCapacity}
+                            onChange={handleCapacityChange}
+                            onKeyDown={handleCapacityKeyDown}
+                            onBlur={finishCapacityEdit}
+                            className="place-capacity-input"
+                            autoFocus
+                            placeholder="n"
+                            min="0"
+                            style={{ width: '100%', height: '100%', boxSizing: 'border-box' }} 
+                        />
                     </foreignObject>
                 </g>
             )}
@@ -467,8 +504,8 @@ export const Place = (props : PlaceProps) => {
             {/* Name editing input - Only show when editing name */}
             {isEditingName && (
                 <foreignObject 
-                    x={props.radius + 10}
-                    y={-props.radius + 8}
+                    x={props.radius + 6}
+                    y={-props.radius + 6}
                     width="150"
                     height="25"
                 >
@@ -500,6 +537,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={-props.radius}
                         cy={-props.radius}
+                        r="8"
                         className="place-resize-handle top-left"
                         onMouseDown={(e) => {
                             e.stopPropagation();
@@ -509,6 +547,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={props.radius}
                         cy={-props.radius}
+                        r="8"
                         className="place-resize-handle top-right"
                         onMouseDown={(e) => {
                             e.stopPropagation();
@@ -518,6 +557,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={-props.radius}
                         cy={props.radius}
+                        r="8"
                         className="place-resize-handle bottom-left"
                         onMouseDown={(e) => {
                             e.stopPropagation();
@@ -527,6 +567,7 @@ export const Place = (props : PlaceProps) => {
                     <circle
                         cx={props.radius}
                         cy={props.radius}
+                        r="8"
                         className="place-resize-handle bottom-right"
                         onMouseDown={(e) => {
                             e.stopPropagation();

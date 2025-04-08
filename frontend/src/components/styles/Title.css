@@ -2,7 +2,8 @@
 .title-container {
   padding: 10px;
   text-align: left;
-  border-bottom: 1px solid #3e3e3e;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #dcdcdc;
   display: flex;
   align-items: center;
   height: 60px;
@@ -19,7 +20,7 @@
   align-items: center;
   font-size: 1.3rem;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.87);
+  color: #333;
   width: auto;
   max-width: 80%;
   background: transparent;
@@ -32,7 +33,7 @@
 
 .title-content:hover,
 .title-content.editing {
-  background-color: #333;
+  background-color: #e0e0e0;
 }
 
 .title-content.editing {
@@ -57,7 +58,7 @@
   border: none;
   border-radius: 0;
   background-color: transparent;
-  color: rgba(255, 255, 255, 0.87);
+  color: #333;
   height: 40px;
   box-sizing: border-box;
   outline: none;

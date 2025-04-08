@@ -19,6 +19,8 @@
   fill: white;
   font-size: 24px;
   font-weight: bold;
+  cursor: text;
+  user-select: none;
 }
 
 .place-label {
@@ -28,7 +30,6 @@
   fill: white; /* Light grey for visibility */
   font-size: 20px;
   font-family: sans-serif;
-  pointer-events: none; /* Allow clicks to pass through */
   user-select: none; /* Prevent text selection */
   text-anchor: start; /* Align text starting from the x coordinate */
   /* Add drop shadow matching grid background */
@@ -36,9 +37,19 @@
 }
 
 .place-token-input {
-  width: 80%;
+  width: 50%;
   font-size: 20px;
   padding: 2px;
+  text-align: center;
+  box-sizing: border-box;
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 3px;
+}
+
+.place-token-input:focus {
+  outline: none;
 }
 
 .place-name-input {
@@ -49,6 +60,7 @@
   border: none;
   font-size: 20px;
   font-weight: bold;
+  font-family: sans-serif;
   padding: 0;
   outline: none;
 }
@@ -62,7 +74,8 @@
 
 .place-resize-handle {
   fill: #007bff;
-  r: 8;
+  stroke: #007bff;
+  stroke-width: 2;
 }
 
 .place-resize-handle.top-left {
@@ -90,13 +103,12 @@
 
 .place-capacity-label {
   /* Styles for the span inside foreignObject */
-  color: #fff; 
-  font-size: 20px; 
-  font-weight: bold; 
-  display: inline-block; 
-  vertical-align: middle;
-  cursor: text; 
-  text-shadow: 1px 1px 2px #141414; /* Added drop shadow */
+  fill: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: text;
+  text-shadow: 1px 1px 2px #141414;
+  user-select: none;
 }
 
 /* Add styles for the new elements */
@@ -125,6 +137,13 @@
 /* Hide spinner arrows for Firefox */
 .place-capacity-input[type=number] {
   appearance: textfield;
+}
+
+/* Remove default blue focus outline */
+.place-capacity-input:focus {
+  outline: none;
+  /* Optional: Add a subtle border or background change for focus indication if needed */
+  /* border-color: #777; */ 
 }
 
 /* Basic Toggle Switch CSS */
@@ -183,4 +202,15 @@ input:checked + .slider:before {
 
 .slider.round:before {
   border-radius: 50%;
+}
+
+/* Hide spinner arrows for token input */
+.place-token-input::-webkit-outer-spin-button,
+.place-token-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.place-token-input[type=number] {
+  appearance: textfield; /* Firefox */
 } 

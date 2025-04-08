@@ -3,31 +3,12 @@
 > vite
 
 
-  VITE v6.2.0  ready in 156 ms
+  VITE v6.2.0  ready in 737 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-10:49:16 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
-10:49:48 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
-10:49:53 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
-10:50:07 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
-10:52:56 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:53:01 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:53:06 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:53:07 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:53:20 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:54:05 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:54:06 PM [vite] (client) hmr update /src/components/Canvas.tsx
-10:54:13 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:54:49 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:57:40 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:57:56 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:58:04 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:58:21 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:59:09 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-11:01:48 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-11:01:57 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-11:02:44 PM [vite] (client) hmr update /src/components/styles/ValidatorTool.css
-11:04:53 PM [vite] (client) hmr update /src/components/styles/ValidatorTool.css
-11:05:23 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-11:09:29 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+4:20:27 PM [vite] (client) hmr update /src/components/MenuBar.tsx
+4:20:46 PM [vite] (client) hmr update /src/components/FileMenu.tsx
+4:20:58 PM [vite] (client) hmr update /src/App.tsx
+4:21:20 PM [vite] (client) hmr update /src/components/MenuBar.tsx
+4:21:40 PM [vite] (client) hmr update /src/App.tsx
