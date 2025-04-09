@@ -7,6 +7,7 @@ import { MenuBar } from './components/MenuBar';
 import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
 import { API_ENDPOINTS } from './utils/api';
 import { TabbedPanel } from './components/TabbedPanel';
+import { useClipboard } from './hooks/useClipboard';
 
 export default function App() {
     // ===== STATE MANAGEMENT =====
@@ -27,13 +28,10 @@ export default function App() {
     const [animatingTransitions, setAnimatingTransitions] = useState<Record<string, boolean>>({});
     const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false);
     
-    // Add state to track drag start positions for multi-drag
     const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
     
-    // Reference to the EditableTitle component
     const titleRef = useRef<EditableTitleRef>(null);
     
-    // Function to highlight the title for editing
     const handleHighlightTitle = () => {
         if (titleRef.current) {
             titleRef.current.startEditing();
@@ -62,7 +60,7 @@ export default function App() {
     
     // Function to handle undo
     const handleUndo = useCallback(() => {
-        if (history.places.length === 0) return; // Nothing to undo
+        if (history.places.length === 0) return;
         
         // Get the previous state
         const prevPlaces = history.places[history.places.length - 1];
@@ -81,6 +79,19 @@ export default function App() {
             arcs: prev.arcs.slice(0, -1)
         }));
     }, [history]);
+
+    // Instantiate the clipboard hook
+    const { handleCopy, handlePaste, clearClipboard } = useClipboard({
+        places,
+        transitions,
+        arcs,
+        selectedElements,
+        setPlaces,
+        setTransitions,
+        setArcs,
+        setSelectedElements,
+        saveToHistory,
+    });
 
     // ===== DERIVED STATE / CONSTANTS =====
     const petriNetDTO: PetriNetDTO = {
@@ -123,31 +134,69 @@ export default function App() {
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (isTyping) return; // Prevent actions while typing
-            
+
+            //different operating systems have different key combinations for copy, paste, and undo
+            const isModifier = e.metaKey || e.ctrlKey; 
+
+            if (isModifier && e.key === 'c') { // Copy
+                e.preventDefault();
+                handleCopy(); // UseClipboard hook's handleCopy
+                return;
+            }
+
+            if (isModifier && e.key === 'v') { // Paste
+                e.preventDefault();
+                handlePaste(); // UseClipboard hook's handlePaste
+                return;
+            }
+
+            if (isModifier && e.key === 'z') { // Undo
+                e.preventDefault();
+                handleUndo();
+                return;
+            }
+
             if (e.key === 'Escape') {
-                // Escape key exits the current tool mode AND clears selection
                 setSelectedTool('NONE');
                 setSelectedElements([]);
                 return;
             }
             
-            // Handle undo with CMD+Z (Mac) or CTRL+Z (Windows)
-            if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
-                e.preventDefault(); // Prevent browser's default undo
-                handleUndo();
-                return;
-            }
+            // Moved handleDelete declaration inside the effect or passed as dependency
+            const handleDeleteLocal = () => {
+                 if (selectedElements.length === 0) return;
+                 
+                 saveToHistory(); // Save history before deleting
+
+                 const arcsToDelete = arcs.filter((arc) => 
+                     selectedElements.includes(arc.id) || 
+                     selectedElements.includes(arc.incomingId) || 
+                     selectedElements.includes(arc.outgoingId)
+                 ).map((arc) => arc.id);
+
+                 setArcs((prevArcs) => prevArcs.filter((arc) => !arcsToDelete.includes(arc.id)));
+
+                 setTransitions((prevTransitions) =>
+                     prevTransitions.map((t) => ({
+                         ...t,
+                         arcIds: t.arcIds.filter((arcId) => !arcsToDelete.includes(arcId)),
+                     }))
+                 );
+
+                 setPlaces((prevPlaces) => prevPlaces.filter((p) => !selectedElements.includes(p.id)));
+                 setTransitions((prevTransitions) => prevTransitions.filter((t) => !selectedElements.includes(t.id)));
+
+                 setSelectedElements([]);
+            };
+
 
             if (e.key === 'Delete' || e.key === 'Backspace') {
-                // If actively drawing an arc (source selected), cancel the drawing by clearing selection.
                 if (selectedTool === 'ARC' && selectedElements.length === 1) {
                     setSelectedElements([]);
                     return; 
                 }
-                
-                // Otherwise (not actively drawing an arc, or multiple elements selected), proceed with deletion.
-                saveToHistory();
-                handleDelete();
+                // Call the local delete function
+                handleDeleteLocal(); 
             }
         }
 
@@ -155,7 +204,20 @@ export default function App() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [selectedElements, places, transitions, arcs, isTyping, handleUndo, saveToHistory, selectedTool]);
+    }, [
+        isTyping, 
+        selectedTool, 
+        selectedElements, 
+        arcs,
+        places,
+        transitions,
+        handleCopy,
+        handlePaste,
+        handleUndo, 
+        saveToHistory, 
+        setSelectedTool,
+        setSelectedElements
+    ]);
 
     useEffect(() => {
         if (selectedTool === 'ARC') {
@@ -550,46 +612,18 @@ export default function App() {
     };
 
     const handleReset = async () => {
-        // Save current state before reset
         saveToHistory();
-        
         setPlaces([]);
         setTransitions([]);
         setArcs([]);
         setSelectedElements([]);
-    }
-
-    // ===== ELEMENT MANIPULATION =====
-    function handleDelete() {
-        if (selectedElements.length === 0) return;
-
-        // Find all arcs that need to be deleted:
-        // 1. Explicitly selected arcs
-        // 2. Arcs connected to selected places or transitions
-        const arcsToDelete = arcs.filter((arc) => 
-            selectedElements.includes(arc.id) || // Explicitly selected arcs
-            selectedElements.includes(arc.incomingId) || // Arcs where selected element is source
-            selectedElements.includes(arc.outgoingId) // Arcs where selected element is target
-        ).map((arc) => arc.id);
-
-        // removing selected arcs from arcs array
-        setArcs((prevArcs) => prevArcs.filter((arc) => !arcsToDelete.includes(arc.id)));
-
-        // updating connected transitions to exclude deleted arc ids
-        setTransitions((prevTransitions) =>
-            prevTransitions.map((t) => ({
-                ...t,
-                arcIds: t.arcIds.filter((arcId) => !arcsToDelete.includes(arcId)),
-            }))
-        );
-
-        // deleting the selected places and transitions
-        setPlaces((prevPlaces) => prevPlaces.filter((p) => !selectedElements.includes(p.id)));
-        setTransitions((prevTransitions) => prevTransitions.filter((t) => !selectedElements.includes(t.id)));
-
-        // Clear the selection
-        setSelectedElements([]);
-    }
+        clearClipboard(); // Clear clipboard on reset
+        setConflictResolutionMode(false);
+        setConflictingTransitions([]);
+        setFiredTransitions([]);
+        setAnimatingTransitions({});
+        setHistory({ places: [], transitions: [], arcs: [] }); // Clear history for the new net
+    };
 
     const updatePlaceSize = (id: string, newRadius: number) => {
         // Save current state before updating size
@@ -719,9 +753,7 @@ export default function App() {
     };
 
     // ===== MENU HANDLERS =====
-    // Function to process data from various import/load methods
     const processLoadedData = (loadedData: PetriNetDTO, sourceTitle?: string) => {
-        // Save current state before loading new data
         saveToHistory();
 
         // Convert imported places to UIPlace objects
@@ -763,12 +795,13 @@ export default function App() {
         // Use title from loaded data, fallback to sourceTitle, then default
         setTitle(loadedData.title || sourceTitle || "Untitled Petri Net");
 
-        // Clear selection and history related to the previous state
+        // Clear selection and simulation/history related to the previous state
         setSelectedElements([]);
         setConflictResolutionMode(false);
         setConflictingTransitions([]);
         setFiredTransitions([]);
-        // Consider if history should be cleared or kept
+        setAnimatingTransitions({});
+        clearClipboard(); // Clear clipboard when loading new data
         setHistory({ places: [], transitions: [], arcs: [] }); // Clear history for the new net
     };
 

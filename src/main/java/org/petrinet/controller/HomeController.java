@@ -11,7 +11,7 @@ public class HomeController {
         return "forward:/index.html";
     }
     
-    // Handle single-page application routes
+    // Handle single-page routes
     @GetMapping(value = {"/canvas/**", "/settings/**", "/help/**"})
     public String forwardToIndex() {
         return "forward:/index.html";

@@ -26,7 +26,7 @@ public class PetriNetValidatorController {
      * Endpoint for validating a Petri net with specified inputs and expected outputs.
      * 
      * @param requestDTO The validation request containing the Petri net and validation parameters
-     * @return A validation result or an error message
+     * @return The validation result or an error message
      */
     @PostMapping("/api/validate")
     public ResponseEntity<?> validatePetriNet(@RequestBody PetriNetValidationDTO requestDTO) {
