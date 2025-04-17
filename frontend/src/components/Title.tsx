@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import GithubIcon from '../assets/github.svg';
+import './styles/Title.css';
 
 interface EditableTitleProps {
     title: string;
@@ -13,7 +15,6 @@ export interface EditableTitleRef {
 export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({ title, onTitleChange }, ref) => {
     const [isEditing, setIsEditing] = useState(false);
     const [tempTitle, setTempTitle] = useState(title);
-    const [hoverBackground, setHoverBackground] = useState('transparent');
     const [showNotification, setShowNotification] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     
@@ -40,9 +41,6 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
     const startEditing = () => {
         setIsEditing(true);
         setTempTitle(title);
-        // Reset hover background when entering edit mode
-        setHoverBackground('transparent');
-        // Show notification when prompted to edit the title
         if (title === DEFAULT_TITLE) {
             setShowNotification(true);
             // Hide notification after 3 seconds
@@ -87,29 +85,12 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
     };
 
     return (
-        <div className="title-container" style={{ 
-            padding: '10px', 
-            textAlign: 'left', 
-            borderBottom: '1px solid #4a4a4a',
-            display: 'flex',
-            alignItems: 'center',
-            height: '60px',
-            minHeight: '60px',
-            position: 'relative'
-        }}>
-            {/* Title content wrapper - consistent for both view and edit modes */}
-            <div 
-                style={{ 
-                    cursor: isEditing ? 'default' : 'pointer',
-                    padding: '5px 10px',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s ease',
-                    display: 'inline-block',
-                    backgroundColor: isEditing ? 'transparent' : hoverBackground
-                }}
+        <div className="title-container">
+            {/* Use class names from styles/Title.css */}
+            <div
+                // Apply conditional class for editing state, using 'title-content'
+                className={`title-content ${isEditing ? 'editing' : ''}`}
                 onClick={isEditing ? undefined : startEditing}
-                onMouseOver={isEditing ? undefined : () => setHoverBackground('#2a2a2a')}
-                onMouseOut={isEditing ? undefined : () => setHoverBackground('transparent')}
                 title={isEditing ? undefined : "Click to edit the title"}
             >
                 {isEditing ? (
@@ -121,58 +102,38 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
                         onChange={(e) => setTempTitle(e.target.value)}
                         onBlur={finishEditing}
                         onKeyDown={handleKeyDown}
-                        style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 'bold',
-                            padding: '5px',
-                            border: '1px solid #444',
-                            borderRadius: '3px',
-                            backgroundColor: '#333',
-                            color: 'white',
-                            width: '300px',
-                            height: '40px',
-                            boxSizing: 'border-box'
-                        }}
+                        className="title-input" // Use class name from styles/Title.css
                         placeholder={DEFAULT_TITLE}
+                        // Auto-focus is handled in startEditing
                     />
                 ) : (
-                    // View mode
-                    <h2 
-                        style={{ 
-                            margin: 0,
-                            padding: 0,
-                            borderRadius: '3px',
-                            height: '40px',
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}
-                    >
+                    // View mode - Use title-text class
+                    <h2 className="title-text">
                         {title}
-                        <span style={{ 
-                            marginLeft: '10px', 
-                            fontSize: '0.8rem', 
-                            opacity: 0.6,
-                            verticalAlign: 'middle'
-                        }}>
-                        </span>
+                        {/* Suffix span is part of title-text styling in styles/Title.css */}
+                        {/* <span></span> */}
                     </h2>
                 )}
             </div>
-            
+
+            {/* GitHub Project Link */}
+            <a
+                href="https://github.com/Joseph-Vanliew/PATS"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="github-link"
+                title="View Project on GitHub"
+            >
+                <img
+                    src={GithubIcon}
+                    alt="GitHub Icon"
+                    className="github-link-icon"
+                />
+            </a>
+
             {/* Notification message */}
             {showNotification && (
-                <div 
-                    style={{
-                        position: 'absolute',
-                        left: '350px',
-                        color: '#ff4d4d',
-                        fontWeight: 'bold',
-                        fontSize: '1rem',
-                        animation: 'fadeIn 0.3s ease-in-out',
-                        display: 'flex',
-                        alignItems: 'center'
-                    }}
-                >
+                <div className="title-notification">
                     Please name your file before saving!
                 </div>
             )}

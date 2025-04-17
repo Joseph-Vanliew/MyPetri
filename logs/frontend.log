@@ -3,32 +3,16 @@
 > vite
 
 
-  VITE v6.2.0  ready in 328 ms
+  VITE v6.2.0  ready in 179 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-5:51:10 PM [vite] (client) hmr update /src/App.tsx
-5:52:18 PM [vite] (client) hmr update /src/App.tsx
-5:52:31 PM [vite] (client) hmr update /src/App.tsx
-7:20:00 PM [vite] (client) hmr update /src/App.tsx
-7:20:01 PM [vite] (client) ✨ new dependencies optimized: uuid
-7:20:01 PM [vite] (client) ✨ optimized dependencies changed. reloading
-7:20:39 PM [vite] (client) hmr update /src/App.tsx
-7:24:11 PM [vite] (client) hmr update /src/App.tsx
-7:28:04 PM [vite] (client) hmr update /src/App.tsx
-7:28:28 PM [vite] (client) hmr update /src/App.tsx
-7:28:48 PM [vite] (client) hmr update /src/App.tsx
-7:30:02 PM [vite] (client) hmr update /src/App.tsx
-7:30:58 PM [vite] (client) hmr update /src/App.tsx
-7:31:25 PM [vite] (client) hmr update /src/App.tsx
-7:31:42 PM [vite] (client) hmr update /src/App.tsx
-7:32:04 PM [vite] (client) hmr update /src/App.tsx
-7:32:16 PM [vite] (client) hmr update /src/App.tsx
-7:32:46 PM [vite] (client) hmr update /src/App.tsx
-7:33:46 PM [vite] (client) hmr update /src/App.tsx
-7:35:41 PM [vite] (client) hmr update /src/App.tsx
-7:36:25 PM [vite] (client) hmr update /src/App.tsx
-7:36:41 PM [vite] (client) hmr update /src/App.tsx
-7:37:11 PM [vite] (client) hmr update /src/App.tsx
-7:40:16 PM [vite] (client) hmr update /src/App.tsx
-7:44:56 PM [vite] (client) hmr update /src/App.tsx
+7:58:50 PM [vite] (client) hmr update /src/components/styles/Title.css
+7:59:30 PM [vite] (client) hmr update /src/components/styles/Title.css
+7:59:50 PM [vite] (client) hmr update /src/components/styles/Title.css
+8:00:28 PM [vite] (client) hmr update /src/components/styles/Title.css
+8:01:41 PM [vite] (client) hmr update /src/components/styles/Title.css
+8:05:36 PM [vite] (client) hmr update /src/components/styles/Title.css
+8:07:37 PM [vite] (client) hmr update /src/components/FileMenu.tsx
+8:07:47 PM [vite] (client) hmr update /src/components/FileMenu.tsx
+8:07:53 PM [vite] (client) hmr update /src/components/FileMenu.tsx

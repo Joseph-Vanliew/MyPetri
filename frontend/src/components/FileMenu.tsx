@@ -135,7 +135,7 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport, onSa
         onClick={toggleMenu}
         style={{
           padding: '6px 12px',
-          color: 'ddd',
+          color: '#f0f0f0',
           cursor: 'pointer',
           fontWeight: isOpen ? 'bold' : 'normal',
           backgroundColor: isOpen ? '#444' : 'transparent',
