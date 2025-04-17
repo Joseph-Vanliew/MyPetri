@@ -3,16 +3,8 @@
 > vite
 
 
-  VITE v6.2.0  ready in 179 ms
+  VITE v6.2.0  ready in 212 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-7:58:50 PM [vite] (client) hmr update /src/components/styles/Title.css
-7:59:30 PM [vite] (client) hmr update /src/components/styles/Title.css
-7:59:50 PM [vite] (client) hmr update /src/components/styles/Title.css
-8:00:28 PM [vite] (client) hmr update /src/components/styles/Title.css
-8:01:41 PM [vite] (client) hmr update /src/components/styles/Title.css
-8:05:36 PM [vite] (client) hmr update /src/components/styles/Title.css
-8:07:37 PM [vite] (client) hmr update /src/components/FileMenu.tsx
-8:07:47 PM [vite] (client) hmr update /src/components/FileMenu.tsx
-8:07:53 PM [vite] (client) hmr update /src/components/FileMenu.tsx
+9:10:16 AM [vite] (client) hmr update /src/components/Canvas.tsx

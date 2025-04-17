@@ -51,7 +51,7 @@ export const Canvas = (props: CanvasProps) => {
     const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
     
     const zoomAndPan = useZoomAndPan(svgRef, {
-        initialViewBox: { x: -500, y: -500, w: 1000, h: 1000 }
+        initialViewBox: { x: -750, y: -750, w: 1500, h: 1500 }
     });
     
     const mouseTracking = useMouseTracking(svgRef, {
