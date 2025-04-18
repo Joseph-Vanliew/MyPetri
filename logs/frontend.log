@@ -1,0 +1,42 @@
+
+> frontend@0.0.0 dev
+> vite
+
+
+  VITE v6.2.0  ready in 186 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+11:41:46 AM [vite] (client) hmr update /src/App.css
+11:42:56 AM [vite] (client) hmr update /src/App.css
+11:43:16 AM [vite] (client) hmr update /src/App.css
+11:43:40 AM [vite] (client) hmr update /src/App.css
+11:44:58 AM [vite] (client) hmr update /src/components/Canvas.tsx
+11:55:48 AM [vite] (client) hmr update /src/App.tsx
+12:09:01 PM [vite] (client) hmr update /src/components/Canvas.tsx
+12:09:53 PM [vite] (client) hmr update /src/App.tsx
+12:09:53 PM [vite] Internal server error: Failed to resolve import "./components/PageTabs" from "src/App.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/src/App.tsx:16:25
+  26 |    PanelGroup
+  27 |  } from "react-resizable-panels";
+  28 |  import { PageTabs } from "./components/PageTabs";
+     |                            ^
+  29 |  import "./App.css";
+  30 |  const createDefaultPage = () => ({
+      at TransformPluginContext._formatLog (file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:47835:41)
+      at TransformPluginContext.error (file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:47832:16)
+      at normalizeUrl (file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:45968:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:46087:37
+      at async Promise.all (index 10)
+      at async TransformPluginContext.transform (file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:46014:7)
+      at async EnvironmentPluginContainer.transform (file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:47630:18)
+      at async loadAndTransform (file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:41318:27)
+      at async viteTransformMiddleware (file:///Users/josephvanliew/Documents/GVSU/2024%20Spring/Software_Testing/Assignments/PATS/frontend/node_modules/vite/dist/node/chunks/dep-ByPKlqZ5.js:42781:24)
+12:10:07 PM [vite] (client) page reload src/components/PageTabs.tsx
+12:10:09 PM [vite] (client) hmr update /src/App.tsx
+12:10:29 PM [vite] (client) hmr update /src/App.tsx
+12:10:37 PM [vite] (client) hmr update /src/App.tsx
+4:01:17 PM [vite] (client) hmr update /src/App.css
+4:01:46 PM [vite] (client) hmr update /src/App.css

@@ -212,7 +212,7 @@ export const Canvas = (props: CanvasProps) => {
             overflow: 'hidden',
             margin: 0,
             padding: 0,
-            display: 'flex'
+            display: 'flex',
         }}>
             <svg
                 ref={svgRef}
@@ -245,7 +245,7 @@ export const Canvas = (props: CanvasProps) => {
                     zoomAndPan.handleMouseLeave(); 
                 }}
                 style={{ 
-                    backgroundColor: 'transparent',
+                    backgroundColor: '#1A1A1A',
                     display: 'block',
                     width: '100%',
                     height: '100%'
@@ -278,7 +278,6 @@ export const Canvas = (props: CanvasProps) => {
                 <g className="arcs-layer">
                     {(() => {
                         return props.arcs.map((arc: UIArc) => {
-                            // Use maps for lookup
                             const sourceElement = placesMap.get(arc.incomingId) || transitionsMap.get(arc.incomingId);
                             const targetElement = placesMap.get(arc.outgoingId) || transitionsMap.get(arc.outgoingId);
 

@@ -4,7 +4,22 @@
 PATS is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
 
 # Images
-
+## The App
+![Dining Philosophers Whole View](screenshots/Dining%20Philosophers%20Whole%20View.png)
+## Basic Token Movement
+![Basic Input](screenshots/Basic%20Input.png)
+![Basic Output](screenshots/Basic%20Output.png)
+## Transition Conflict
+![Transition Conflict](screenshots/Transition%20Conflict.png)
+## Solving Transition Conflict
+![Locking Inhibitor Example](screenshots/Locking%20Inhibitor%20Example.png)
+## An example net to validate
+![Validator Output](screenshots/Validator%20Output.png)
+## Validating with expected inputs and outputs
+![Validator Parameters](screenshots/Validator%20Parameters.png)
+## Validation Result (proving the net)
+![Validation Result](screenshots/Validation%20Result.png)
+![Dining Philosophers Canvas](screenshots/Dining%20Philosophers%20Canvas.png)
 
 # Build and Run Instructions
 

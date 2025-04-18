@@ -3,7 +3,6 @@
   position: relative;
   width: 1200px;
   height: 1000px;
-  border: 2px solid #ccc;
   margin: 20px;
 }
 .canvas-svg {
@@ -93,14 +92,4 @@
   color: white;
   border: none;
   cursor: pointer;
-}
-
-.petri-element.place circle {
-  stroke: #0f0f0f;
-  transition: fill 0.2s ease;
-}
-
-.petri-element.place:hover circle {
-  stroke-width: 4;
-  transform: 0.2s ease;
 }
