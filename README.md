@@ -1,4 +1,4 @@
-# PATS (Petri Net Place and Transition Simulator) 
+# MyPetri (Petri Net Place and Transition Simulator) 
 
 # A Brief Description
 PATS is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
