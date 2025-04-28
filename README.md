@@ -1,25 +1,23 @@
 # PATS (Petri Net Place and Transition Simulator) 
 
-# Brief Description
+# A Brief Description
 PATS is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
 
-# Images
 ## The App
-![Dining Philosophers Whole View](screenshots/Dining%20Philosophers%20Whole%20View.png)
-## Basic Token Movement
-![Basic Input](screenshots/Basic%20Input.png)
-![Basic Output](screenshots/Basic%20Output.png)
-## Transition Conflict
-![Transition Conflict](screenshots/Transition%20Conflict.png)
-## Solving Transition Conflict
-![Locking Inhibitor Example](screenshots/Locking%20Inhibitor%20Example.png)
-## An example net to validate
-![Validator Output](screenshots/Validator%20Output.png)
-## Validating with expected inputs and outputs
-![Validator Parameters](screenshots/Validator%20Parameters.png)
-## Validation Result (proving the net)
-![Validation Result](screenshots/Validation%20Result.png)
-![Dining Philosophers Canvas](screenshots/Dining%20Philosophers%20Canvas.png)
+<img src="screenshots/Dining%20Philosophers%20Whole%20View.png" alt="Dining Philosophers Whole View" width="500"/> <br>
+## Basic Token Movement<br>
+<img src="screenshots/Basic%20Input.png" alt="Basic Input" width="200"/><br>
+<img src="screenshots/Basic%20Output.png" alt="Basic Output" width="200"/><br>
+## Transition Conflict<br>
+<img src="screenshots/Transition%20Conflict.png" alt="Transition Conflict" width="200"/><br>
+## Solving Transition Conflict<br>
+<img src="screenshots/Locking%20Inhibitor%20Example.png" alt="Locking Inhibitor Example" width="300"/><br>
+## An example net to validate<br>
+<img src="screenshots/Validator%20Output.png" alt="Validator Output" width="300"/><br>
+## Validating with expected inputs and outputs<br>
+<img src="screenshots/Validator%20Parameters.png" alt="Validator Parameters" width="300"/><br>
+## Validation Result (proving the net)<br>
+<img src="screenshots/Validation%20Result.png" alt="Validation Result" width="300"/><br>
 
 # Build and Run Instructions
 
