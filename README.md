@@ -129,5 +129,6 @@ We are continuously working to improve PATS. Planned future developments include
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Project Management**          | Refine existing save/import mechanisms and implement robust project export functionality.                                                                               |
 | **Analysis & Simulation**       | Develop and connect backend services for comprehensive Petri net analysis capabilities (e.g., reachability graphs, boundedness checks, liveness properties).                |
-| **Petri Net Core**              | Implement variable arc weights to allow for the consumption and production of multiple tokens per transition firing, providing greater modeling flexibility.            |
+| **Petri Net Core**              | Implement variable arc weights to allow for the consumption and production of multiple tokens per transition firing without the need to add multiple arcs of the same type, providing greater modeling flexibility.            |
 | **User Interface / User Experience** | Explore options for multi-document or tabbed views to improve the management of multiple Petri nets or complex models.                                                |
+| **SVG Icons** | Creation of additional SVG Icons that can be used as place and transition nodes to represent common industry components.                                                |
