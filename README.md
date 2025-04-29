@@ -1,7 +1,7 @@
 # MyPetri (Petri Net Place and Transition Simulator) 
 
 # A Brief Description
-PATS is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
+MyPetri is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
 
 ## The App
 <img src="screenshots/Dining%20Philosophers%20Whole%20View.png" alt="Dining Philosophers Whole View" width="500"/> <br>
@@ -27,14 +27,14 @@ PATS is intended to be an open source web-application and educational tool meant
 - Git
 - Gradle
 
-No IDE is required - PATS can be built and run entirely from the command line.
+No IDE is required - MyPetri can be built and run entirely from the command line.
 
 ## Getting Started
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/Joseph-Vanliew/PATS
-cd pats
+git clone https://github.com/Joseph-Vanliew/MyPetri
+cd MyPetri
 ```
 
 ### Running the Application
@@ -123,7 +123,7 @@ java -jar build/libs/pats-0.0.1-SNAPSHOT.jar
 
 ## Future Enhancements / Roadmap
 
-We are continuously working to improve PATS. Planned future developments include:
+We are continuously working to improve MyPetri. Planned future developments include:
 
 | Feature Area                    | Description                                                                                                                                                             |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
