@@ -120,3 +120,14 @@ The production-ready application will be packaged as a JAR file in the `build/li
 ```bash
 java -jar build/libs/pats-0.0.1-SNAPSHOT.jar
 ```
+
+## Future Enhancements / Roadmap
+
+We are continuously working to improve PATS. Planned future developments include:
+
+| Feature Area                    | Description                                                                                                                                                             |
+| :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Project Management**          | Refine existing save/import mechanisms and implement robust project export functionality.                                                                               |
+| **Analysis & Simulation**       | Develop and connect backend services for comprehensive Petri net analysis capabilities (e.g., reachability graphs, boundedness checks, liveness properties).                |
+| **Petri Net Core**              | Implement variable arc weights to allow for the consumption and production of multiple tokens per transition firing, providing greater modeling flexibility.            |
+| **User Interface / User Experience** | Explore options for multi-document or tabbed views to improve the management of multiple Petri nets or complex models.                                                |
