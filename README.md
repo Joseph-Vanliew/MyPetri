@@ -3,6 +3,16 @@
 # A Brief Description
 MyPetri is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
 
+# Technologies
+Java 21 - backend API for next state and conflict detection/resolution and validation.
+Typescript 5.6 - core logic for elements and structuring of the web app.
+CSS 
+Vite/REACT - Frontend Build
+Springboot - Backend API Framework and testing
+Docker - For packaging the backend with the frontend for deployment
+GCP (Google Cloud Platform) Cloud Run Instance for deployment
+
+
 ## The App
 <img src="screenshots/Dining%20Philosophers%20Whole%20View.png" alt="Dining Philosophers Whole View" width="500"/> <br>
 ## Basic Token Movement<br>
@@ -132,3 +142,7 @@ We are continuously working to improve MyPetri. Planned future developments incl
 | **Petri Net Core**              | Implement variable arc weights to allow for the consumption and production of multiple tokens per transition firing without the need to add multiple arcs of the same type, providing greater modeling flexibility.            |
 | **User Interface / User Experience** | Explore options for multi-document or tabbed views to improve the management of multiple Petri nets or complex models.                                                |
 | **SVG Icons** | Creation of additional SVG Icons that can be used as place and transition nodes to represent common industry components.                                                |
+
+
+# Find a Bug?
+Please submit an issue using the issues tab above! We'll do our best to respond promptly. 
