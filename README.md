@@ -1,16 +1,17 @@
 # MyPetri (Petri Net Place and Transition Simulator) 
 
 # A Brief Description
-MyPetri is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
+MyPetri is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems. 
 
 # Technologies
-Java 21 - backend API for next state and conflict detection/resolution and validation.
-Typescript 5.6 - core logic for elements and structuring of the web app.
-CSS 
-Vite/REACT - Frontend Build
-Springboot - Backend API Framework and testing
-Docker - For packaging the backend with the frontend for deployment
-GCP (Google Cloud Platform) Cloud Run Instance for deployment
+- Java 21 - backend API for next state and conflict detection/resolution and validation.
+- Typescript 5.6 - core logic for elements and structuring of the web app.
+- CSS 
+- Vite/REACT - Frontend Build
+- Springboot - Backend API Framework and testing and build tool
+- Gradle - Backend build tool
+- Docker - For packaging the backend with the frontend for deployment
+- GCP (Google Cloud Platform) Cloud Run Instance for deployment
 
 
 ## The App
