@@ -37,30 +37,16 @@ export interface PetriNetDTO {
     deterministicMode?: boolean;
     selectedTransitionId?: string;
     title?: string;
-}
-
-export interface PlaceDTO {
-    id: string;
-    tokens: number;
-}
-
-export interface TransitionDTO {
-    id: string;
-    enabled: boolean;
-    arcIds: string[];
-}
-
-export interface ArcDTO {
-    id: string;
-    type: "REGULAR" | "INHIBITOR" | "BIDIRECTIONAL";
-    incomingId: string;
-    outgoingId: string;
+    zoomLevel?: number;
+    panOffset?: { x: number; y: number };
 }
 
 // --------------------------
 // UI State Types (Additional frontend-only fields)
 // --------------------------
-export interface UIPlace extends PlaceDTO {
+export interface UIPlace {
+    id: string;
+    tokens: number;
     name: string,
     x: number;
     y: number;
@@ -69,7 +55,10 @@ export interface UIPlace extends PlaceDTO {
     capacity: number | null;
 }
 
-export interface UITransition extends TransitionDTO {
+export interface UITransition {
+    id: string;
+    enabled: boolean;
+    arcIds: string[];
     name: string,
     x: number;
     y: number;
@@ -77,8 +66,11 @@ export interface UITransition extends TransitionDTO {
     height: number;
 }
 
-export interface UIArc extends ArcDTO {
-
+export interface UIArc {
+    id: string;
+    type: 'REGULAR' | 'INHIBITOR' | 'BIDIRECTIONAL';
+    incomingId: string;
+    outgoingId: string;
 }
 
 // --------------------------
@@ -101,4 +93,25 @@ export interface ValidationResult {
     conflictingTransitions?: string[];
     finalState?: PetriNetDTO;
     outputMatches?: Record<string, boolean>;
+}
+
+// Page Data
+export interface PetriNetPageData {
+    id: string;
+    title: string;
+    places: UIPlace[];
+    transitions: UITransition[];
+    arcs: UIArc[];
+    deterministicMode: boolean; 
+    conflictResolutionMode: boolean;
+    conflictingTransitions: string[];
+    selectedElements: string[];
+    history: {
+        places: UIPlace[][];
+        transitions: UITransition[][];
+        arcs: UIArc[][];
+        title: string[];
+    };
+    zoomLevel?: number;
+    panOffset?: { x: number; y: number };
 }

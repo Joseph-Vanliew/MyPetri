@@ -1,13 +1,22 @@
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { UIPlace, UITransition, UIArc, GRID_CELL_SIZE } from '../types';
+import { UIPlace, UITransition, UIArc } from '../types';
 
-// Define the props the hook will need
-interface UseClipboardProps {
+// Define structure for clipboard data
+interface ClipboardData {
+    type: 'petriNetElements'; 
+    places: UIPlace[];
+    transitions: UITransition[];
+    arcs: UIArc[];
+}
+
+// Export prop type if App.tsx imports it
+export interface UseClipboardProps {
     places: UIPlace[];
     transitions: UITransition[];
     arcs: UIArc[];
     selectedElements: string[];
+    // selectionBounds prop removed based on rejection
     setPlaces: React.Dispatch<React.SetStateAction<UIPlace[]>>;
     setTransitions: React.Dispatch<React.SetStateAction<UITransition[]>>;
     setArcs: React.Dispatch<React.SetStateAction<UIArc[]>>;
@@ -15,7 +24,6 @@ interface UseClipboardProps {
     saveToHistory: () => void;
 }
 
-// Define the return type of the hook
 interface UseClipboardReturn {
     handleCopy: () => void;
     handlePaste: () => void;
@@ -34,97 +42,142 @@ export function useClipboard({
     saveToHistory,
 }: UseClipboardProps): UseClipboardReturn {
 
-    const [clipboard, setClipboard] = useState<{
-        places: UIPlace[];
-        transitions: UITransition[];
-        arcs: UIArc[];
-    } | null>(null);
+    // State to track consecutive pastes of the SAME content
     const [pasteCount, setPasteCount] = useState(0);
+    // State to store the content processed by the LAST paste
+    const [lastPastedContent, setLastPastedContent] = useState<ClipboardData | null>(null);
 
-    const handleCopy = useCallback(() => {
+    const handleCopy = useCallback(async () => {
         if (selectedElements.length === 0) return;
 
         const copiedPlaces = places.filter(p => selectedElements.includes(p.id));
         const copiedTransitions = transitions.filter(t => selectedElements.includes(t.id));
+        const selectedSet = new Set(selectedElements);
         const copiedArcs = arcs.filter(arc =>
-            selectedElements.includes(arc.incomingId) && selectedElements.includes(arc.outgoingId)
+            selectedSet.has(arc.incomingId) && selectedSet.has(arc.outgoingId)
         );
 
         if (copiedPlaces.length > 0 || copiedTransitions.length > 0) {
-            setClipboard({
+            const clipboardData: ClipboardData = {
+                type: 'petriNetElements',
                 places: JSON.parse(JSON.stringify(copiedPlaces)),
                 transitions: JSON.parse(JSON.stringify(copiedTransitions)),
                 arcs: JSON.parse(JSON.stringify(copiedArcs))
-            });
-            setPasteCount(0);
-            console.log('Copied to clipboard:', { copiedPlaces, copiedTransitions, copiedArcs });
+            };
+            try {
+                await navigator.clipboard.writeText(JSON.stringify(clipboardData, null, 2));
+                setPasteCount(0); 
+                setLastPastedContent(null); 
+            } catch (err) {
+                 console.error('Failed to copy to system clipboard:', err);
+            }
         } else {
-            setClipboard(null);
-            setPasteCount(0);
+             setPasteCount(0);
+             setLastPastedContent(null);
         }
     }, [selectedElements, places, transitions, arcs]);
 
-    const handlePaste = useCallback(() => {
-        if (!clipboard) return;
+    const handlePaste = useCallback(async () => {
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            if (!clipboardText) return;
+            const parsedData = JSON.parse(clipboardText);
 
-        saveToHistory();
-
-        const currentPasteIndex = pasteCount + 1;
-        const pasteOffsetAmount = GRID_CELL_SIZE * 1.3; // tune the offset when pasting multiple times in a row
-        const currentOffsetX = currentPasteIndex * pasteOffsetAmount;
-        const currentOffsetY = currentPasteIndex * pasteOffsetAmount;
-
-        const idMapping: Record<string, string> = {};
-        const newElements: string[] = [];
-
-        const pastedPlaces = clipboard.places.map((p: UIPlace) => {
-            const newId = `place_${uuidv4()}`;
-            idMapping[p.id] = newId;
-            newElements.push(newId);
-            return { ...p, id: newId, x: p.x + currentOffsetX, y: p.y + currentOffsetY };
-        });
-
-        const pastedTransitions = clipboard.transitions.map((t: UITransition) => {
-            const newId = `trans_${uuidv4()}`;
-            idMapping[t.id] = newId;
-            newElements.push(newId);
-            return { ...t, id: newId, x: t.x + currentOffsetX, y: t.y + currentOffsetY, arcIds: [] };
-        });
-
-        const pastedArcs = clipboard.arcs.map((a: UIArc) => {
-            const newId = `arc_${uuidv4()}`;
-            idMapping[a.id] = newId;
-            return {
-                ...a,
-                id: newId,
-                incomingId: idMapping[a.incomingId],
-                outgoingId: idMapping[a.outgoingId],
-            };
-        });
-
-        pastedTransitions.forEach((transition: UITransition) => {
-            const originalTransition = clipboard.transitions.find((t: UITransition) => idMapping[t.id] === transition.id);
-            if (originalTransition) {
-                transition.arcIds = originalTransition.arcIds
-                    .map(oldArcId => idMapping[oldArcId])
-                    .filter(newArcId => newArcId !== undefined);
+            if (parsedData?.type !== 'petriNetElements' || !parsedData.places || !parsedData.transitions || !parsedData.arcs) {
+                console.warn("Clipboard data is not valid Petri net elements.");
+                return;
             }
-        });
+            const clipboardContent = parsedData as ClipboardData;
+            if (clipboardContent.places.length === 0 && clipboardContent.transitions.length === 0) {
+                return; 
+            }
+            
+            saveToHistory(); 
 
-        setPlaces(prev => [...prev, ...pastedPlaces]);
-        setTransitions(prev => [...prev, ...pastedTransitions]);
-        setArcs(prev => [...prev, ...pastedArcs]);
-        setSelectedElements(newElements);
+            // Determine if this is a subsequent paste of the same content
+            const isSubsequentPaste = lastPastedContent !== null && 
+                                      JSON.stringify(clipboardContent) === JSON.stringify(lastPastedContent);
 
-        setPasteCount(currentPasteIndex);
+            const currentPasteIndex = isSubsequentPaste ? pasteCount + 1 : 1;
+            
+            const pasteOffsetAmount = 30; 
+            const currentOffsetX = currentPasteIndex * pasteOffsetAmount;
+            const currentOffsetY = currentPasteIndex * pasteOffsetAmount;
 
-        console.log(`Pasted from clipboard (Paste #${currentPasteIndex}):`, { pastedPlaces, pastedTransitions, pastedArcs });
+            const idMapping: Record<string, string> = {};
+            const newElementIds: string[] = [];
 
-    }, [clipboard, pasteCount, saveToHistory, setPlaces, setTransitions, setArcs, setSelectedElements]);
+            const pastedPlaces = clipboardContent.places.map((p: UIPlace) => {
+                const newId = `place_${uuidv4()}`;
+                idMapping[p.id] = newId;
+                newElementIds.push(newId);
+                return { 
+                    ...p, id: newId, 
+                    x: (p.x ?? 100) + currentOffsetX, 
+                    y: (p.y ?? 100) + currentOffsetY 
+                };
+            });
 
-    const clearClipboard = useCallback(() => {
-        setClipboard(null);
+            const pastedTransitionsData = clipboardContent.transitions.map((t: UITransition) => {
+                const newId = `trans_${uuidv4()}`;
+                idMapping[t.id] = newId;
+                newElementIds.push(newId);
+                return { 
+                    ...t, id: newId, 
+                    x: (t.x ?? 200) + currentOffsetX, 
+                    y: (t.y ?? 200) + currentOffsetY, 
+                    arcIds: [] 
+                };
+            });
+
+            const pastedArcs = clipboardContent.arcs
+                .map((a: UIArc): UIArc | null => {
+                    const newId = `arc_${uuidv4()}`;
+                    const newIncomingId = idMapping[a.incomingId];
+                    const newOutgoingId = idMapping[a.outgoingId];
+                    if (newIncomingId && newOutgoingId) {
+                        return { ...a, id: newId, incomingId: newIncomingId, outgoingId: newOutgoingId };
+                    }
+                    return null;
+                 })
+                .filter((arc): arc is UIArc => arc !== null);
+
+            const pastedTransitions = pastedTransitionsData.map(transition => {
+                 const originalTransition = clipboardContent.transitions.find(t => idMapping[t.id] === transition.id);
+                 let newArcIds: string[] = [];
+                 if (originalTransition) {
+                    const successfullyPastedArcIds = new Set(pastedArcs.map(a => a.id));
+                    newArcIds = originalTransition.arcIds
+                        .map(oldArcId => idMapping[oldArcId]) 
+                        .filter((newArcId): newArcId is string => 
+                            newArcId !== undefined && successfullyPastedArcIds.has(newArcId)
+                        );
+                 }
+                 return { ...transition, arcIds: newArcIds };
+            });
+
+            setPlaces(prev => [...prev, ...pastedPlaces]);
+            setTransitions(prev => [...prev, ...pastedTransitions]);
+            setArcs(prev => [...prev, ...pastedArcs]);
+            setSelectedElements(newElementIds);
+
+            // Update paste tracking state
+            setLastPastedContent(clipboardContent); 
+            setPasteCount(currentPasteIndex); 
+
+        } catch (err) {
+            console.error('Paste error:', err);
+            setPasteCount(0);
+            setLastPastedContent(null);
+        }
+    }, [pasteCount, lastPastedContent, saveToHistory, setPlaces, setTransitions, setArcs, setSelectedElements]); 
+
+    const clearClipboard = useCallback(async () => {
+        // Reset internal tracking state
         setPasteCount(0);
+        setLastPastedContent(null);
+        // Optional: Clear system clipboard
+        // try { await navigator.clipboard.writeText(''); } catch (err) {} 
     }, []);
 
     return { handleCopy, handlePaste, clearClipboard };

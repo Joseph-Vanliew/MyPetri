@@ -5,81 +5,80 @@ import { PetriNetDTO } from '../types';
 // import { API_ENDPOINTS } from '../utils/api';
 
 interface MenuBarProps {
-  petriNetData: PetriNetDTO & { title: string };
-  onImport: (data: PetriNetDTO) => void; // Keep onImport for FileMenu
-  highlightTitle: () => void; // Keep highlightTitle for FileMenu
-  // Remove onLoadJson
+  petriNetData: PetriNetDTO | null;
+  onImport: (data: PetriNetDTO) => void;
+  highlightTitle: () => void;
 }
 
 export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport, highlightTitle }) => {
   // Remove fileInputRef, handleExport, handleValidate, handleOpenFileClick, handleFileChange
 
-  // Keep handleSaveAs and handleSave if they are used by FileMenu (they seem to be based on the previous code)
   const handleSave = () => {
-    // grabbing the title
-    const dataToSave = {
+    if (!petriNetData) {
+        console.warn("Cannot save: No active Petri net data.");
+        return; 
+    }
+
+    const pageTitle = petriNetData.title || "Untitled Page"; // Get title from DTO
+
+    // Include zoom and pan from the DTO if they exist
+    const dataToSave: PetriNetDTO = {
       ...petriNetData,
-      title: petriNetData.title || "Untitled Petri Net"
+      title: pageTitle,
+      zoomLevel: petriNetData.zoomLevel, // Directly from DTO
+      panOffset: petriNetData.panOffset  // Directly from DTO
     };
 
-    // Create a blob with the JSON data
     const jsonData = JSON.stringify(dataToSave, null, 2);
     const blob = new Blob([jsonData], { type: 'application/json' });
-
-    // Create a download link
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
 
-    // Generate filename based on the title
-    const sanitizedTitle = (petriNetData.title || "Untitled Petri Net")
-      .replace(/[^\w\s-]/g, '') // Remove special characters
+    const sanitizedTitle = (pageTitle)
+      .replace(/[^\w\s-]/g, '') 
       .trim()
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/\s+/g, '-') 
       .toLowerCase();
 
-    a.download = `${sanitizedTitle}.pats`;
-
-    // Trigger download
+    a.download = `${sanitizedTitle || 'petri-net'}.pats`; // Fallback filename
     document.body.appendChild(a);
     a.click();
-
-    // Clean up
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
   const handleSaveAs = () => {
-    // Check if the title is the default and prompt for editing if it is
-    if (petriNetData.title === "Untitled Petri Net" && highlightTitle) {
-      highlightTitle();
-      return;
+    if (!petriNetData) {
+        console.warn("Cannot save as: No active Petri net data.");
+        return; 
     }
+    
+    const pageTitle = petriNetData.title || "Untitled Page"; // Get title from DTO
 
-    // Include the title in the data to be saved
-    const dataToSave = {
+    // Include zoom and pan from the DTO if they exist
+    const dataToSave: PetriNetDTO = {
       ...petriNetData,
-      title: petriNetData.title || "Untitled Petri Net"
+      title: pageTitle, 
+      zoomLevel: petriNetData.zoomLevel, 
+      panOffset: petriNetData.panOffset
     };
 
-    // Create a blob with the JSON data
     const jsonData = JSON.stringify(dataToSave, null, 2);
     const blob = new Blob([jsonData], { type: 'application/json' });
 
-    // Generate a suggested filename based on the title
-    const sanitizedTitle = (petriNetData.title || "Untitled Petri Net")
-      .replace(/[^\w\s-]/g, '') // Remove special characters
+    const sanitizedTitle = (pageTitle)
+      .replace(/[^\w\s-]/g, '') 
       .trim()
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/\s+/g, '-') 
       .toLowerCase();
 
-    // showSaveFilePicker API
     if ('showSaveFilePicker' in window) {
       const saveFile = async () => {
         try {
           // @ts-ignore
           const fileHandle = await window.showSaveFilePicker({
-            suggestedName: `${sanitizedTitle}.pats`,
+            suggestedName: `${sanitizedTitle || 'petri-net'}.pats`, // Fallback filename
             types: [{
               description: 'Petri Net Files',
               accept: { 'application/json': ['.pats'] }
@@ -110,7 +109,6 @@ export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport, highli
     }
   };
 
-
   return (
     <div className="menu-bar" style={{
       display: 'flex',
@@ -123,9 +121,9 @@ export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport, highli
       {/* Render FileMenu and pass necessary props */}
       <FileMenu
         petriNetData={petriNetData}
-        onImport={onImport} // Pass onImport down
-        onSaveAs={handleSaveAs} // Keep passing save handlers
-        highlightTitle={highlightTitle} // Pass highlightTitle down
+        onImport={onImport}
+        onSaveAs={handleSaveAs}
+        highlightTitle={highlightTitle}
       />
       {/* Remove hidden input and buttons */}
     </div>

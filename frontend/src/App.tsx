@@ -1,44 +1,54 @@
 // src/App.tsx
-import React, {useState, useCallback, useEffect, useRef} from 'react';
+import React, {useState, useCallback, useEffect, useRef, useMemo} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
-import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult} from './types';
+import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult, PetriNetPageData} from './types';
 import { MenuBar } from './components/MenuBar';
 import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
 import { API_ENDPOINTS } from './utils/api';
 import { TabbedPanel } from './components/TabbedPanel';
 import { useClipboard } from './hooks/useClipboard';
+import { PagesComponent } from './components/PagesComponent';
+
+// Define max history length
+const MAX_HISTORY_LENGTH = 50; 
 
 export default function App() {
-    // ===== STATE MANAGEMENT =====
-    const [places, setPlaces] = useState<UIPlace[]>([]);
-    const [transitions, setTransitions] = useState<UITransition[]>([]);
-    const [arcs, setArcs] = useState<UIArc[]>([]);
+    // ===== NEW MULTI-PAGE STATE MANAGEMENT =====
+    const [pages, setPages] = useState<Record<string, PetriNetPageData>>({});
+    const [activePageId, setActivePageId] = useState<string | null>(null);
+    const [pageOrder, setPageOrder] = useState<string[]>([]);
+    // Add state for the overall project title
+    const [projectTitle, setProjectTitle] = useState<string>("Untitled MyPetri Project");
+
+    // ===== TRANSIENT STATE (for active page's last interaction) =====
+    const [currentFiredTransitions, setCurrentFiredTransitions] = useState<string[]>([]);
+    // const [currentAnimatingTransitions, setCurrentAnimatingTransitions] = useState<Record<string, boolean>>({}); // Keep commented for now
+
+    // ===== EXISTING GLOBAL/APP-LEVEL STATE (to be kept for now) =====
     const [selectedTool, setSelectedTool] = useState<'NONE' |'PLACE' | 'TRANSITION' | 'ARC'>('NONE');
-    const [selectedElements, setSelectedElements] = useState<string[]>([]);
     const [arcType, setArcType] = useState<UIArc['type']>('REGULAR');
     const [isTyping, setIsTyping] = useState(false);
     const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
-    const [currentMode, setCurrentMode] = useState('select');
-    const [deterministicMode, setDeterministicMode] = useState(false);
-    const [conflictResolutionMode, setConflictResolutionMode] = useState(false);
-    const [conflictingTransitions, setConflictingTransitions] = useState<string[]>([]);
-    const [title, setTitle] = useState<string>("Untitled Petri Net");
-    const [firedTransitions, setFiredTransitions] = useState<string[]>([]);
-    const [animatingTransitions, setAnimatingTransitions] = useState<Record<string, boolean>>({});
+    const [currentMode, setCurrentMode] = useState('select'); // Derived from selectedTool, might be removable later
     const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false);
     
+    // Refs will likely remain global or need context if used by children extensively
     const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
-    
-    const titleRef = useRef<EditableTitleRef>(null);
-    
-    const handleHighlightTitle = () => {
-        if (titleRef.current) {
-            titleRef.current.startEditing();
-        }
-    };
-    
-    // Add history state for undo functionality
+    const titleRef = useRef<EditableTitleRef>(null); // This will interact with activePageData.title
+
+    // ===== REMOVED SINGLE-NET STATE =====
+    /*
+    const [places, setPlaces] = useState<UIPlace[]>([]);
+    const [transitions, setTransitions] = useState<UITransition[]>([]);
+    const [arcs, setArcs] = useState<UIArc[]>([]);
+    const [selectedElements, setSelectedElements] = useState<string[]>([]); // Now in PetriNetPageData
+    const [deterministicMode, setDeterministicMode] = useState(false); // Now in PetriNetPageData
+    const [conflictResolutionMode, setConflictResolutionMode] = useState(false); // Now in PetriNetPageData
+    const [conflictingTransitions, setConflictingTransitions] = useState<string[]>([]); // Now in PetriNetPageData
+    const [title, setTitle] = useState<string>("Untitled Petri Net"); // Now in PetriNetPageData
+    const [firedTransitions, setFiredTransitions] = useState<string[]>([]); // Replaced by currentFiredTransitions
+    const [animatingTransitions, setAnimatingTransitions] = useState<Record<string, boolean>>({}); // Replaced by currentAnimatingTransitions (if used)
     const [history, setHistory] = useState<{
         places: UIPlace[][],
         transitions: UITransition[][],
@@ -47,56 +57,169 @@ export default function App() {
         places: [],
         transitions: [],
         arcs: []
-    });
-    
-    // Function to save current state to history
-    const saveToHistory = useCallback(() => {
-        setHistory(prev => ({
-            places: [...prev.places, JSON.parse(JSON.stringify(places))],
-            transitions: [...prev.transitions, JSON.parse(JSON.stringify(transitions))],
-            arcs: [...prev.arcs, JSON.parse(JSON.stringify(arcs))]
-        }));
-    }, [places, transitions, arcs]);
-    
-    // Function to handle undo
-    const handleUndo = useCallback(() => {
-        if (history.places.length === 0) return;
-        
-        // Get the previous state
-        const prevPlaces = history.places[history.places.length - 1];
-        const prevTransitions = history.transitions[history.transitions.length - 1];
-        const prevArcs = history.arcs[history.arcs.length - 1];
-        
-        // Restore previous state
-        setPlaces(prevPlaces);
-        setTransitions(prevTransitions);
-        setArcs(prevArcs);
-        
-        // Remove the used history entry
-        setHistory(prev => ({
-            places: prev.places.slice(0, -1),
-            transitions: prev.transitions.slice(0, -1),
-            arcs: prev.arcs.slice(0, -1)
-        }));
-    }, [history]);
+    }); // Now in PetriNetPageData
+    */
 
-    // Instantiate the clipboard hook
+    // ===== INITIAL PAGE CREATION =====
+    useEffect(() => {
+        if (Object.keys(pages).length === 0 && pageOrder.length === 0) {
+            const initialPageId = `page_${Date.now()}`;
+            const newPage: PetriNetPageData = {
+                id: initialPageId,
+                title: "Page 1", // Default page title
+                places: [],
+                transitions: [],
+                arcs: [],
+                deterministicMode: false,
+                conflictResolutionMode: false,
+                conflictingTransitions: [],
+                selectedElements: [],
+                history: { places: [], transitions: [], arcs: [], title: [] },
+                zoomLevel: .85,
+                panOffset: { x: -880, y: -400 }
+            };
+            setPages({ [initialPageId]: newPage });
+            setPageOrder([initialPageId]);
+            setActivePageId(initialPageId);
+        }
+    }, [pages, pageOrder]); // Added pageOrder dependency for safety
+
+    // ===== DERIVED STATE FOR ACTIVE PAGE ( Placeholder - Step III.1 ) =====
+    // This will be filled in the next step
+    const activePageData = useMemo(() => activePageId ? pages[activePageId] : null, [pages, activePageId]);
+
+    // ===== EXISTING HANDLERS AND EFFECTS (will need significant adaptation) =====
+    
+    const handleHighlightTitle = () => {
+        if (titleRef.current) {
+            titleRef.current.startEditing();
+        }
+    };
+    
+    // ===== HISTORY HANDLERS =====
+    // Re-introducing saveToHistory specifically for drag start
+    const saveToHistory = useCallback((pageDataToSave: PetriNetPageData) => { 
+        if (!activePageId) return; 
+
+        const { places, transitions, arcs, history, title } = pageDataToSave; 
+        const currentHistory = history || { places: [], transitions: [], arcs: [], title: [] };
+        
+        const currentPlacesState = JSON.parse(JSON.stringify(places));
+        const currentTransitionsState = JSON.parse(JSON.stringify(transitions));
+        const currentArcsState = JSON.parse(JSON.stringify(arcs));
+        const currentTitleState = title;
+
+        const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
+        const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
+        const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+        const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
+
+        setPages(prevPages => {
+            if (!prevPages[activePageId!]) return prevPages;
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...prevPages[activePageId!],
+                    history: {
+                        places: nextPlacesHistory,
+                        transitions: nextTransitionsHistory,
+                        arcs: nextArcsHistory,
+                        title: nextTitleHistory
+                    }
+                }
+            };
+        });
+    }, [activePageId, setPages]);
+    
+    const handleUndo = useCallback(() => {
+        if (!activePageId || !activePageData) return; 
+        const currentHistory = activePageData.history || { places: [], transitions: [], arcs: [], title: [] };
+        if (currentHistory.places.length === 0) return; 
+        const placesToRestore = currentHistory.places[currentHistory.places.length - 1];
+        const transitionsToRestore = currentHistory.transitions[currentHistory.transitions.length - 1];
+        const arcsToRestore = currentHistory.arcs[currentHistory.arcs.length - 1];
+        const titleToRestore = currentHistory.title[currentHistory.title.length - 1];
+        const nextPlacesHistory = currentHistory.places.slice(0, -1);
+        const nextTransitionsHistory = currentHistory.transitions.slice(0, -1);
+        const nextArcsHistory = currentHistory.arcs.slice(0, -1);
+        const nextTitleHistory = currentHistory.title.slice(0, -1);
+        setPages(prevPages => ({
+            ...prevPages,
+            [activePageId!]: {
+                ...prevPages[activePageId!],
+                title: titleToRestore ?? prevPages[activePageId!].title, 
+                places: placesToRestore,
+                transitions: transitionsToRestore,
+                arcs: arcsToRestore,
+                history: {
+                    places: nextPlacesHistory,
+                    transitions: nextTransitionsHistory,
+                    arcs: nextArcsHistory,
+                    title: nextTitleHistory
+                },
+                selectedElements: [], 
+            }
+        }));
+        setCurrentFiredTransitions([]);
+    }, [activePageId, activePageData, setPages]);
+
+    
     const { handleCopy, handlePaste, clearClipboard } = useClipboard({
-        places,
-        transitions,
-        arcs,
-        selectedElements,
-        setPlaces,
-        setTransitions,
-        setArcs,
-        setSelectedElements,
-        saveToHistory,
+        places: activePageData?.places || [],
+        transitions: activePageData?.transitions || [],
+        arcs: activePageData?.arcs || [],
+        selectedElements: activePageData?.selectedElements || [],
+        setPlaces: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentPlaces = prev[activePageId!].places;
+                const newPlaces = typeof updater === 'function' ? updater(currentPlaces) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], places: newPlaces } };
+            });
+        },
+        setTransitions: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentTransitions = prev[activePageId!].transitions;
+                const newTransitions = typeof updater === 'function' ? updater(currentTransitions) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], transitions: newTransitions } };
+            });
+        },
+        setArcs: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentArcs = prev[activePageId!].arcs;
+                const newArcs = typeof updater === 'function' ? updater(currentArcs) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], arcs: newArcs } };
+            });
+        },
+        setSelectedElements: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentSelected = prev[activePageId!].selectedElements;
+                const newSelected = typeof updater === 'function' ? updater(currentSelected) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], selectedElements: newSelected } };
+            });
+        },
+        saveToHistory: () => {
+            if (activePageData) {
+                 saveToHistory(activePageData); // Call the re-introduced function
+            }
+        }, 
     });
 
     // ===== DERIVED STATE / CONSTANTS =====
-    const petriNetDTO: PetriNetDTO = {
-        places: places.map((p) => {
+    // TODO: This DTO needs to be derived from activePageData
+    const petriNetDTO: PetriNetDTO | null = useMemo(() => {
+        if (!activePageData) return null;
             return {
+            title: activePageData.title,
+            deterministicMode: activePageData.deterministicMode,
+            places: activePageData.places.map((p) => ({
                 id: p.id,
                 tokens: p.tokens,
                 name: p.name,
@@ -105,9 +228,8 @@ export default function App() {
                 radius: p.radius,
                 bounded: p.bounded,
                 capacity: p.capacity
-            };
-        }),
-        transitions: transitions.map((t) => ({
+            })),
+            transitions: activePageData.transitions.map((t) => ({
             id: t.id,
             enabled: t.enabled,
             arcIds: t.arcIds,
@@ -117,13 +239,14 @@ export default function App() {
             width: t.width,
             height: t.height
         })),
-        arcs: arcs.map((a) => ({
+            arcs: activePageData.arcs.map((a) => ({
             id: a.id,
             type: a.type,
             incomingId: a.incomingId,
             outgoingId: a.outgoingId,
         })),
     };
+    }, [activePageData]);
 
     // ===== EVENT HANDLERS =====
     const handleTypingChange = (typing: boolean) => {
@@ -133,24 +256,22 @@ export default function App() {
     // ===== EFFECTS =====
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
-            if (isTyping) return; // Prevent actions while typing
-
-            //different operating systems have different key combinations for copy, paste, and undo
+            if (isTyping) return;
             const isModifier = e.metaKey || e.ctrlKey; 
 
-            if (isModifier && e.key === 'c') { // Copy
+            // Use hook handlers
+            if (isModifier && e.key === 'c') { 
                 e.preventDefault();
-                handleCopy(); // UseClipboard hook's handleCopy
+                handleCopy(); 
                 return;
             }
-
-            if (isModifier && e.key === 'v') { // Paste
+            if (isModifier && e.key === 'v') { 
                 e.preventDefault();
-                handlePaste(); // UseClipboard hook's handlePaste
+                handlePaste(); 
                 return;
             }
-
-            if (isModifier && e.key === 'z') { // Undo
+            // Use App handler
+            if (isModifier && e.key === 'z') { 
                 e.preventDefault();
                 handleUndo();
                 return;
@@ -158,44 +279,84 @@ export default function App() {
 
             if (e.key === 'Escape') {
                 setSelectedTool('NONE');
-                setSelectedElements([]);
+                clearActivePageSelection();
                 return;
             }
             
-            // Moved handleDelete declaration inside the effect or passed as dependency
             const handleDeleteLocal = () => {
-                 if (selectedElements.length === 0) return;
+                if (!activePageId || !activePageData || activePageData.selectedElements.length === 0) return;
                  
-                 saveToHistory(); // Save history before deleting
+                // History saving is integrated into setPages now
+                // saveToHistory(activePageData); // REMOVE this standalone call
 
-                 const arcsToDelete = arcs.filter((arc) => 
-                     selectedElements.includes(arc.id) || 
-                     selectedElements.includes(arc.incomingId) || 
-                     selectedElements.includes(arc.outgoingId)
-                 ).map((arc) => arc.id);
+                setPages(prevPages => {
+                    const currentPage = prevPages[activePageId!];
+                    if (!currentPage) return prevPages;
 
-                 setArcs((prevArcs) => prevArcs.filter((arc) => !arcsToDelete.includes(arc.id)));
+                    const { 
+                        places: currentPlaces, 
+                        transitions: currentTransitions, 
+                        arcs: currentArcs, 
+                        selectedElements: currentSelectedElements,
+                        history: currentHistoryData,
+                        title: currentTitle
+                    } = currentPage;
 
-                 setTransitions((prevTransitions) =>
-                     prevTransitions.map((t) => ({
+                    // --- Integrate History Save --- 
+                    const currentHistory = currentHistoryData || { places: [], transitions: [], arcs: [], title: [] };
+                    const currentPlacesState = JSON.parse(JSON.stringify(currentPlaces));
+                    const currentTransitionsState = JSON.parse(JSON.stringify(currentTransitions));
+                    const currentArcsState = JSON.parse(JSON.stringify(currentArcs));
+                    const currentTitleState = currentTitle;
+                    const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
+                    const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
+                    const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+                    const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
+                    const nextHistory = { places: nextPlacesHistory, transitions: nextTransitionsHistory, arcs: nextArcsHistory, title: nextTitleHistory };
+                    // --- End History Save ---
+                    
+                    const selectedSet = new Set(currentSelectedElements);
+
+                    const arcsToDelete = currentArcs.filter(arc =>
+                        selectedSet.has(arc.id) || 
+                        selectedSet.has(arc.incomingId) || 
+                        selectedSet.has(arc.outgoingId)   
+                    ).map(arc => arc.id);
+                    const arcsToDeleteSet = new Set(arcsToDelete);
+
+                    const updatedArcs = currentArcs.filter(arc => !arcsToDeleteSet.has(arc.id));
+
+                    const updatedTransitions = currentTransitions
+                        .filter(t => !selectedSet.has(t.id)) 
+                        .map(t => ({ 
                          ...t,
-                         arcIds: t.arcIds.filter((arcId) => !arcsToDelete.includes(arcId)),
-                     }))
-                 );
+                            arcIds: t.arcIds.filter(arcId => !arcsToDeleteSet.has(arcId)),
+                        }));
 
-                 setPlaces((prevPlaces) => prevPlaces.filter((p) => !selectedElements.includes(p.id)));
-                 setTransitions((prevTransitions) => prevTransitions.filter((t) => !selectedElements.includes(t.id)));
+                    const updatedPlaces = currentPlaces.filter(p => !selectedSet.has(p.id));
 
-                 setSelectedElements([]);
+                    // Construct the full updated page state
+                    const updatedPageData: PetriNetPageData = {
+                        ...currentPage, // Keep id, title, mode, view state etc.
+                        places: updatedPlaces,
+                        transitions: updatedTransitions,
+                        arcs: updatedArcs,
+                        selectedElements: [], // Clear selection
+                        history: nextHistory  // Set updated history
+                    };
+
+                    return {
+                        ...prevPages,
+                        [activePageId!]: updatedPageData
+                    };
+                });
             };
 
-
             if (e.key === 'Delete' || e.key === 'Backspace') {
-                if (selectedTool === 'ARC' && selectedElements.length === 1) {
-                    setSelectedElements([]);
+                if (selectedTool === 'ARC' && activePageData && activePageData.selectedElements.length === 1) {
+                    clearActivePageSelection();
                     return; 
                 }
-                // Call the local delete function
                 handleDeleteLocal(); 
             }
         }
@@ -207,16 +368,11 @@ export default function App() {
     }, [
         isTyping, 
         selectedTool, 
-        selectedElements, 
-        arcs,
-        places,
-        transitions,
-        handleCopy,
-        handlePaste,
-        handleUndo, 
-        saveToHistory, 
+        activePageData, // For reading selectedElements inside handleDeleteLocal & conditions
+        pages, // For setPages call in handleDeleteLocal & clearActivePageSelection
+        // handleCopy, handlePaste, handleUndo, saveToHistory will be added back once adapted
         setSelectedTool,
-        setSelectedElements
+        // Removed clearActivePageSelection from deps as it's defined in App scope and doesn't change
     ]);
 
     useEffect(() => {
@@ -231,204 +387,337 @@ export default function App() {
         }
     }, [selectedTool]);
 
-    // ===== ELEMENT CREATION & SELECTION =====
-    const handleCanvasClick = useCallback((x: number, y: number) => {
-        if (selectedTool === 'NONE') {
-            // Clears the selection if no tool is active.
-            setSelectedElements([]);
-            return;
-        }
-
-        // Save current state 
-        saveToHistory();
-
-        if (selectedTool === 'PLACE') {
-            const newPlace: UIPlace = {
-                name:'',
-                id: `place_${Date.now()}`,
-                tokens: 0,
-                x,
-                y,
-                radius: 46,
-                bounded: false,
-                capacity: null
-            };
-            setPlaces(prev => [...prev, newPlace]);
-            setSelectedTool('NONE');
-        } else if (selectedTool === 'TRANSITION') {
-            const newTransition: UITransition = {
-                name: '',
-                id: `trans_${Date.now()}`,
-                enabled: false,
-                arcIds: [],
-                x,
-                y,
-                width: 120,
-                height: 54
-            };
-            setTransitions(prev => [...prev, newTransition]);
-            setSelectedTool('NONE');
-        } else if (selectedTool === 'ARC') {
-            handleArcCreation(x, y);
-            setSelectedTool('NONE')
-        }
-
-    }, [selectedTool, places, transitions, saveToHistory]);
-
-    const handleSelectElement = (id: string, event?: React.MouseEvent | KeyboardEvent) => {
-        // Check if shift key is pressed (from either mouse or keyboard event)
-        const isShift = event?.shiftKey;
-        
-        setSelectedElements(prevSelected => {
-            // Determine the next state based on id and isShift
-            let nextSelected: string[];
-            if (id === '') { // Special case to clear selection (e.g., background click)
-                nextSelected = [];
-            } else if (isShift) {
-                // Shift+Click: Toggle selection
-                if (prevSelected.includes(id)) {
-                    // Remove if already selected
-                    nextSelected = prevSelected.filter(elId => elId !== id);
-                } else {
-                    // Add if not selected
-                    nextSelected = [...prevSelected, id];
-                }
-            } else {
-                // No Shift: Select only this element, unless it's already the *only* selected element
-                if (prevSelected.length === 1 && prevSelected[0] === id) {
-                    nextSelected = prevSelected; // No change if clicking the already solely selected element
-                } else {
-                    // Otherwise, select just this one
-                    nextSelected = [id];
-                }
-            }
-            return nextSelected; // Return the calculated next state
-        });
-
-        // If we just selected exactly one element (not clearing selection, not shift-clicking)
-        // then deactivate any active creation tool by setting it back to NONE.
-        if (!isShift && id !== '') {
-             setSelectedTool('NONE'); 
-        }
-    };
-    
-    // Handler for multi-selection (e.g., from drag-select box)
-    const handleMultiSelectElement = (ids: string[]) => {
-        setSelectedElements(ids);
-    };
-
     // ===== ARC MANAGEMENT =====
     const handleArcPortClick = (clickedId: string) => {
-        if (selectedElements.length === 0) {
-            setSelectedElements([clickedId]);
+        if (!activePageId || !activePageData) return;
+        const currentSelectedElements = activePageData.selectedElements;
+        if (currentSelectedElements.length === 0) {
+            // Select source
+            setPages(prevPages => {
+                // ... logic to select source element ...
+                 const currentPage = prevPages[activePageId!];
+                 if (!currentPage) return prevPages;
+                 return {
+                     ...prevPages,
+                     [activePageId!]: { ...currentPage, selectedElements: [clickedId] }
+                 };
+            });
         } else {
-            const sourceId = selectedElements[0];
+            const sourceId = currentSelectedElements[0];
             const targetId = clickedId;
-            if (isValidArcConnection(sourceId, targetId, arcType, places, transitions)) {
-                // Save current state before adding arc
-                saveToHistory();
-                
-                const newArc: UIArc = {
-                    id: `arc_${Date.now()}`,
-                    type: arcType,
-                    incomingId: sourceId,
-                    outgoingId: targetId,
-                };
-                setArcs(prev => [...prev, newArc]);
+            if (isValidArcConnection(sourceId, targetId, arcType, activePageData.places, activePageData.transitions)) {
+                // Create Arc and Update History Atomically
+                setPages(prevPages => { 
+                    const currentPage = prevPages[activePageId!];
+                    if (!currentPage) return prevPages;
+                    // --- History Save Logic --- 
+                    const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], title: [] };
+                    const currentPlacesState = JSON.parse(JSON.stringify(currentPage.places));
+                    const currentTransitionsState = JSON.parse(JSON.stringify(currentPage.transitions));
+                    const currentArcsState = JSON.parse(JSON.stringify(currentPage.arcs));
+                    const currentTitleState = currentPage.title;
+                    const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
+                    const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
+                    const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+                    const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
+                    const nextHistory = { places: nextPlacesHistory, transitions: nextTransitionsHistory, arcs: nextArcsHistory, title: nextTitleHistory };
+                    // --- End History Logic ---
+                    
+                    const newArcId = `arc_${Date.now()}_${activePageId}`;
+                    const newArc: UIArc = { id: newArcId, type: arcType, incomingId: sourceId, outgoingId: targetId };
+                    const updatedArcs = [...currentPage.arcs, newArc];
+                    const updatedTransitions = currentPage.transitions.map(t => {
+                        const elementIsTransition = currentPage.transitions.some(trans => trans.id === t.id);
+                        if ((t.id === sourceId || t.id === targetId) && elementIsTransition) {
+                            if (!t.arcIds.includes(newArcId)) {
+                                return { ...t, arcIds: [...t.arcIds, newArcId] };
+                            }
+                        }
+                        return t;
+                    });
 
-                // Update transitions using property check
-                const sourceElement = places.find(p => p.id === sourceId) || transitions.find(t => t.id === sourceId);
-                const targetElement = places.find(p => p.id === targetId) || transitions.find(t => t.id === targetId);
-
-                if (sourceElement && 'width' in sourceElement) { // Check if source is transition
-                    setTransitions(prev => prev.map(t =>
-                        t.id === sourceId ? { ...t, arcIds: [...t.arcIds, newArc.id] } : t
-                    ));
-                }
-                if (targetElement && 'width' in targetElement) { // Check if target is transition
-                    setTransitions(prev => prev.map(t =>
-                        t.id === targetId ? { ...t, arcIds: [...t.arcIds, newArc.id] } : t
-                    ));
-                }
+                    // Return explicitly constructed new page state
+                    return {
+                        ...prevPages,
+                        [activePageId!]: {
+                            id: currentPage.id,
+                            title: currentPage.title,
+                            places: currentPage.places, // Places don't change
+                            transitions: updatedTransitions,
+                            arcs: updatedArcs,
+                            deterministicMode: currentPage.deterministicMode,
+                            conflictResolutionMode: currentPage.conflictResolutionMode,
+                            conflictingTransitions: currentPage.conflictingTransitions,
+                            selectedElements: [], // Clear selection
+                            history: nextHistory, // Set updated history
+                            zoomLevel: currentPage.zoomLevel,
+                            panOffset: currentPage.panOffset
+                        }
+                    };
+                });
             } else {
                 console.warn('Invalid arc connection');
+                clearActivePageSelection(); 
             }
-            setSelectedElements([]);
         }
     };
 
     const handleArcCreation = (x: number, y: number) => {
-        const clickedElement = findClickedElement(x, y);
-
+        if (!activePageId || !activePageData) return;
+        const clickedElement = findClickedElement(x, y, activePageData.places, activePageData.transitions);
         if (!clickedElement) {
-            setSelectedElements([]);
+            clearActivePageSelection();
             return;
         }
-
-        // If we haven't yet chosen a source, set this clicked node as source
-        if (selectedElements.length === 0) {
-            setSelectedElements([clickedElement.id]);
-        }
-        // Otherwise, we already have a source, so connect to this new target
-        else {
-            const sourceId = selectedElements[0];
+        const currentSelectedElements = activePageData.selectedElements;
+        if (currentSelectedElements.length === 0) {
+            // Select source
+            setPages(prevPages => {
+                // ... logic to select source element ...
+                 const currentPage = prevPages[activePageId!];
+                 if (!currentPage) return prevPages;
+                 return {
+                     ...prevPages,
+                     [activePageId!]: { ...currentPage, selectedElements: [clickedElement.id] }
+                 };
+             });
+        } else {
+            const sourceId = currentSelectedElements[0];
             const targetId = clickedElement.id;
+            if (isValidArcConnection(sourceId, targetId, arcType, activePageData.places, activePageData.transitions)) {
+                 // Create Arc and Update History Atomically
+                 setPages(prevPages => { 
+                    const currentPage = prevPages[activePageId!];
+                    if (!currentPage) return prevPages;
+                    // --- History Save Logic --- 
+                    const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], title: [] };
+                    const currentPlacesState = JSON.parse(JSON.stringify(currentPage.places));
+                    const currentTransitionsState = JSON.parse(JSON.stringify(currentPage.transitions));
+                    const currentArcsState = JSON.parse(JSON.stringify(currentPage.arcs));
+                    const currentTitleState = currentPage.title;
+                    const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
+                    const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
+                    const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+                    const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
+                    const nextHistory = { places: nextPlacesHistory, transitions: nextTransitionsHistory, arcs: nextArcsHistory, title: nextTitleHistory };
+                    // --- End History Logic ---
 
-            // Pass places and transitions arrays to validation function
-            if (isValidArcConnection(sourceId, targetId, arcType, places, transitions)) {
-                // Save current state before adding arc
-                saveToHistory();
-                
-                const newArc: UIArc = {
-                    id: `arc_${Date.now()}`,
-                    type: arcType,
-                    incomingId: sourceId,
-                    outgoingId: targetId,
-                };
+                    const newArcId = `arc_${Date.now()}_${activePageId}`;
+                    const newArc: UIArc = { id: newArcId, type: arcType, incomingId: sourceId, outgoingId: targetId };
+                    const updatedArcs = [...currentPage.arcs, newArc];
+                    const updatedTransitions = currentPage.transitions.map(t => {
+                         const elementIsTransition = currentPage.transitions.some(trans => trans.id === t.id);
+                         if ((t.id === sourceId || t.id === targetId) && elementIsTransition) {
+                            if (!t.arcIds.includes(newArcId)) {
+                                return { ...t, arcIds: [...t.arcIds, newArcId] };
+                            }
+                         }
+                         return t;
+                    });
 
-                setArcs(prev => [...prev, newArc]);
-
-                // Update transition arcIds using property check
-                const sourceElement = places.find(p => p.id === sourceId) || transitions.find(t => t.id === sourceId);
-                const targetElement = places.find(p => p.id === targetId) || transitions.find(t => t.id === targetId);
-
-                if (sourceElement && 'width' in sourceElement) { // Check if source is transition
-                    setTransitions(prev => prev.map(t =>
-                        t.id === sourceId
-                            ? { ...t, arcIds: [...t.arcIds, newArc.id] }
-                            : t
-                    ));
-                }
-                if (targetElement && 'width' in targetElement) { // Check if target is transition
-                    setTransitions(prev => prev.map(t =>
-                        t.id === targetId
-                            ? { ...t, arcIds: [...t.arcIds, newArc.id] }
-                            : t
-                    ));
-                }
+                    // Return explicitly constructed new page state
+                    return {
+                        ...prevPages,
+                        [activePageId!]: {
+                            id: currentPage.id,
+                            title: currentPage.title,
+                            places: currentPage.places,
+                            transitions: updatedTransitions,
+                            arcs: updatedArcs,
+                            deterministicMode: currentPage.deterministicMode,
+                            conflictResolutionMode: currentPage.conflictResolutionMode,
+                            conflictingTransitions: currentPage.conflictingTransitions,
+                            selectedElements: [],
+                            history: nextHistory,
+                            zoomLevel: currentPage.zoomLevel,
+                            panOffset: currentPage.panOffset
+                        }
+                    };
+                 });
             } else {
                 console.warn(`Invalid arc from ${sourceId} to ${targetId} (${arcType}).`);
+                clearActivePageSelection(); 
             }
-
-            // Reset after trying to create the arc
-            setSelectedElements([]);
         }
     };
 
+    const handleCanvasClick = useCallback((x: number, y: number) => {
+        if (selectedTool === 'NONE') {
+            clearActivePageSelection();
+            return;
+        }
+        if (!activePageId) return; // Only need activePageId now
+
+        if (selectedTool === 'PLACE') {
+            const newPlace: UIPlace = {
+                name: '',
+                id: `place_${Date.now()}_${activePageId}`,
+                tokens: 0, x, y, radius: 46, bounded: false, capacity: null
+            };
+            setPages(prevPages => {
+                const currentPage = prevPages[activePageId!];
+                if (!currentPage) return prevPages;
+                // --- Integrate History Update ---
+                const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], title: [] };
+                const currentPlacesState = JSON.parse(JSON.stringify(currentPage.places));
+                const currentTransitionsState = JSON.parse(JSON.stringify(currentPage.transitions));
+                const currentArcsState = JSON.parse(JSON.stringify(currentPage.arcs));
+                const currentTitleState = currentPage.title;
+                const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
+                const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
+                const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+                const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
+                // --- End History Update ---
+                return {
+                    ...prevPages,
+                    [activePageId!]: {
+                        ...currentPage,
+                        places: [...currentPage.places, newPlace], // Apply change
+                        history: { // Save new history
+                            places: nextPlacesHistory,
+                            transitions: nextTransitionsHistory,
+                            arcs: nextArcsHistory,
+                            title: nextTitleHistory
+                        } 
+                    }
+                };
+            });
+            setSelectedTool('NONE');
+
+        } else if (selectedTool === 'TRANSITION') {
+            const newTransition: UITransition = {
+                name: '', id: `trans_${Date.now()}_${activePageId}`,
+                enabled: false, arcIds: [], x, y, width: 120, height: 54
+            };
+             setPages(prevPages => {
+                const currentPage = prevPages[activePageId!];
+                if (!currentPage) return prevPages;
+                // --- Integrate History Update --- 
+                const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], title: [] };
+                const currentPlacesState = JSON.parse(JSON.stringify(currentPage.places)); 
+                const currentTransitionsState = JSON.parse(JSON.stringify(currentPage.transitions));
+                const currentArcsState = JSON.parse(JSON.stringify(currentPage.arcs));
+                const currentTitleState = currentPage.title;
+                const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
+                const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
+                const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+                const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
+                // --- End History Update --- 
+                return {
+                    ...prevPages,
+                    [activePageId!]: {
+                        ...currentPage,
+                        transitions: [...currentPage.transitions, newTransition], // Apply change
+                        history: { // Save new history
+                            places: nextPlacesHistory,
+                            transitions: nextTransitionsHistory,
+                            arcs: nextArcsHistory,
+                            title: nextTitleHistory
+                        } 
+                    }
+                };
+            });
+            setSelectedTool('NONE');
+
+        } else if (selectedTool === 'ARC') {
+             // handleArcCreation needs to be updated with integrated history saving
+            handleArcCreation(x, y);
+            setSelectedTool('NONE');
+        }
+    // Dependencies updated - no longer needs activePageData directly, no longer needs saveToHistory
+    }, [selectedTool, activePageId, pages, setSelectedTool, handleArcCreation]); 
+
+    const handleSelectElement = (elementId: string, event?: React.MouseEvent | KeyboardEvent) => {
+        if (!activePageId || !pages[activePageId]) return;
+
+        const isShift = event?.shiftKey;
+        
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!]; 
+            if (!currentPage) return prevPages; 
+
+            let nextSelected: string[];
+            const currentSelected = currentPage.selectedElements;
+
+            if (elementId === '') { 
+                nextSelected = [];
+            } else if (isShift) {
+                if (currentSelected.includes(elementId)) {
+                    nextSelected = currentSelected.filter(elId => elId !== elementId);
+                } else {
+                    nextSelected = [...currentSelected, elementId];
+                }
+            } else {
+                if (currentSelected.length === 1 && currentSelected[0] === elementId) {
+                    nextSelected = currentSelected;
+                } else {
+                    nextSelected = [elementId];
+                }
+            }
+
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...currentPage,
+                    selectedElements: nextSelected
+                }
+            };
+        });
+
+        if (!isShift && elementId !== '') {
+             setSelectedTool('NONE'); 
+        }
+    };
+    
+    const clearActivePageSelection = () => {
+        if (!activePageId || !pages[activePageId]) return;
+
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
+
+            if (currentPage.selectedElements.length === 0) {
+                return prevPages;
+                }
+
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...currentPage,
+                    selectedElements: []
+                }
+            };
+        });
+    };
+
+    const handleMultiSelectElement = (ids: string[]) => {
+        if (!activePageId || !pages[activePageId]) return;
+
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
+
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...currentPage,
+                    selectedElements: ids 
+                }
+            };
+        });
+    };
+
     // ===== HELPER FUNCTIONS =====
-    const findClickedElement = (x: number, y: number) => {
-        // Snap to grid first
+    const findClickedElement = (x: number, y: number, currentPlaces: UIPlace[], currentTransitions: UITransition[]) => {
         const gridX = Math.round(x / GRID_CELL_SIZE) * GRID_CELL_SIZE;
         const gridY = Math.round(y / GRID_CELL_SIZE) * GRID_CELL_SIZE;
 
-        // Check places (use grid-aligned positions)
-        const place = places.find(p =>
+        const place = currentPlaces.find(p =>
             p.x === gridX && p.y === gridY
         );
         if (place) return place;
 
-        // Check transitions
-        const transition = transitions.find(t =>
+        const transition = currentTransitions.find(t =>
             t.x === gridX && t.y === gridY
         );
         if (transition) return transition;
@@ -436,7 +725,6 @@ export default function App() {
         return null;
     };
 
-    // Modify function signature to accept element arrays
     function isValidArcConnection(
         sourceId: string,
         targetId: string,
@@ -444,33 +732,26 @@ export default function App() {
         allPlaces: UIPlace[],
         allTransitions: UITransition[]
     ): boolean {
-        // Disallow self-loop (same node for source & target)
         if (sourceId === targetId) {
             return false;
         }
 
-        // Find the actual elements
         const sourceElement = allPlaces.find(p => p.id === sourceId) || allTransitions.find(t => t.id === sourceId);
         const targetElement = allPlaces.find(p => p.id === targetId) || allTransitions.find(t => t.id === targetId);
 
-        // Check if elements were found
         if (!sourceElement || !targetElement) {
             console.error("Could not find source or target element for arc validation.");
             return false; 
         }
 
-        // Determine types based on properties
         const isSourcePlace = 'radius' in sourceElement;
         const isSourceTrans = 'width' in sourceElement;
         const isTargetPlace = 'radius' in targetElement;
         const isTargetTrans = 'width' in targetElement;
 
-        // Inhibitor arcs must ONLY go from a Place to a Transition
         if (arcType === 'INHIBITOR') {
             return isSourcePlace && isTargetTrans;
         }
-        // REGULAR or BIDIRECTIONAL arcs can be:
-        // (Place -> Transition) OR (Transition -> Place)
         else {
             return (
                 (isSourcePlace && isTargetTrans) ||
@@ -481,439 +762,496 @@ export default function App() {
 
     // ===== SIMULATION CONTROLS =====
     const handleSimulate = async () => {
-        console.log("Current deterministic mode state:", deterministicMode);
+        if (!activePageId || !activePageData) {
+            console.log("No active page to simulate.");
+            return;
+        }
         
-        // First, clear any existing animation by setting firedTransitions to empty
-        setFiredTransitions([]);
+        setCurrentFiredTransitions([]); 
+        // setCurrentAnimatingTransitions({}); // This was correctly commented out as per plan
         
         // Small delay to ensure the animation class is removed before adding it again
         await new Promise(resolve => setTimeout(resolve, 10));
         
         const requestBody: PetriNetDTO = {
-            places: places.map(p => ({ 
-                id: p.id, 
-                tokens: p.tokens,
-                name: p.name,
-                x: p.x,
-                y: p.y,
-                radius: p.radius,
-                bounded: p.bounded,
-                capacity: p.capacity
+            places: activePageData.places.map(p => ({ 
+                id: p.id, tokens: p.tokens, name: p.name, x: p.x, y: p.y, 
+                radius: p.radius, bounded: p.bounded, capacity: p.capacity
             })),
-            transitions: transitions.map(t => ({
-                id: t.id,
-                enabled: t.enabled,
-                arcIds: t.arcIds,
-                name: t.name,
-                x: t.x,
-                y: t.y,
-                width: t.width,
-                height: t.height
+            transitions: activePageData.transitions.map(t => ({
+                id: t.id, enabled: t.enabled, arcIds: t.arcIds, name: t.name, 
+                x: t.x, y: t.y, width: t.width, height: t.height
             })),
-            arcs: arcs.map(a => ({
-                id: a.id,
-                type: a.type,
-                incomingId: a.incomingId,
-                outgoingId: a.outgoingId,
+            arcs: activePageData.arcs.map(a => ({
+                id: a.id, type: a.type, incomingId: a.incomingId, outgoingId: a.outgoingId,
             })),
-            deterministicMode: deterministicMode
+            deterministicMode: activePageData.deterministicMode,
+            title: activePageData.title 
         };
 
         try {
-            const response = await fetch(API_ENDPOINTS.PROCESS, {
+            // Construct the URL correctly for the paged endpoint
+            // Assuming API_ENDPOINTS.PROCESS is just "/api"
+            const apiUrl = `${API_ENDPOINTS.PROCESS}/page/${activePageId}/process`;
+
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
 
+            if (!response.ok) {
+                const errorBody = await response.text();
+                console.error('Simulation API error:', response.status, errorBody);
+                return;
+            }
+
             const responseData: PetriNetDTO = await response.json();
 
-            // Update places state
-            const newPlaces = places.map(p => {
-                const updated = responseData.places.find(rp => rp.id === p.id);
-                return updated ? { ...p, tokens: updated.tokens } : p;
-            });
-            setPlaces([...newPlaces]); 
+            // Update the active page's state using setPages
+            setPages(prevPages => {
+                const pageToUpdate = prevPages[activePageId!]; // activePageId is confirmed not null
+                if (!pageToUpdate) return prevPages; // Should not happen
 
-            // Get the list of enabled transitions from the response
-            const enabledTransitions = responseData.transitions
-                .filter(t => t.enabled)
-                .map(t => t.id);
-                
-            // In deterministic mode, handle potentially multiple enabled transitions
-            if (deterministicMode && enabledTransitions.length > 1) {
-                console.log("Entering conflict resolution mode with transitions:", enabledTransitions);
-                
-                // Multiple enabled transitions - enter conflict resolution mode
-                setConflictingTransitions(enabledTransitions);
-                setConflictResolutionMode(true);
-                
-                // Update transitions state without animation
-                const newTransitions = transitions.map(t => {
-                    const updated = responseData.transitions.find(rt => rt.id === t.id);
-                    return updated ? { ...t, enabled: updated.enabled } : t;
-                });
-                setTransitions([...newTransitions]);
-                
-                return; // Wait for user selection - don't animate
-            }
-            
-            // Non-deterministic mode or only one enabled transition
-            
-            // Update transitions based on response
-            const newTransitions = transitions.map(t => {
-                const updated = responseData.transitions.find(rt => rt.id === t.id);
-                return updated ? { ...t, enabled: updated.enabled } : t;
+                // Map response DTO places to UIPlace, preserving existing UI properties not in DTO if necessary
+                const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
+                    const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
+                    return updatedPlaceData ? { 
+                        ...p_ui, // Preserve existing UI properties like x,y,radius,name etc.
+                        tokens: updatedPlaceData.tokens // Only update tokens from DTO
+                        // If DTO could also update name/x/y, merge them here too.
+                    } : p_ui;
             });
-            setTransitions([...newTransitions]);
-            
-            // Get the list of enabled transitions IDs from the *updated state*
-            const enabledTransitionsUpdated = newTransitions // Use the updated array
-                .filter(t => t.enabled)
-                .map(t => t.id);
 
-            // Check for deterministic conflict
-            if (deterministicMode && enabledTransitionsUpdated.length > 1) {
-                console.log("Entering conflict resolution mode with transitions:", enabledTransitionsUpdated);
-                
-                // Multiple enabled transitions - enter conflict resolution mode
-                setConflictingTransitions(enabledTransitionsUpdated);
-                setConflictResolutionMode(true);
-                
-                // Update transitions state without animation
-                const newTransitionsConflict = transitions.map(t => {
-                    const updated = responseData.transitions.find(rt => rt.id === t.id);
-                    return updated ? { ...t, enabled: updated.enabled } : t;
-                });
-                setTransitions([...newTransitionsConflict]);
-                
-                return; // Wait for user selection - don't animate
+            let newConflictResolutionMode = false;
+            let newConflictingTransitions: string[] = [];
+            const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
+
+            if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
+                newConflictResolutionMode = true;
+                newConflictingTransitions = responseEnabledTransitions;
             }
+
+            // Map response DTO transitions to UITransition
+            const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
+                const updatedTransitionData = responseData.transitions?.find(rt => rt.id === t_ui.id);
+                return updatedTransitionData ? { 
+                    ...t_ui, // Preserve existing UI properties
+                    enabled: updatedTransitionData.enabled // Update enabled status from DTO
+                } : { ...t_ui, enabled: false }; // Default to not enabled if not in response
+            });
             
-            // Check if any animation should happen
-            if (enabledTransitionsUpdated.length > 0) {
-                const newAnimatingTransitions = { ...animatingTransitions };
-                enabledTransitionsUpdated.forEach(id => {
-                    newAnimatingTransitions[id] = true;
-                });
-                setAnimatingTransitions(newAnimatingTransitions);
-                setFiredTransitions(prevFired => [...prevFired, ...enabledTransitionsUpdated]);
+            // Update transient animation state based on the outcome for the *active* page
+            if (!newConflictResolutionMode && responseEnabledTransitions.length > 0) {
+                 setCurrentFiredTransitions(responseEnabledTransitions);
             } else {
-                console.log("No enabled transitions found.");
+                 setCurrentFiredTransitions([]); // Clear if conflict or no newly enabled transitions to fire
             }
-            
-            // Exit conflict resolution mode
-            setConflictResolutionMode(false);
-            setConflictingTransitions([]);
 
-        } catch (error) {
-            console.error('Simulation error:', error);
-        }
-    };
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...pageToUpdate,
+                    places: updatedPagePlaces,
+                    transitions: updatedPageTransitions,
+                    conflictResolutionMode: newConflictResolutionMode,
+                    conflictingTransitions: newConflictingTransitions,
+                    // arcs are not changed by the /process endpoint directly, only places and transitions
+                }
+            };
+        });
+
+    } catch (error) {
+        console.error('Simulation error:', error);
+        // TODO: Optionally set an error state here to display to the user
+    }
+};
 
     const handleReset = async () => {
-        saveToHistory();
-        setPlaces([]);
-        setTransitions([]);
-        setArcs([]);
-        setSelectedElements([]);
-        clearClipboard(); // Clear clipboard on reset
-        setConflictResolutionMode(false);
-        setConflictingTransitions([]);
-        setFiredTransitions([]);
-        setAnimatingTransitions({});
-        setHistory({ places: [], transitions: [], arcs: [] }); // Clear history for the new net
+        if (!activePageId || !pages[activePageId]) {
+            console.log("No active page to reset.");
+            return;
+        }
+        handleUndo(); // Call before resetting page
+        const pageToReset = pages[activePageId];
+        const defaultPageData: PetriNetPageData = {
+            id: pageToReset.id, 
+            title: pageToReset.title, 
+            places: [],
+            transitions: [],
+            arcs: [],
+            deterministicMode: false, 
+            conflictResolutionMode: false, 
+            conflictingTransitions: [], 
+            selectedElements: [], 
+            history: { places: [], transitions: [], arcs: [], title: [] }, 
+            zoomLevel: 1, 
+            panOffset: { x: 0, y: 0 } 
+        };
+        setPages(prevPages => ({
+            ...prevPages,
+            [activePageId!]: defaultPageData
+        }));
+        setCurrentFiredTransitions([]);
+        clearClipboard(); 
     };
 
-    const updatePlaceSize = (id: string, newRadius: number) => {
-        // Save current state before updating size
-        saveToHistory();
+    const updatePlaceSize = (id: string, newRadius: number, resizeState: 'start' | 'resizing' | 'end') => {
+        if (!activePageId || !pages[activePageId]) return;
         
-        setPlaces((prevPlaces) =>
-            prevPlaces.map((p) => (p.id === id ? { ...p, radius: newRadius } : p))
-        );
-    };
+        // Save history only at the start of the resize
+        if (resizeState === 'start') {
+            saveToHistory(pages[activePageId]);
+        }
 
-    const updateTransitionSize = (id: string, newWidth: number, newHeight: number) => {
-        // Save current state before updating size
-        saveToHistory();
-        
-        setTransitions((prevTransitions) =>
-            prevTransitions.map((t) => {
-                if (t.id === id) {
-                    const updated = { ...t, width: newWidth, height: newHeight };
-                    return updated;
+        // Update the size in the main state
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
+            
+            const updatedPlaces = currentPage.places.map(p => 
+                p.id === id ? { ...p, radius: newRadius } : p
+            );
+
+            // Optimization: Check if change actually occurred
+            if (JSON.stringify(currentPage.places) === JSON.stringify(updatedPlaces)) return prevPages;
+            
+            return {
+                ...prevPages,
+                [activePageId!]: { 
+                    ...currentPage, 
+                    places: updatedPlaces, // Apply size change
+                    // DO NOT update history here
                 }
-                return t;
-            })
-        );
+            };
+        });
+    };
+
+    const updateTransitionSize = (id: string, newWidth: number, newHeight: number, resizeState: 'start' | 'resizing' | 'end') => {
+        if (!activePageId || !pages[activePageId]) return;
+
+        // Save history only at the start of the resize
+        if (resizeState === 'start') {
+            saveToHistory(pages[activePageId]);
+        }
+
+        // Update the size in the main state
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
+
+            const updatedTransitions = currentPage.transitions.map(t => 
+                 t.id === id ? { ...t, width: newWidth, height: newHeight } : t
+            );
+
+             // Optimization: Check if change actually occurred
+             if (JSON.stringify(currentPage.transitions) === JSON.stringify(updatedTransitions)) return prevPages;
+             
+            return {
+                ...prevPages,
+                [activePageId!]: { 
+                    ...currentPage, 
+                    transitions: updatedTransitions, // Apply size change
+                    // DO NOT update history here
+                }
+            };
+        });
     };
 
     const updateElementPosition = (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end' = 'end') => {
+        if (!activePageId || !activePageData) return;
         
-        const isMultiSelect = selectedElements.length > 1 && selectedElements.includes(id);
-        let deltaX = 0;
-        let deltaY = 0;
-
+        // --- Drag Start Logic ---
         if (dragState === 'start') {
-            // Save current state to history
-            saveToHistory();
-            // Store starting positions for all selected elements
+            // Call standalone saveToHistory here
+            saveToHistory(activePageData); 
+            const { places: placesAtDragStart, transitions: transitionsAtDragStart, selectedElements: currentSelectedElements } = activePageData; 
             dragStartPositionsRef.current.clear();
-            const allElements = [...places, ...transitions];
-            selectedElements.forEach(selectedId => {
-                const element = allElements.find(el => el.id === selectedId);
+            const elementsToTrack = [...placesAtDragStart, ...transitionsAtDragStart];
+            currentSelectedElements.forEach(selectedId => {
+                const element = elementsToTrack.find(el => el.id === selectedId); 
                 if (element) {
                     dragStartPositionsRef.current.set(selectedId, { x: element.x, y: element.y });
                 }
             });
-            // For single element drag, store its start position too
-            if (!isMultiSelect) {
-                 const element = [...places, ...transitions].find(el => el.id === id);
-                 if (element) {
-                     dragStartPositionsRef.current.set(id, { x: element.x, y: element.y });
+            if (!currentSelectedElements.includes(id)) {
+                const mainElement = elementsToTrack.find(el => el.id === id);
+                if (mainElement) {
+                    dragStartPositionsRef.current.set(id, { x: mainElement.x, y: mainElement.y });
                  }
             }
+            return; 
         }
 
-        // Calculate delta based on the initially dragged element
+        // --- Dragging or End Logic ---
         const startPos = dragStartPositionsRef.current.get(id);
-        if (startPos) {
-             deltaX = newX - startPos.x;
-             deltaY = newY - startPos.y;
-        } else {
-             // Fallback if startPos wasn't captured (shouldn't happen ideally)
-             // Calculate delta based on current position vs new position (less accurate for multi-drag)
-             const currentElement = [...places, ...transitions].find(el => el.id === id);
-             if (currentElement) {
-                 deltaX = newX - currentElement.x;
-                 deltaY = newY - currentElement.y;
-             }
-        }
-        
-        // Apply updates
-        setPlaces((prevPlaces) =>
-            prevPlaces.map((p) => {
-                const start = dragStartPositionsRef.current.get(p.id);
-                if (isMultiSelect && selectedElements.includes(p.id) && start) {
-                    return { ...p, x: start.x + deltaX, y: start.y + deltaY };
-                } else if (p.id === id && start) { // Handle single element drag
-                     return { ...p, x: start.x + deltaX, y: start.y + deltaY };
+        if (!startPos) { 
+             if (dragState === 'end') dragStartPositionsRef.current.clear();
+             console.warn("Drag update/end called without valid start position for element:", id);
+             return; 
+         }
+
+        const deltaX = newX - startPos.x;
+        const deltaY = newY - startPos.y;
+
+        // Update state if dragging OR ending
+        if (dragState === 'dragging' || dragState === 'end') {
+             setPages(prevPages => {
+                 const currentPage = prevPages[activePageId!];
+                 if (!currentPage) return prevPages;
+                 
+                 const currentSelectedElements = currentPage.selectedElements; 
+                 const isMultiSelect = currentSelectedElements.length > 1 && currentSelectedElements.includes(id);
+
+                 const updatedPlaces = currentPage.places.map(p => {
+                     const originalStartPos = dragStartPositionsRef.current.get(p.id);
+                     const shouldMove = p.id === id || (isMultiSelect && currentSelectedElements.includes(p.id));
+                     if (shouldMove && originalStartPos) { 
+                         return { ...p, x: originalStartPos.x + deltaX, y: originalStartPos.y + deltaY };
                 }
                 return p;
-            })
-        );
+                 });
 
-        setTransitions((prevTransitions) =>
-            prevTransitions.map((t) => {
-                const start = dragStartPositionsRef.current.get(t.id);
-                if (isMultiSelect && selectedElements.includes(t.id) && start) {
-                    return { ...t, x: start.x + deltaX, y: start.y + deltaY };
-                } else if (t.id === id && start) { // Handle single element drag
-                    return { ...t, x: start.x + deltaX, y: start.y + deltaY };
+                 const updatedTransitions = currentPage.transitions.map(t => {
+                     const originalStartPos = dragStartPositionsRef.current.get(t.id);
+                     const shouldMove = t.id === id || (isMultiSelect && currentSelectedElements.includes(t.id));
+                     if (shouldMove && originalStartPos) {
+                         return { ...t, x: originalStartPos.x + deltaX, y: originalStartPos.y + deltaY };
                 }
                 return t;
-            })
-        );
+                 });
 
-        // Clear start positions reference when drag ends
+                 // Optimization: Use stringify for a quick check, though not perfectly performant
+                 const placesChanged = JSON.stringify(currentPage.places) !== JSON.stringify(updatedPlaces);
+                 const transitionsChanged = JSON.stringify(currentPage.transitions) !== JSON.stringify(updatedTransitions);
+
+                 if (!placesChanged && !transitionsChanged) {
+                     return prevPages; 
+                 }
+
+                 return {
+                     ...prevPages,
+                     [activePageId!]: {
+                         ...currentPage,
+                         places: updatedPlaces,
+                         transitions: updatedTransitions,
+                     }
+                 };
+             });
+        }
+
+        // Clear ref only on end
         if (dragState === 'end') {
             dragStartPositionsRef.current.clear();
         }
     };
 
-    const handleTokenUpdate = (id: string, newTokens: number) => {
-        // Save current state before updating tokens
-        saveToHistory();
-        
-        setPlaces(prevPlaces =>
-            prevPlaces.map(place =>
-                place.id === id ? { ...place, tokens: newTokens } : place
-            )
-        );
+    const handleTokenUpdate = (placeId: string, newTokens: number) => {
+        if (!activePageId || !pages[activePageId]) return;
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
+            const updatedPlaces = currentPage.places.map(place =>
+                place.id === placeId ? { ...place, tokens: newTokens } : place
+            );
+            if (updatedPlaces === currentPage.places) return prevPages;
+            return {
+                ...prevPages,
+                [activePageId!]: { ...currentPage, places: updatedPlaces }
+            };
+        });
     };
 
     const handleNameUpdate = (id: string, newName: string) => {
-        // Save current state before updating names
-        saveToHistory();
-        
-        // Update place names
-        setPlaces(prevPlaces =>
-            prevPlaces.map(place =>
-                place.id === id ? { ...place, name: newName } : place
-            )
-        );
-        
-        // Update transition names
-        setTransitions(prevTransitions =>
-            prevTransitions.map(transition =>
-                transition.id === id ? { ...transition, name: newName } : transition
-            )
-        );
+         if (!activePageId || !pages[activePageId]) return;
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
+
+            let changed = false;
+            const updatedPlaces = currentPage.places.map(place => {
+                if (place.id === id) {
+                    changed = true;
+                    return { ...place, name: newName };
+                }
+                return place;
+            });
+            const updatedTransitions = currentPage.transitions.map(transition => {
+                if (transition.id === id) {
+                    changed = true;
+                    return { ...transition, name: newName };
+                }
+                return transition;
+            });
+
+            if (!changed) return prevPages;
+
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                     ...currentPage, 
+                     places: updatedPlaces, 
+                     transitions: updatedTransitions 
+                }
+            };
+        });
     };
 
     // ===== MENU HANDLERS =====
     const processLoadedData = (loadedData: PetriNetDTO, sourceTitle?: string) => {
-        saveToHistory();
-
-        // Convert imported places to UIPlace objects
-        const loadedPlaces: UIPlace[] = loadedData.places.map(place => ({
-            id: place.id,
-            name: place.name || '',
-            tokens: place.tokens,
-            x: place.x ?? 100, // Use nullish coalescing for defaults
-            y: place.y ?? 100,
-            radius: place.radius ?? 46,
-            bounded: place.bounded ?? false,
-            capacity: place.capacity ?? null
+        const newPageId = `page_${Date.now()}`;
+        // Restore loading logic
+        const loadedPlaces: UIPlace[] = (loadedData.places || []).map(place => ({ 
+            id: place.id, name: place.name || '', tokens: place.tokens || 0,
+            x: place.x ?? Math.random() * 500 + 100, y: place.y ?? Math.random() * 300 + 100,
+            radius: place.radius ?? 46, bounded: place.bounded ?? false, capacity: place.capacity ?? null
+        }));
+        const loadedTransitions: UITransition[] = (loadedData.transitions || []).map(transition => ({ 
+             id: transition.id, name: transition.name || '', enabled: transition.enabled ?? false,
+             arcIds: transition.arcIds || [], x: transition.x ?? Math.random() * 500 + 200,
+             y: transition.y ?? Math.random() * 300 + 200, width: transition.width ?? 120, height: transition.height ?? 54
+        }));
+        const loadedArcs: UIArc[] = (loadedData.arcs || []).map(arc => ({ 
+             id: arc.id, type: arc.type ?? 'REGULAR', incomingId: arc.incomingId, outgoingId: arc.outgoingId
         }));
 
-        // Convert imported transitions to UITransition objects
-        const loadedTransitions: UITransition[] = loadedData.transitions.map(transition => ({
-            id: transition.id,
-            name: transition.name || '',
-            enabled: transition.enabled ?? false, // Default enabled state if missing
-            arcIds: transition.arcIds || [], // Default arcIds if missing
-            x: transition.x ?? 200,
-            y: transition.y ?? 200,
-            width: transition.width ?? 120,
-            height: transition.height ?? 54
+        // Set zoom/pan from loaded data or default to centered
+        const initialZoom = (loadedData as any).zoomLevel ?? 1;
+        const initialPan = (loadedData as any).panOffset ?? { x: -750, y: -421.875 };
+
+        const newPageData: PetriNetPageData = {
+            id: newPageId,
+            title: loadedData.title || sourceTitle || `Page ${pageOrder.length + 1}`, 
+            places: loadedPlaces,
+            transitions: loadedTransitions,
+            arcs: loadedArcs,
+            deterministicMode: loadedData.deterministicMode ?? false, 
+            conflictResolutionMode: false, 
+            conflictingTransitions: [], 
+            selectedElements: [], 
+            history: { places: [], transitions: [], arcs: [], title: [] }, 
+            zoomLevel: initialZoom, 
+            panOffset: initialPan 
+        };
+        
+        setPages(prevPages => ({
+            ...prevPages,
+            [newPageId]: newPageData
         }));
-
-        // Convert imported arcs to UIArc objects (ensure all fields)
-        const loadedArcs: UIArc[] = loadedData.arcs.map(arc => ({
-            id: arc.id,
-            type: arc.type ?? 'REGULAR', // Default type if missing
-            incomingId: arc.incomingId,
-            outgoingId: arc.outgoingId,
-        }));
-
-        // Set the imported data
-        setPlaces(loadedPlaces);
-        setTransitions(loadedTransitions);
-        setArcs(loadedArcs);
-        // Use title from loaded data, fallback to sourceTitle, then default
-        setTitle(loadedData.title || sourceTitle || "Untitled Petri Net");
-
-        // Clear selection and simulation/history related to the previous state
-        setSelectedElements([]);
-        setConflictResolutionMode(false);
-        setConflictingTransitions([]);
-        setFiredTransitions([]);
-        setAnimatingTransitions({});
-        clearClipboard(); // Clear clipboard when loading new data
-        setHistory({ places: [], transitions: [], arcs: [] }); // Clear history for the new net
+        setPageOrder(prevOrder => [...prevOrder, newPageId]); 
+        setActivePageId(newPageId);
+        setCurrentFiredTransitions([]);
     };
 
-    // Handler for importing from pre-defined examples (if any)
     const handleImport = (importedData: PetriNetDTO) => {
         processLoadedData(importedData);
     };
 
     const continueSimulation = async (selectedTransitionId: string) => {
-        // First, clear any existing animation by setting firedTransitions to empty
-        setFiredTransitions([]);
-        
-        // Small delay to ensure the animation class is removed before adding it again
+        if (!activePageId || !activePageData) {
+            console.log("No active page for conflict resolution.");
+            return;
+        }
+
+        setCurrentFiredTransitions([]); 
         await new Promise(resolve => setTimeout(resolve, 10));
         
-        // Update transitions in state to mark only the selected one as enabled
-        const updatedTransitions = transitions.map(t => ({
+        // OPTIONAL: Visually mark only the selected transition as "enabled" immediately 
+        //           before sending the request, for better UX.
+        const tempUpdatedTransitions = activePageData.transitions.map(t => ({
             ...t,
             enabled: t.id === selectedTransitionId
         }));
+        setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: tempUpdatedTransitions } }));
         
-        // Update the transitions state immediately to show the user's selection
-        setTransitions(updatedTransitions);
+        // Set animation state for the selected transition
+        setCurrentFiredTransitions([selectedTransitionId]);
         
-        // Clear any existing animation states
-        setAnimatingTransitions({});
-        
-        // Mark ONLY the selected transition as animating
-        setAnimatingTransitions({
-            [selectedTransitionId]: true
-        });
-        
-        // Add ONLY the selected transition to the fired transitions list
-        setFiredTransitions([selectedTransitionId]);
-        
-        /* DO NOT exit conflict resolution mode yet - we'll do that only when we confirm
-        there are no more conflicts from the backend */
-        
-        // Create a request body with the updated transitions
         const requestBody = {
-            places: places.map(p => ({ 
-                id: p.id, 
-                tokens: p.tokens,
-                name: p.name,
-                x: p.x,
-                y: p.y,
-                radius: p.radius
+            // Construct DTO from activePageData
+            places: activePageData.places.map(p => ({ 
+                 id: p.id, tokens: p.tokens, name: p.name, x: p.x, y: p.y,
+                 radius: p.radius, bounded: p.bounded, capacity: p.capacity
             })),
-            transitions: updatedTransitions.map(t => ({
-                id: t.id,
-                enabled: t.enabled,
-                arcIds: t.arcIds,
-                name: t.name,
-                x: t.x,
-                y: t.y,
-                width: t.width,
-                height: t.height
+            transitions: activePageData.transitions.map(t => ({ // Send the original enabled state before temp update
+                 id: t.id, enabled: t.enabled, arcIds: t.arcIds, name: t.name, 
+                 x: t.x, y: t.y, width: t.width, height: t.height
             })),
-            arcs: arcs.map(a => ({
-                id: a.id,
-                type: a.type,
-                incomingId: a.incomingId,
-                outgoingId: a.outgoingId,
+            arcs: activePageData.arcs.map(a => ({
+                id: a.id, type: a.type, incomingId: a.incomingId, outgoingId: a.outgoingId,
             })),
-            selectedTransitionId,
-            deterministicMode: deterministicMode
+            selectedTransitionId, // Add the selected ID for the backend
+            deterministicMode: activePageData.deterministicMode,
+            title: activePageData.title
         };
         
         try {
-            const response = await fetch(API_ENDPOINTS.RESOLVE, {
+            // Assuming API_ENDPOINTS.RESOLVE = "/api/process"
+            const apiUrl = `${API_ENDPOINTS.RESOLVE}/page/${activePageId}/resolve`; 
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
             
-            const responseData = await response.json() as PetriNetDTO;
-            
-            // Update places state
-            const newPlaces = places.map(p => {
-                const updated = responseData.places.find((rp: { id: string; tokens: number }) => rp.id === p.id);
-                return updated ? { ...p, tokens: updated.tokens } : p;
-            });
-            setPlaces([...newPlaces]);
-            
-            // Update transitions state with the response from the backend
-            const newTransitions = transitions.map(t => {
-                const updated = responseData.transitions.find((rt: { id: string; enabled: boolean }) => rt.id === t.id);
-                return updated ? { ...t, enabled: updated.enabled } : t;
-            });
-            
-            // Get the list of enabled transitions from the response
-            const enabledTransitions = responseData.transitions
-                .filter((t: { enabled: boolean }) => t.enabled)
-                .map((t: { id: string }) => t.id);
-                
-            // Do NOT add animations for newly enabled transitions in deterministic mode
-            // Only exit conflict resolution mode if there are no more conflicts
-            if (enabledTransitions.length <= 1 || !deterministicMode) {
-                // No more conflicts, exit conflict resolution mode
-                setConflictResolutionMode(false);
-                setConflictingTransitions([]);
-            } else {
-                // Still have conflicts, update the conflicting transitions list
-                setConflictingTransitions(enabledTransitions);
+            if (!response.ok) {
+                 const errorBody = await response.text();
+                 console.error('Conflict resolution API error:', response.status, errorBody);
+                 // Revert temporary UI update? Or show error? Reverting for now.
+                 setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: activePageData.transitions, conflictResolutionMode: false } })); // Revert transitions and exit conflict mode on error
+                 setCurrentFiredTransitions([]);
+                 return;
             }
             
-            setTransitions(newTransitions);
+            const responseData = await response.json() as PetriNetDTO;
+            
+            // Update page state based on response
+            setPages(prevPages => {
+                const pageToUpdate = prevPages[activePageId!];
+                if (!pageToUpdate) return prevPages;
+
+                const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
+                    const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
+                    return updatedPlaceData ? { ...p_ui, tokens: updatedPlaceData.tokens } : p_ui;
+            });
+
+                const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
+                    const updatedTransitionData = responseData.transitions?.find(rt => rt.id === t_ui.id);
+                    return updatedTransitionData ? { ...t_ui, enabled: updatedTransitionData.enabled } : { ...t_ui, enabled: false };
+                });
+
+                const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
+                let newConflictResolutionMode = false;
+                let newConflictingTransitions: string[] = [];
+
+                // Check if *still* in conflict after resolution (possible if the fired transition enables others)
+                if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
+                     newConflictResolutionMode = true;
+                     newConflictingTransitions = responseEnabledTransitions;
+                } 
+                
+                // Clear transient animation state after processing response
+                setCurrentFiredTransitions([]);
+
+                return {
+                    ...prevPages,
+                    [activePageId!]: {
+                        ...pageToUpdate,
+                        places: updatedPagePlaces,
+                        transitions: updatedPageTransitions,
+                        conflictResolutionMode: newConflictResolutionMode,
+                        conflictingTransitions: newConflictingTransitions,
+                    }
+                };
+            });
+
         } catch (error) {
             console.error('Error resolving conflict:', error);
-            // In case of error, still exit conflict resolution mode to avoid getting stuck
-            setConflictResolutionMode(false);
-            setConflictingTransitions([]);
+            // Revert UI state and exit conflict mode on unexpected error
+            if (activePageId && pages[activePageId]) { // Check existence before accessing
+                 setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: pages[activePageId!].transitions, conflictResolutionMode: false } }));
+            }
+            setCurrentFiredTransitions([]);
         }
     };
 
@@ -922,31 +1260,160 @@ export default function App() {
         console.log('Validation result:', result);
     };
 
-    // REVISED: Handler now just takes capacity, infers bounded state
     const handleUpdatePlaceCapacity = (id: string, newCapacity: number | null) => {
-        saveToHistory();
-        setPlaces(prevPlaces =>
-            prevPlaces.map(place => {
-                if (place.id === id) {
-                    const newBounded = newCapacity !== null; // Determine bounded based on capacity presence
-                    let validCapacity = newCapacity;
+         if (!activePageId || !pages[activePageId]) return;
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
 
-                    // Ensure capacity is non-negative if provided
+            let changed = false;
+            const updatedPlaces = currentPage.places.map(place => {
+                if (place.id === id) {
+                    const newBounded = newCapacity !== null;
+                    let validCapacity = newCapacity;
                     if (newBounded && (validCapacity === null || validCapacity < 0)) {
                          validCapacity = 0;
                     }
-
-                    // Adjust tokens if current tokens exceed new capacity
                     let newTokens = place.tokens;
                     if (newBounded && validCapacity !== null && newTokens > validCapacity) {
                         newTokens = validCapacity;
                     }
-
+                    if (place.bounded !== newBounded || place.capacity !== validCapacity || place.tokens !== newTokens) {
+                        changed = true;
                     return { ...place, bounded: newBounded, capacity: validCapacity, tokens: newTokens };
+                    }
                 }
                 return place;
-            })
-        );
+            });
+
+            if (!changed) return prevPages;
+
+            return {
+                ...prevPages,
+                [activePageId!]: { ...currentPage, places: updatedPlaces }
+            };
+        });
+    };
+
+    const handleSetDeterministicMode = (newValue: boolean) => {
+        if (!activePageId || !pages[activePageId]) return;
+
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            let updatedConflictMode = currentPage.conflictResolutionMode;
+            let updatedConflictingTransitions = currentPage.conflictingTransitions;
+
+            if (!newValue && currentPage.conflictResolutionMode) {
+                updatedConflictMode = false;
+                updatedConflictingTransitions = [];
+            }
+
+            return {
+                ...prevPages,
+                [activePageId!]: { 
+                    ...currentPage, 
+                    deterministicMode: newValue,
+                    conflictResolutionMode: updatedConflictMode,
+                    conflictingTransitions: updatedConflictingTransitions
+                }
+            };
+        });
+    };
+
+    // ===== PAGE HANDLERS =====
+    const handleCreatePage = () => {
+        const newPageId = `page_${Date.now()}`;
+        const pageCount = pageOrder.length; 
+        const newPage: PetriNetPageData = {
+            id: newPageId,
+            title: `Page ${pageCount + 1}`, 
+            places: [],
+            transitions: [],
+            arcs: [],
+            deterministicMode: false,
+            conflictResolutionMode: false,
+            conflictingTransitions: [],
+            selectedElements: [],
+            history: { places: [], transitions: [], arcs: [], title: [] }, 
+            zoomLevel: 1, 
+            panOffset: { x: -750, y: -421.875 } // Set default centered pan
+        };
+        setPages(prevPages => ({
+            ...prevPages,
+            [newPageId]: newPage
+        }));
+        setPageOrder(prevOrder => [...prevOrder, newPageId]);
+        setActivePageId(newPageId); 
+    };
+
+    const handleRenamePage = (pageId: string, newTitle: string) => {
+        if (!pageId || !newTitle.trim() || !pages[pageId]) return; // Basic validation
+
+        setPages(prevPages => ({
+            ...prevPages,
+            [pageId]: {
+                ...prevPages[pageId],
+                title: newTitle.trim() // Update the title for the specific page
+            }
+        }));
+    };
+
+    const handleDeletePage = (pageIdToDelete: string) => {
+        const pageIds = pageOrder;
+        if (pageIds.length <= 1) {
+            console.warn("Cannot delete the last page.");
+            return; 
+        }
+
+        let nextActivePageId: string | null = null;
+        const currentIndex = pageIds.indexOf(pageIdToDelete);
+
+        if (activePageId === pageIdToDelete) {
+            if (currentIndex > 0) {
+                nextActivePageId = pageIds[currentIndex - 1];
+            } else { // Deleting the first page
+                nextActivePageId = pageIds[1]; 
+            }
+        } else {
+            nextActivePageId = activePageId; // Keep current active page
+        }
+
+        const updatedPages = { ...pages };
+        delete updatedPages[pageIdToDelete];
+        setPages(updatedPages);
+        
+        setPageOrder(prevOrder => prevOrder.filter(id => id !== pageIdToDelete));
+        
+        setActivePageId(nextActivePageId);
+        setCurrentFiredTransitions([]);
+    };
+
+    // Handler for reordering pages
+    const handleReorderPages = (newPageOrder: string[]) => {
+        setPageOrder(newPageOrder);
+    };
+
+    // ===== ZOOM/PAN HANDLER =====
+    const handleViewChange = (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => {
+        if (!activePageId || !pages[activePageId]) return; // Check activePageId before saving/setting
+        setPages(prev => {
+            if (!prev[activePageId!]) return prev;
+            // Check if update is necessary
+            const currentPage = prev[activePageId!];
+            if (currentPage.zoomLevel === view.zoomLevel && 
+                currentPage.panOffset?.x === view.panOffset.x &&
+                currentPage.panOffset?.y === view.panOffset.y) {
+                return prev; 
+            }
+            return {
+                ...prev,
+                [activePageId!]: {
+                    ...currentPage,
+                    zoomLevel: view.zoomLevel,
+                    panOffset: view.panOffset
+                }
+            };
+        });
     };
 
     // ===== RENDER =====
@@ -957,31 +1424,24 @@ export default function App() {
             height: '100vh',
             overflow: 'hidden'
         }}>
-            {/* Use the EditableTitle component */}
             <EditableTitle 
                 ref={titleRef}
-                title={title}
-                onTitleChange={setTitle}
+                title={projectTitle} 
+                onTitleChange={setProjectTitle}
             />
             
-            {/* Menu Bar below the title */}
             <MenuBar
-                petriNetData={{
-                    ...petriNetDTO,
-                    title: title
-                }}
+                petriNetData={petriNetDTO}
                 onImport={handleImport}
                 highlightTitle={handleHighlightTitle}
             />
 
-            {/* Main content area - Restore the detailed layout */}
             <div style={{ 
                 display: 'flex', 
                 flexGrow: 1,
-                height: 'calc(100vh - 80px)', // Adjust height based on MenuBar/Title height
+                height: 'calc(100vh - 80px)',
                 overflow: 'hidden'
             }}>
-                {/* Left sidebar */}
                 <div style={{ 
                     width: '200px', 
                     borderRight: '1px solid #4a4a4a',
@@ -991,16 +1451,14 @@ export default function App() {
                     flexDirection: 'column',
                     overflow: 'hidden'
                 }}>
-                    {/* Toolbar section */}
                     <div style={{ flex: 'none', overflow: 'hidden' }}>
                         <Toolbar
                             selectedTool={selectedTool}
-                            // Use the logic provided by user to clear selection on ARC tool activation
                             setSelectedTool={(tool) => {
                                 if (tool === 'ARC') {
-                                    setSelectedElements([]);
+                                    clearActivePageSelection();
                                 }
-                                setSelectedTool(tool); // Call the actual state setter
+                                setSelectedTool(tool);
                             }}
                             arcType={arcType}
                             setArcType={setArcType}
@@ -1009,7 +1467,6 @@ export default function App() {
                         />
                     </div>
 
-                    {/* Simulation controls (Restored from user input) */}
                     <div className="controls" style={{ 
                         marginTop: '2rem', 
                         display: 'flex', 
@@ -1019,7 +1476,6 @@ export default function App() {
                         borderTop: '1px solid #4a4a4a',
                         overflow: 'hidden'
                     }}>
-                        {/* Deterministic Mode checkbox */}
                         <div 
                             style={{ 
                                 display: 'flex', 
@@ -1033,21 +1489,15 @@ export default function App() {
                             onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#2a2a2a'; }}
                             onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                             onClick={() => {
-                                const newValue = !deterministicMode;
-                                if (!newValue && conflictResolutionMode) {
-                                    setConflictResolutionMode(false);
-                                    setConflictingTransitions([]);
-                                    setTransitions(transitions.map(t => ({ ...t, enabled: false })));
-                                }
-                                setDeterministicMode(newValue);
+                                handleSetDeterministicMode(!(activePageData?.deterministicMode ?? false));
                             }}
                             title="When enabled, you can choose which transition to fire when multiple are enabled"
                         >
                             <input
                                 type="checkbox"
                                 id="deterministic-mode"
-                                checked={deterministicMode}
-                                onChange={(e) => { e.stopPropagation(); }}
+                                checked={activePageData?.deterministicMode ?? false}
+                                onChange={(e) => { e.stopPropagation(); handleSetDeterministicMode(e.target.checked); }}
                                 style={{ marginRight: '5px', cursor: 'pointer' }}
                             />
                             <label 
@@ -1059,11 +1509,10 @@ export default function App() {
                             </label>
                         </div>
                         
-                        {/* Next State button */}
                         <button 
                             onClick={handleSimulate} 
                             className="simulate-button"
-                            style={{ /* styles */ 
+                            style={{ 
                                 padding: '8px 12px', backgroundColor: '#2c5282', color: 'white',
                                 border: 'none', borderRadius: '4px', cursor: 'pointer',
                                 transition: 'background-color 0.2s ease'
@@ -1075,17 +1524,15 @@ export default function App() {
                             Next State
                         </button>
                         
-                        {conflictResolutionMode && (
+                        {activePageData?.conflictResolutionMode && (
                             <div style={{ marginTop: '10px', color: '#ff4d4d' }}>
                                 Select one transition to fire
                             </div>
                         )}
                     </div>
                     
-                    {/* Spacer to push reset button to bottom */}
                     <div style={{ flex: '1' }}></div>
                     
-                    {/* Reset button (Restored from user input) */}
                     <div style={{ 
                         marginTop: '10px', 
                         borderTop: '1px solid #4a4a4a',
@@ -1094,7 +1541,7 @@ export default function App() {
                         <button 
                             onClick={handleReset} 
                             className="reset-button"
-                            style={{ /* styles */ 
+                            style={{ 
                                 width: '100%', padding: '8px 12px', backgroundColor: '#822c2c',
                                 color: 'white', border: 'none', borderRadius: '4px', 
                                 cursor: 'pointer', transition: 'background-color 0.2s ease', fontWeight: 'bold'
@@ -1123,10 +1570,10 @@ export default function App() {
                         position: 'relative' // Added for positioning context if needed
                     }}>
                         <Canvas
-                            places={places}
-                            transitions={transitions}
-                            arcs={arcs}
-                            selectedElements={selectedElements}
+                            places={activePageData?.places || []}
+                            transitions={activePageData?.transitions || []}
+                            arcs={activePageData?.arcs || []}
+                            selectedElements={activePageData?.selectedElements || []}
                             onCanvasClick={handleCanvasClick}
                             onSelectElement={handleSelectElement}
                             onMultiSelectElement={handleMultiSelectElement}
@@ -1135,35 +1582,34 @@ export default function App() {
                             onUpdateElementPosition={updateElementPosition}
                             onArcPortClick={handleArcPortClick}
                             selectedTool={selectedTool}
-                            onSelectTool={setSelectedTool} // Pass the state setter
+                            onSelectTool={setSelectedTool} 
                             arcType={arcType}
                             onUpdateToken={handleTokenUpdate}
-                            onTypingChange={handleTypingChange}
+                            onTypingChange={handleTypingChange} 
                             onUpdateName={handleNameUpdate}
-                            conflictResolutionMode={conflictResolutionMode}
-                            conflictingTransitions={conflictingTransitions}
+                            conflictResolutionMode={activePageData?.conflictResolutionMode ?? false}
+                            conflictingTransitions={activePageData?.conflictingTransitions || []}
                             onConflictingTransitionSelect={continueSimulation}
-                            firedTransitions={firedTransitions}
+                            firedTransitions={currentFiredTransitions} 
                             onUpdatePlaceCapacity={handleUpdatePlaceCapacity}
                             showCapacityEditorMode={showCapacityEditorMode}
+                            zoomLevel={activePageData?.zoomLevel ?? 1}
+                            panOffset={activePageData?.panOffset ?? {x: 0, y: 0}}
+                            onViewChange={handleViewChange}
                         />
                     </div>
                     
-                    {/* Page Navigation Placeholder */}
-                    <div style={{ 
-                        height: '40px',
-                        borderTop: '1px solid #4a4a4a',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#1a1a1a',
-                        padding: '0 15px',
-                        flexShrink: 0 // Prevent shrinking
-                    }}>
-                        <div style={{ color: '#777', fontSize: '14px' }}>
-                            Page Tabs (Under Construction)
-                        </div>
-                    </div>
+                    {/* Replace Placeholder with PagesComponent */}
+                    <PagesComponent 
+                        pages={pages}
+                        pageOrder={pageOrder}
+                        activePageId={activePageId}
+                        onSelectPage={setActivePageId}
+                        onCreatePage={handleCreatePage}
+                        onRenamePage={handleRenamePage}
+                        onDeletePage={handleDeletePage}
+                        onReorderPages={handleReorderPages}
+                    />
                 </div>
 
                 {/* Right Panel for TabbedPanel */}
@@ -1174,17 +1620,25 @@ export default function App() {
                      flexShrink: 0,
                      height: '100%'
                 }}>
+                    {/* Conditionally render TabbedPanel */}
+                    {petriNetDTO && (
                     <TabbedPanel 
-                        data={petriNetDTO}
+                            data={petriNetDTO} // Guaranteed non-null here
                         onValidationResult={handleValidationResult}
-                        selectedElements={selectedElements}
+                            selectedElements={activePageData?.selectedElements || []}
                         autoScrollEnabled={autoScrollEnabled}
                         onAutoScrollToggle={setAutoScrollEnabled}
                         currentMode={currentMode}
-                        // Explicitly set width/height to fill container
                         width="100%" 
                         height="100%"
                     />
+                    )}
+                    {/* Optional placeholder when no page is active */}
+                    {!petriNetDTO && (
+                        <div style={{ padding: '20px', color: '#888', textAlign: 'center' }}>
+                            No active Petri net selected.
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

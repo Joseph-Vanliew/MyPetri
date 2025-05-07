@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PetriNetDTO } from '../types';
 
 interface FileMenuProps {
-  petriNetData: PetriNetDTO;
+  petriNetData: PetriNetDTO | null;
   onImport: (data: PetriNetDTO) => void;
   onSaveAs?: () => void;
   highlightTitle?: () => void;
@@ -13,52 +13,10 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport, onSa
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const isSaveDisabled = !petriNetData;
+
   const toggleMenu = () => {
     setIsOpen(!isOpen);
-  };
-
-  const handleSave = () => {
-    // Check if the title is the default and prompt for editing if it is
-    if (petriNetData.title === "Untitled Petri Net" && highlightTitle) {
-      highlightTitle();
-      setIsOpen(false);
-      return;
-    }
-    
-    // Use the current title as the default filename instead of a date-based name
-    const currentTitle = petriNetData.title || "Untitled Petri Net";
-    
-    // Prompt the user for a filename, pre-filled with the current title
-    const filename = prompt('Enter a filename for your Petri net:', currentTitle);
-    
-    // If the user cancels the prompt or enters an empty string, abort the save
-    if (!filename) return;
-    
-    // Add .pats extension
-    const filenameWithExtension = filename.endsWith('.pats') ? filename : `${filename}.pats`;
-    
-    // Create a blob with the JSON data
-    // Make sure to include the title in the saved data
-    const dataToSave = {
-      ...petriNetData,
-      title: filename // Update the title to match the filename the user chose
-    };
-    
-    const jsonString = JSON.stringify(dataToSave, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    
-    // Create a download link and trigger it
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filenameWithExtension;
-    document.body.appendChild(a);
-    a.click();
-    
-    // Clean up
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setIsOpen(false);
   };
 
   const handleImportClick = () => {
@@ -114,19 +72,24 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport, onSa
     };
   }, [isOpen]);
 
-  // Handle save with title check
   const handleSaveClick = () => {
-    if (onSaveAs) {
-      // Check if the title is the default and prompt for editing if it is
-      if (petriNetData.title === "Untitled Petri Net" && highlightTitle) {
-        highlightTitle();
-        setIsOpen(false);
-        return;
-      }
-      onSaveAs();
-    } else {
-      handleSave();
+    if (isSaveDisabled || !onSaveAs) {
+      console.warn("Save As not possible: No data or handler.");
+      return;
     }
+
+    const pageTitle = petriNetData?.title;
+
+    const isDefaultPageTitle = pageTitle && /^Page \d+$/.test(pageTitle);
+
+    if (highlightTitle && isDefaultPageTitle) {
+      highlightTitle();
+      setIsOpen(false);
+      return;
+    } 
+
+    onSaveAs();
+    setIsOpen(false);
   };
 
   return (
@@ -185,8 +148,9 @@ export const FileMenu: React.FC<FileMenuProps> = ({ petriNetData, onImport, onSa
             onClick={handleSaveClick}
             style={{
               padding: '10px 14px',
-              cursor: 'pointer',
-              color: 'white',
+              cursor: isSaveDisabled ? 'not-allowed' : 'pointer',
+              color: isSaveDisabled ? '#888' : 'white',
+              backgroundColor: isSaveDisabled ? '#333' : 'transparent',
               transition: 'background-color 0.2s ease',
               fontSize: '15px'
             }}

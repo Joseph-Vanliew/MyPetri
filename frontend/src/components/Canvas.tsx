@@ -26,9 +26,9 @@ interface CanvasProps {
     onCanvasClick: (x: number, y: number) => void;
     onSelectElement: (id: string, event?: React.MouseEvent) => void;
     onMultiSelectElement: (ids: string[]) => void;
-    onUpdatePlaceSize: (id: string, newRadius: number) => void;
-    onUpdateTransitionSize: (id: string, width: number, height: number) => void;
-    onUpdateElementPosition: (id: string, newX: number, newY: number) => void;
+    onUpdatePlaceSize: (id: string, newRadius: number, resizeState: 'start' | 'resizing' | 'end') => void;
+    onUpdateTransitionSize: (id: string, width: number, height: number, resizeState: 'start' | 'resizing' | 'end') => void;
+    onUpdateElementPosition: (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end') => void;
     onArcPortClick:(id: string)=> void;
     selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';
     onSelectTool: (tool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC') => void;
@@ -42,6 +42,9 @@ interface CanvasProps {
     firedTransitions?: string[];
     onUpdatePlaceCapacity?: (id: string, capacity: number | null) => void;
     showCapacityEditorMode?: boolean;
+    zoomLevel: number;
+    panOffset: { x: number; y: number };
+    onViewChange: (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => void;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -51,7 +54,9 @@ export const Canvas = (props: CanvasProps) => {
     const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
     
     const zoomAndPan = useZoomAndPan(svgRef, {
-        initialViewBox: { x: -750, y: -750, w: 1500, h: 1500 }
+        initialZoomLevel: props.zoomLevel, 
+        initialPanOffset: props.panOffset,
+        onViewChange: props.onViewChange,
     });
     
     const mouseTracking = useMouseTracking(svgRef, {
@@ -93,22 +98,6 @@ export const Canvas = (props: CanvasProps) => {
         updateDimensions();
         window.addEventListener('resize', updateDimensions);
         return () => window.removeEventListener('resize', updateDimensions);
-    }, []);
-    
-    // Handle non-passive wheel events
-    useEffect(() => {
-        const svgElement = document.querySelector('.petri-canvas');
-        if (!svgElement) return;
-        
-        const handleWheelNonPassive = (e: Event) => {
-            e.preventDefault();
-        };
-        
-        svgElement.addEventListener('wheel', handleWheelNonPassive, { passive: false });
-        
-        return () => {
-            svgElement.removeEventListener('wheel', handleWheelNonPassive);
-        };
     }, []);
     
     // Track the last mouse position globally

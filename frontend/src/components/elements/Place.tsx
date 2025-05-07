@@ -5,9 +5,9 @@ import '../styles/Place.css';
 
 interface PlaceProps extends UIPlace {
     isSelected: boolean;
-    onSelect: (id: string) => void;
-    onUpdatePosition: (id: string, x: number, y: number, dragState?: 'start' | 'dragging' | 'end') => void;
-    onUpdateSize: (id: string, newRadius: number) => void;
+    onSelect: (id: string, event?: React.MouseEvent) => void;
+    onUpdatePosition: (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end') => void;
+    onUpdateSize: (id: string, newRadius: number, resizeState: 'start' | 'resizing' | 'end') => void;
     onUpdateTokens: (id: string, newTokens: number) => void;
     onArcPortClick: (id: string) => void;
     arcMode?: boolean;
@@ -123,7 +123,7 @@ export const Place = (props : PlaceProps) => {
                 default:
                     break;
             }
-            props.onUpdateSize(props.id, newRadius);
+            props.onUpdateSize(props.id, newRadius, 'resizing');
         };
 
         const handleMouseUp = () => {

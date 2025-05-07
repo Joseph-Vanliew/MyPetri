@@ -4,9 +4,9 @@ import '../styles/Transition.css';
 
 interface TransitionProps extends UITransition {
     isSelected: boolean;
-    onSelect: (id: string) => void;
-    onUpdatePosition: (id: string, x: number, y: number, dragState?: 'start' | 'dragging' | 'end') => void;
-    onUpdateSize: (id: string, newWidth: number, newHeight: number) => void;
+    onSelect: (id: string, event?: React.MouseEvent) => void;
+    onUpdatePosition: (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end') => void;
+    onUpdateSize: (id: string, newWidth: number, newHeight: number, resizeState: 'start' | 'resizing' | 'end') => void;
     arcMode?: boolean;
     arcType?: UIArc['type'];
     onArcPortClick: (id:string) => void;
@@ -258,7 +258,7 @@ export const Transition = (props: TransitionProps) => {
                 newWidth = 20 * aspectRatio;
             }
             
-            props.onUpdateSize(props.id, newWidth, newHeight);
+            props.onUpdateSize(props.id, newWidth, newHeight, 'resizing');
         };
 
         const handleMouseUp = () => {
