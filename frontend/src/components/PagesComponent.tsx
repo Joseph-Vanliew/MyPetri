@@ -82,12 +82,12 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
     event.preventDefault(); 
 
     // Estimate menu dimensions (adjust based on actual content/styling)
-    const menuHeightEstimate = 60; // Example: height for 2 items + padding
-    const menuWidthEstimate = 110; // Approx width
-    const buffer = 5; // Small gap
+    const menuHeightEstimate = 60; 
+    const menuWidthEstimate = 110; 
+    const buffer = 5;
 
     let xPos = event.clientX + buffer;
-    let yPos = event.clientY - menuHeightEstimate - buffer; // Default: Position above cursor
+    let yPos = event.clientY - menuHeightEstimate - buffer; 
 
     // Adjust if menu goes off viewport boundaries
     if (xPos + menuWidthEstimate > window.innerWidth) {
@@ -100,7 +100,6 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
     if (xPos < 0) {
         xPos = buffer; 
     }
-    // We don't check for yPos > window.innerHeight here, assuming it won't happen often
 
     setContextMenu({
       visible: true,
@@ -125,8 +124,7 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
         }
       }
     };
-    // Use mousedown to catch clicks before they trigger other actions potentially
-    // Use capture phase for both mousedown and contextmenu
+
     if (contextMenu?.visible) {
       document.addEventListener('mousedown', handleClickOutside, true);
       document.addEventListener('contextmenu', handleClickOutside, true); 
@@ -146,14 +144,14 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
 
   const handleDeleteFromMenu = () => {
     if (contextMenu) {
-      // Optional: Add confirmation dialog
-      // if (window.confirm(`Are you sure you want to delete page "${pages[contextMenu.pageId]?.title}"?`)) {
+      
+      if (window.confirm(`Are you sure you want to delete page "${pages[contextMenu.pageId]?.title}"?`)) {
       onDeletePage(contextMenu.pageId);
+      }
       // }
     }
     closeContextMenu();
   };
-  // --- End Context Menu Handlers ---
 
   // --- Drag and Drop Handlers ---
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, pageId: string) => {
@@ -162,7 +160,7 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', pageId); // Store pageId
 
-    // --- Hide Ghost Image --- 
+    
     // Create a minimal (invisible) element to use as the drag image
     const dragImage = document.createElement('div');
     dragImage.style.position = "absolute";
@@ -182,7 +180,6 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, pageId: string) => {
     e.preventDefault(); // Necessary to allow dropping
     dragOverItem.current = pageId;
-    // Optional: Add visual feedback for drop target
     e.currentTarget.style.backgroundColor = '#555'; 
   };
 
@@ -217,10 +214,9 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
     // Insert it at the position of the item it was dragged over
     newPageOrder.splice(dragOverItemIndex, 0, draggedItem);
 
-    // Call the handler passed from App.tsx to update the state
     onReorderPages(newPageOrder);
 
-    // Clear refs
+    // Clearing refs
     dragItem.current = null;
     dragOverItem.current = null;
   };
@@ -233,7 +229,6 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
      // Reset background in case drag ended outside a valid target
     e.currentTarget.style.backgroundColor = ''; 
   };
-  // --- End Drag and Drop Handlers ---
 
   return (
     <div className="pages-component-container" onDragOver={(e) => e.preventDefault()} >

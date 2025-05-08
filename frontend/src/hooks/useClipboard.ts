@@ -2,7 +2,6 @@ import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { UIPlace, UITransition, UIArc } from '../types';
 
-// Define structure for clipboard data
 interface ClipboardData {
     type: 'petriNetElements'; 
     places: UIPlace[];
@@ -10,13 +9,11 @@ interface ClipboardData {
     arcs: UIArc[];
 }
 
-// Export prop type if App.tsx imports it
 export interface UseClipboardProps {
     places: UIPlace[];
     transitions: UITransition[];
     arcs: UIArc[];
     selectedElements: string[];
-    // selectionBounds prop removed based on rejection
     setPlaces: React.Dispatch<React.SetStateAction<UIPlace[]>>;
     setTransitions: React.Dispatch<React.SetStateAction<UITransition[]>>;
     setArcs: React.Dispatch<React.SetStateAction<UIArc[]>>;
@@ -94,7 +91,6 @@ export function useClipboard({
             
             saveToHistory(); 
 
-            // Determine if this is a subsequent paste of the same content
             const isSubsequentPaste = lastPastedContent !== null && 
                                       JSON.stringify(clipboardContent) === JSON.stringify(lastPastedContent);
 
@@ -161,7 +157,6 @@ export function useClipboard({
             setArcs(prev => [...prev, ...pastedArcs]);
             setSelectedElements(newElementIds);
 
-            // Update paste tracking state
             setLastPastedContent(clipboardContent); 
             setPasteCount(currentPasteIndex); 
 
@@ -173,11 +168,8 @@ export function useClipboard({
     }, [pasteCount, lastPastedContent, saveToHistory, setPlaces, setTransitions, setArcs, setSelectedElements]); 
 
     const clearClipboard = useCallback(async () => {
-        // Reset internal tracking state
         setPasteCount(0);
         setLastPastedContent(null);
-        // Optional: Clear system clipboard
-        // try { await navigator.clipboard.writeText(''); } catch (err) {} 
     }, []);
 
     return { handleCopy, handlePaste, clearClipboard };

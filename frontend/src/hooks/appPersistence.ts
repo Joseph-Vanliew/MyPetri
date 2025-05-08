@@ -1,4 +1,4 @@
-import { PetriNetPageData } from '../types'; // Removed unused ProjectDTO
+import { PetriNetPageData } from '../types';
 
 export const LOCAL_STORAGE_KEY = 'patsAppState_v1';
 
@@ -8,38 +8,34 @@ export interface PersistedAppState {
   pageOrder: string[];
   projectTitle: string;
   projectHasUnsavedChanges: boolean;
-  // We don't persist projectFileHandle as it's not easily serializable.
-  // We also don't persist transient UI states like selectedTool, currentFiredTransitions etc.
 }
 
 export function loadAppState(): PersistedAppState | null {
   try {
     const serializedState = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (serializedState === null) {
-      return null; // No state saved
+      return null; 
     }
     const storedState = JSON.parse(serializedState) as Partial<PersistedAppState>;
 
-    // Basic validation: Check for the presence of essential keys
+   
     if (
       typeof storedState.pages !== 'object' ||
-      storedState.activePageId === undefined || // null is a valid value
+      storedState.activePageId === undefined ||
       !Array.isArray(storedState.pageOrder) ||
       typeof storedState.projectTitle !== 'string' ||
       typeof storedState.projectHasUnsavedChanges !== 'boolean'
     ) {
       console.warn('Persisted state is missing essential keys or has wrong types. Ignoring.');
-      localStorage.removeItem(LOCAL_STORAGE_KEY); // Clear invalid state
+      localStorage.removeItem(LOCAL_STORAGE_KEY); 
       return null;
     }
     
-    // Ensure all parts of pages are at least empty arrays/objects if they were somehow nullified
-    // This is more of a defensive measure if the stored data gets corrupted partially.
     const validatedPages: Record<string, PetriNetPageData> = {};
     if (storedState.pages) {
         for (const pageId in storedState.pages) {
             const page = storedState.pages[pageId];
-            if (page && typeof page === 'object') { // Basic check for page object
+            if (page && typeof page === 'object') { 
                 validatedPages[pageId] = {
                     id: page.id || pageId,
                     title: page.title || 'Untitled Page',
@@ -78,8 +74,7 @@ export function loadAppState(): PersistedAppState | null {
 
   } catch (error) {
     console.error('Error loading state from localStorage:', error);
-    // Optionally clear corrupted state
-    // localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
     return null;
   }
 }
@@ -90,6 +85,5 @@ export function saveAppState(state: PersistedAppState): void {
     localStorage.setItem(LOCAL_STORAGE_KEY, serializedState);
   } catch (error) {
     console.error('Error saving state to localStorage:', error);
-    // Handle potential errors, e.g., localStorage full
   }
 } 

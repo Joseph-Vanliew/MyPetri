@@ -1,5 +1,4 @@
 .analysis-container {
-  /* Mimic validator-container */
   padding: 15px;
   background-color: #242424;;
   border-radius: 5px;
@@ -18,7 +17,6 @@
 }
 
 .analysis-section {
-  /* Mimic validator-section */
   background-color: #1a1a1a;
   padding: 15px;
   margin-bottom: 15px;
@@ -29,7 +27,6 @@
 }
 
 .analysis-section-title {
-  /* Mimic validator-section-title */
   margin-top: 0;
   margin-bottom: 10px;
   font-size: 1.1em;
@@ -47,7 +44,6 @@
   padding: 3px 0;
 }
 
-/* Keep specific button styling separate and simple */
 .analysis-button-group {
   display: flex;
   flex-direction: column;
@@ -72,7 +68,7 @@
 }
 
 
-/*--------------------- Remove when done --------------------- */
+/*---------------------TODO: Remove when done! --------------------- */
 /* Overlay Styles */
 .analysis-overlay {
   position: absolute;

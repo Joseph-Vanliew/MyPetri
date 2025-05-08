@@ -4,7 +4,6 @@
 }
 
 .transition-rectangle {
-  /* rx: 8; */ /* REMOVED - Set directly in JSX */
   fill: #0f0f0f;
   stroke: #ffffff;
   stroke-width: 2;

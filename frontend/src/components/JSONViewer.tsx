@@ -144,7 +144,6 @@ export function JSONViewer({
                 }
             }
             
-            // If we couldn't find the specific element, fall back to section scrolling
             if (!foundElement) {
                 if (data.places.some(place => place.id === selectedId)) {
                     scrollToSection(placesRef);

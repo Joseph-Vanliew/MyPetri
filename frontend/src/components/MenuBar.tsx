@@ -157,7 +157,7 @@ export function MenuBar({
           </div>
         )}
       </div>
-      {/* Other top-level menus like Edit, View can be added here */}
+      
     </div>
   );
 } 
