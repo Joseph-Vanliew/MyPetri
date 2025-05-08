@@ -73,11 +73,13 @@ export function MenuBar({
         setShowExportSubMenu(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
+    // Add listener in the CAPTURE phase
+    document.addEventListener("mousedown", handleClickOutside, true);
+    // Cleanup: remove the listener
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside, true);
     };
-  }, [fileMenuRef]);
+  }, [fileMenuRef]); // Dependency array ensures this runs once
 
   return (
     <div className="menu-bar">

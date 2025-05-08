@@ -13,3 +13,10 @@
 10:48:54 AM [vite] server restarted.
 10:50:36 AM [vite] (client) hmr update /src/components/ValidatorTool.tsx
 10:56:48 AM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+11:34:13 AM [vite] (client) hmr update /src/components/MenuBar.tsx
+11:34:21 AM [vite] (client) hmr update /src/components/PagesComponent.tsx
+11:37:44 AM [vite] (client) hmr update /src/components/PagesComponent.tsx
+11:39:48 AM [vite] (client) hmr update /src/components/styles/PagesComponent.css
+11:45:56 AM [vite] (client) hmr update /src/components/PagesComponent.tsx
+11:45:58 AM [vite] (client) hmr update /src/components/MenuBar.tsx
+11:46:02 AM [vite] (client) hmr update /src/components/styles/PagesComponent.css

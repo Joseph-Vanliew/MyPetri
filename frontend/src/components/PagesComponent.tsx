@@ -126,12 +126,13 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
       }
     };
     // Use mousedown to catch clicks before they trigger other actions potentially
+    // Use capture phase for both mousedown and contextmenu
     if (contextMenu?.visible) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('contextmenu', handleClickOutside, true); // Use capture phase for contextmenu
+      document.addEventListener('mousedown', handleClickOutside, true);
+      document.addEventListener('contextmenu', handleClickOutside, true); 
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside, true);
       document.removeEventListener('contextmenu', handleClickOutside, true);
     };
   }, [contextMenu]);
@@ -157,11 +158,25 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
   // --- Drag and Drop Handlers ---
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, pageId: string) => {
     dragItem.current = pageId;
-    // Optional: Add styling for dragged item
     e.currentTarget.style.opacity = '0.5'; 
-    // Set drag data (optional but good practice)
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', pageId); // Store pageId
+
+    // --- Hide Ghost Image --- 
+    // Create a minimal (invisible) element to use as the drag image
+    const dragImage = document.createElement('div');
+    dragImage.style.position = "absolute";
+    dragImage.style.top = "-9999px"; // Position off-screen
+    dragImage.style.width = "1px";
+    dragImage.style.height = "1px";
+    dragImage.style.overflow = "hidden";
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    // Schedule removal of the temporary element
+    setTimeout(() => {
+      document.body.removeChild(dragImage);
+    }, 0);
+    // --- End Hide Ghost Image ---
   };
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, pageId: string) => {
