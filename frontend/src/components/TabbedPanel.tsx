@@ -8,7 +8,7 @@ import './styles/TabbedPanel.css';
 type Tab = 'json' | 'validator' | 'analysis';
 
 interface TabbedPanelProps {
-  data: PetriNetDTO | null;
+  data: PetriNetDTO;
   width?: string | number;
   height?: string | number;
   selectedElements?: string[];
@@ -16,6 +16,7 @@ interface TabbedPanelProps {
   onAutoScrollToggle?: (enabled: boolean) => void;
   currentMode?: string;
   onValidationResult?: (result: ValidationResult) => void;
+  activePageId?: string | null;
 }
 
 export function TabbedPanel({
@@ -26,7 +27,8 @@ export function TabbedPanel({
   autoScrollEnabled = true,
   onAutoScrollToggle,
   currentMode = '',
-  onValidationResult
+  onValidationResult,
+  activePageId
 }: TabbedPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('validator');
   
@@ -75,51 +77,43 @@ export function TabbedPanel({
       
       {/* Tab content */}
       <div className="tab-content">
-        {/* Conditional rendering based on data presence */}
-        {!data ? (
-          <div style={{ padding: '20px', color: '#888', textAlign: 'center' }}>
-            No active Petri net to display.
-          </div>
-        ) : (
-          <> {/* Render content only if data exists */}
-            {activeTab === 'json' && (
-              <JSONViewer
-                data={data}
-                width="100%" 
-                height="100%"
-                selectedElements={selectedElements}
-                autoScrollEnabled={autoScrollEnabled}
-                onAutoScrollToggle={onAutoScrollToggle}
-                currentMode={currentMode}
-              />
-            )}
-            
-            {activeTab === 'validator' && (
-              <ValidatorTool
-                data={data}
-                width="100%"
-                height="100%"
-                onValidate={handleValidate}
-                inputConfigs={inputConfigs}
-                setInputConfigs={setInputConfigs}
-                expectedOutputs={expectedOutputs}
-                setExpectedOutputs={setExpectedOutputs}
-                persistedValidationResult={validationResult}
-                setValidationResult={setValidationResult}
-                emptyInputFields={emptyInputFields}
-                setEmptyInputFields={setEmptyInputFields}
-                emptyOutputFields={emptyOutputFields}
-                setEmptyOutputFields={setEmptyOutputFields}
-              />
-            )}
-            {activeTab === 'analysis' && (
-              <AnalysisTool
-                data={data}
-                width="100%"
-                height="100%"
-              />
-            )}
-          </>
+        {activeTab === 'json' && (
+          <JSONViewer
+            data={data}
+            width="100%" 
+            height="100%"
+            selectedElements={selectedElements}
+            autoScrollEnabled={autoScrollEnabled}
+            onAutoScrollToggle={onAutoScrollToggle}
+            currentMode={currentMode}
+          />
+        )}
+        
+        {activeTab === 'validator' && (
+          <ValidatorTool
+            data={data}
+            width="100%"
+            height="100%"
+            onValidate={handleValidate}
+            inputConfigs={inputConfigs}
+            setInputConfigs={setInputConfigs}
+            expectedOutputs={expectedOutputs}
+            setExpectedOutputs={setExpectedOutputs}
+            persistedValidationResult={validationResult}
+            setValidationResult={setValidationResult}
+            emptyInputFields={emptyInputFields}
+            setEmptyInputFields={setEmptyInputFields}
+            emptyOutputFields={emptyOutputFields}
+            setEmptyOutputFields={setEmptyOutputFields}
+            activePageId={activePageId}
+          />
+        )}
+        {activeTab === 'analysis' && (
+          <AnalysisTool
+            data={data}
+            width="100%"
+            height="100%"
+          />
         )}
       </div>
     </div>

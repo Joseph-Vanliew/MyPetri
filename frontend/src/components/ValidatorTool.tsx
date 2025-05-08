@@ -1,7 +1,6 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 import { PetriNetDTO, PlaceConfig, ValidationResult } from '../types';
 import './styles/ValidatorTool.css';
-import { API_ENDPOINTS } from '../utils/api';
 
 interface ValidatorToolProps {
   data: PetriNetDTO;
@@ -19,6 +18,7 @@ interface ValidatorToolProps {
   setEmptyInputFields?: Dispatch<SetStateAction<{[index: number]: boolean}>>;
   emptyOutputFields?: {[index: number]: boolean};
   setEmptyOutputFields?: Dispatch<SetStateAction<{[index: number]: boolean}>>;
+  activePageId?: string | null;
 }
 
 export function ValidatorTool({
@@ -34,7 +34,8 @@ export function ValidatorTool({
   emptyInputFields: externalEmptyInputFields,
   setEmptyInputFields: externalSetEmptyInputFields,
   emptyOutputFields: externalEmptyOutputFields,
-  setEmptyOutputFields: externalSetEmptyOutputFields
+  setEmptyOutputFields: externalSetEmptyOutputFields,
+  activePageId
 }: ValidatorToolProps) {
   // Use local state if no external state is provided (backwards compatibility)
   const [localInputConfigs, setLocalInputConfigs] = useState<PlaceConfig[]>([]);
@@ -330,17 +331,26 @@ export function ValidatorTool({
 
   // Run validation
   const runValidation = async () => {
+    if (!activePageId) {
+      setValidationResult({
+        valid: false,
+        message: 'Cannot validate: Active page ID is missing.',
+        errors: ['Active page ID is missing.']
+      });
+      return;
+    }
     if (inputConfigs.length === 0 || expectedOutputs.length === 0) {
       setValidationResult({
         valid: false,
-        message: 'You must specify at least one input and one expected output.'
+        message: 'You must specify at least one input and one expected output.',
+        errors: ['Input or expected output is missing.']
       });
       return;
     }
 
     setIsValidating(true);
     try {
-      const response = await fetch(API_ENDPOINTS.VALIDATE, {
+      const response = await fetch(`/api/page/${activePageId}/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -353,7 +363,8 @@ export function ValidatorTool({
       });
 
       if (!response.ok) {
-        throw new Error(`Validation request failed: ${response.statusText}`);
+        const errorBody = await response.text();
+        throw new Error(`Validation request failed: ${response.status} ${errorBody}`);
       }
 
       const result: ValidationResult = await response.json();
@@ -364,10 +375,16 @@ export function ValidatorTool({
       }
     } catch (error) {
       console.error('Error validating Petri net:', error);
-      setValidationResult({
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const validationErrorResult: ValidationResult = {
         valid: false,
-        message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
-      });
+        message: `Error: ${errorMessage}`,
+        errors: [errorMessage]
+      };
+      setValidationResult(validationErrorResult);
+      if (onValidate) {
+        onValidate(validationErrorResult);
+      }
     } finally {
       setIsValidating(false);
     }
@@ -412,7 +429,7 @@ export function ValidatorTool({
         </div>
         
         {inputConfigs.length === 0 ? (
-          <p className="validator-empty-message">No input places configured.</p>
+          <p className="validator-empty-message">No input places named, please name your places.</p>
         ) : (
           <div>
             {inputConfigs.map((config, index) => {
@@ -514,7 +531,7 @@ export function ValidatorTool({
         </div>
         
         {expectedOutputs.length === 0 ? (
-          <p className="validator-empty-message">No expected outputs configured.</p>
+          <p className="validator-empty-message">No expected outputs named, please name your places.</p>
         ) : (
           <div>
             {expectedOutputs.map((output, index) => {

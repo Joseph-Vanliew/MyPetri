@@ -14,14 +14,233 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.4)
 
-2025-05-07T17:20:36.992-04:00  INFO 52657 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 52657 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
-2025-05-07T17:20:36.993-04:00  INFO 52657 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
-2025-05-07T17:20:37.464-04:00  INFO 52657 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-05-07T17:20:37.470-04:00  INFO 52657 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-05-07T17:20:37.470-04:00  INFO 52657 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
-2025-05-07T17:20:37.492-04:00  INFO 52657 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-05-07T17:20:37.492-04:00  INFO 52657 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 478 ms
-2025-05-07T17:20:37.529-04:00  INFO 52657 --- [PATS] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
-2025-05-07T17:20:37.622-04:00  INFO 52657 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
-2025-05-07T17:20:37.625-04:00  INFO 52657 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.801 seconds (process running for 0.939)
+2025-05-08T10:46:58.838-04:00  INFO 61581 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 61581 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
+2025-05-08T10:46:58.839-04:00  INFO 61581 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
+2025-05-08T10:46:59.129-04:00  INFO 61581 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-05-08T10:46:59.135-04:00  INFO 61581 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-05-08T10:46:59.135-04:00  INFO 61581 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
+2025-05-08T10:46:59.154-04:00  INFO 61581 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-05-08T10:46:59.155-04:00  INFO 61581 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 301 ms
+2025-05-08T10:46:59.215-04:00  INFO 61581 --- [PATS] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-05-08T10:46:59.346-04:00  INFO 61581 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-05-08T10:46:59.351-04:00  INFO 61581 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.642 seconds (process running for 0.757)
 PatsApplication started
+2025-05-08T10:49:18.863-04:00  INFO 61581 --- [PATS] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-08T10:49:18.864-04:00  INFO 61581 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-05-08T10:49:18.865-04:00  INFO 61581 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 10, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 10, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=10, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 10
+    -> Decremented tokens. New tokens: 9
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 9, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 9, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=9, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 9
+    -> Decremented tokens. New tokens: 8
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 8, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 8, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 2, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=8, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 8
+    -> Decremented tokens. New tokens: 7
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 7, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 7, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 3, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 3, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=7, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 7
+    -> Decremented tokens. New tokens: 6
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 6, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 6, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 4, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 4, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=6, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 6
+    -> Decremented tokens. New tokens: 5
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 5, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 5, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 5, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 5, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=5, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 5
+    -> Decremented tokens. New tokens: 4
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 4, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 4, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 6, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 6, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=4, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 4
+    -> Decremented tokens. New tokens: 3
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 3, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 3, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 7, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 7, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=3, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 8, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 8, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 9, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 9, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746715740679_page_1746715736333
+DEBUG Place place_1746715739229_page_1746715736333: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.
+Validator: Calling processPetriNet. Deterministic mode: true
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715739229_page_1746715736333, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715739229_page_1746715736333, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746715742212_page_1746715736333, Tokens: 10, Bounded: false, Capacity: null)
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746715742212_page_1746715736333, Tokens: 10, Bounded: false, Capacity: null)
+    - Place place_1746715739229_page_1746715736333: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 0
+DEBUG Place place_1746715739229_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, returning null
+DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
+DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
+Validator: Received processedState.

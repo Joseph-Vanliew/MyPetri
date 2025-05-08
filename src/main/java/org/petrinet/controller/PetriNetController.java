@@ -19,7 +19,7 @@ public class PetriNetController {
         this.petriNetService = petriNetService;
     }
 
-    @PostMapping("/api/page/{pageId}/process")
+    @PostMapping("/api/process/page/{pageId}/process")
     public ResponseEntity<?> processPetriNet(
             @PathVariable String pageId,
             @RequestBody PetriNetDTO currentPetriNetState) {
@@ -32,7 +32,7 @@ public class PetriNetController {
         }
     }
     
-    @PostMapping("/api/page/{pageId}/process/resolve")
+    @PostMapping("/api/process/resolve/page/{pageId}/resolve")
     public ResponseEntity<?> resolveConflict(
             @PathVariable String pageId,
             @RequestBody PetriNetDTO petriNetInConflict) {

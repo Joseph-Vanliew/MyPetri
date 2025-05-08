@@ -2,7 +2,7 @@
 import React, {useState, useCallback, useEffect, useRef, useMemo} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
-import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult, PetriNetPageData} from './types';
+import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult, PetriNetPageData, ProjectDTO} from './types';
 import { MenuBar } from './components/MenuBar';
 import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
 import { API_ENDPOINTS } from './utils/api';
@@ -85,10 +85,9 @@ export default function App() {
     }, [pages, pageOrder]); // Added pageOrder dependency for safety
 
     // ===== DERIVED STATE FOR ACTIVE PAGE ( Placeholder - Step III.1 ) =====
-    // This will be filled in the next step
     const activePageData = useMemo(() => activePageId ? pages[activePageId] : null, [pages, activePageId]);
 
-    // ===== EXISTING HANDLERS AND EFFECTS (will need significant adaptation) =====
+    // ===== HANDLERS AND EFFECTS =====
     
     const handleHighlightTitle = () => {
         if (titleRef.current) {
@@ -213,7 +212,6 @@ export default function App() {
     });
 
     // ===== DERIVED STATE / CONSTANTS =====
-    // TODO: This DTO needs to be derived from activePageData
     const petriNetDTO: PetriNetDTO | null = useMemo(() => {
         if (!activePageData) return null;
             return {
@@ -247,6 +245,20 @@ export default function App() {
         })),
     };
     }, [activePageData]);
+
+    const currentProjectDTO: ProjectDTO | null = useMemo(() => {
+        // Construct the full project DTO to pass to the MenuBar
+        // It can be null if there are no pages yet, or represent the current state.
+        if (Object.keys(pages).length === 0 && !projectTitle) return null; // Or a default initial project DTO
+
+        return {
+            projectTitle,
+            pages,
+            pageOrder,
+            activePageId,
+            version: '1.0.0' // Consistent with save logic
+        };
+    }, [projectTitle, pages, pageOrder, activePageId]);
 
     // ===== EVENT HANDLERS =====
     const handleTypingChange = (typing: boolean) => {
@@ -1098,53 +1110,156 @@ export default function App() {
     };
 
     // ===== MENU HANDLERS =====
-    const processLoadedData = (loadedData: PetriNetDTO, sourceTitle?: string) => {
-        const newPageId = `page_${Date.now()}`;
-        // Restore loading logic
-        const loadedPlaces: UIPlace[] = (loadedData.places || []).map(place => ({ 
-            id: place.id, name: place.name || '', tokens: place.tokens || 0,
-            x: place.x ?? Math.random() * 500 + 100, y: place.y ?? Math.random() * 300 + 100,
-            radius: place.radius ?? 46, bounded: place.bounded ?? false, capacity: place.capacity ?? null
+    const processLoadedData = (pageToLoad: Partial<PetriNetPageData>, sourceTitle?: string) => {
+        const newPageId = pageToLoad.id || `page_${Date.now()}`;
+        // Ensure all fields of PetriNetPageData are present, using defaults where necessary
+        const loadedPlaces: UIPlace[] = (pageToLoad.places || []).map(place => ({ 
+            id: place.id || `place_${Date.now()}_${newPageId}`, 
+            name: place.name || '', 
+            tokens: place.tokens || 0,
+            x: place.x ?? Math.random() * 500 + 100, 
+            y: place.y ?? Math.random() * 300 + 100,
+            radius: place.radius ?? 46, 
+            bounded: place.bounded ?? false, 
+            capacity: place.capacity ?? null
         }));
-        const loadedTransitions: UITransition[] = (loadedData.transitions || []).map(transition => ({ 
-             id: transition.id, name: transition.name || '', enabled: transition.enabled ?? false,
-             arcIds: transition.arcIds || [], x: transition.x ?? Math.random() * 500 + 200,
-             y: transition.y ?? Math.random() * 300 + 200, width: transition.width ?? 120, height: transition.height ?? 54
+        const loadedTransitions: UITransition[] = (pageToLoad.transitions || []).map(transition => ({ 
+             id: transition.id || `trans_${Date.now()}_${newPageId}`, 
+             name: transition.name || '', 
+             enabled: transition.enabled ?? false,
+             arcIds: transition.arcIds || [], 
+             x: transition.x ?? Math.random() * 500 + 200,
+             y: transition.y ?? Math.random() * 300 + 200, 
+             width: transition.width ?? 120, 
+             height: transition.height ?? 54
         }));
-        const loadedArcs: UIArc[] = (loadedData.arcs || []).map(arc => ({ 
-             id: arc.id, type: arc.type ?? 'REGULAR', incomingId: arc.incomingId, outgoingId: arc.outgoingId
+        const loadedArcs: UIArc[] = (pageToLoad.arcs || []).map(arc => ({ 
+             id: arc.id || `arc_${Date.now()}_${newPageId}`, 
+             type: arc.type ?? 'REGULAR', 
+             incomingId: arc.incomingId, 
+             outgoingId: arc.outgoingId
         }));
-
-        // Set zoom/pan from loaded data or default to centered
-        const initialZoom = (loadedData as any).zoomLevel ?? 1;
-        const initialPan = (loadedData as any).panOffset ?? { x: -750, y: -421.875 };
 
         const newPageData: PetriNetPageData = {
             id: newPageId,
-            title: loadedData.title || sourceTitle || `Page ${pageOrder.length + 1}`, 
+            title: pageToLoad.title || sourceTitle || `Page ${pageOrder.length + 1}`, 
             places: loadedPlaces,
             transitions: loadedTransitions,
             arcs: loadedArcs,
-            deterministicMode: loadedData.deterministicMode ?? false, 
-            conflictResolutionMode: false, 
-            conflictingTransitions: [], 
-            selectedElements: [], 
-            history: { places: [], transitions: [], arcs: [], title: [] }, 
-            zoomLevel: initialZoom, 
-            panOffset: initialPan 
+            deterministicMode: pageToLoad.deterministicMode ?? false, 
+            conflictResolutionMode: pageToLoad.conflictResolutionMode ?? false, 
+            conflictingTransitions: pageToLoad.conflictingTransitions || [], 
+            selectedElements: pageToLoad.selectedElements || [], 
+            history: pageToLoad.history || { places: [], transitions: [], arcs: [], title: [] }, 
+            zoomLevel: pageToLoad.zoomLevel ?? 1, 
+            panOffset: pageToLoad.panOffset ?? { x: -750, y: -421.875 } 
         };
         
         setPages(prevPages => ({
             ...prevPages,
             [newPageId]: newPageData
-        }));
-        setPageOrder(prevOrder => [...prevOrder, newPageId]); 
+        })); 
+        // Only add to pageOrder and set active if it's a truly new page (not part of project load)
+        // This logic will be refined when handleOpenProject calls this.
+        if (!Object.keys(pages).includes(newPageId)) {
+             setPageOrder(prevOrder => [...prevOrder, newPageId]); 
+        }
         setActivePageId(newPageId);
         setCurrentFiredTransitions([]);
     };
 
-    const handleImport = (importedData: PetriNetDTO) => {
-        processLoadedData(importedData);
+    // This function is kept for the legacy import in MenuBar for now.
+    // It can be removed if the new import/open project fully replaces it.
+    const handleLegacyImport = (importedData: PetriNetDTO) => {
+        // Create a structure that processLoadedData can understand
+        const partialPageData: Partial<PetriNetPageData> = {
+            title: importedData.title,
+            places: importedData.places.map(p => ({
+                ...p, 
+                name: p.name || '',
+                x: p.x ?? Math.random() * 500 + 100, 
+                y: p.y ?? Math.random() * 300 + 100,
+                radius: p.radius ?? 46,
+                bounded: p.bounded ?? false,
+                capacity: p.capacity ?? null
+            })), 
+            transitions: importedData.transitions.map(t => ({
+                ...t, 
+                name: t.name || '',
+                x: t.x ?? Math.random() * 500 + 200, 
+                y: t.y ?? Math.random() * 300 + 200,
+                width: t.width ?? 120,
+                height: t.height ?? 54
+            })), 
+            arcs: importedData.arcs.map(a => ({ // Ensure arc has all required UIArc fields
+                id: a.id, // UIArc requires id
+                type: a.type ?? 'REGULAR', // UIArc requires type
+                incomingId: a.incomingId, // UIArc requires incomingId
+                outgoingId: a.outgoingId // UIArc requires outgoingId
+            })),
+            deterministicMode: importedData.deterministicMode,
+            // zoomLevel and panOffset might not be in PetriNetDTO, so they'll get defaults in processLoadedData
+        };
+        processLoadedData(partialPageData, "Imported Page");
+    };
+
+    const handleOpenProject = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const projectData = await readJSONFile(file) as ProjectDTO;
+            // Basic validation (can be expanded)
+            if (!projectData || !projectData.pages || !projectData.pageOrder || typeof projectData.projectTitle !== 'string') {
+                alert('Invalid project file format.');
+                return;
+            }
+
+            // Clear existing project state
+            setProjectTitle(projectData.projectTitle);
+            setPages(projectData.pages); // Directly set the pages from the project
+            setPageOrder(projectData.pageOrder);
+            setActivePageId(projectData.activePageId || (projectData.pageOrder.length > 0 ? projectData.pageOrder[0] : null));
+            setCurrentFiredTransitions([]);
+            clearClipboard(); // Clear clipboard for the new project
+
+            // Reset file input value to allow re-opening the same file if needed
+            event.target.value = '';
+        } catch (error) {
+            console.error("Error opening project:", error);
+            alert("Failed to open project file. Ensure it is a valid .pats.json file.");
+        }
+    };
+
+    const handleImportPages = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            try {
+                const pageData = await readJSONFile(file) as PetriNetPageData;
+                // Basic validation for a page file
+                if (!pageData || !pageData.id || !pageData.title) { // Check for essential fields
+                    console.warn(`Skipping file ${file.name}: Invalid page file format.`);
+                    continue;
+                }
+                // Ensure imported page ID is unique if it clashes with an existing one
+                let newPageId = pageData.id;
+                let counter = 1;
+                while (pages[newPageId]) {
+                    newPageId = `${pageData.id}_imported_${counter++}`;
+                }
+                const pageDataWithNewGuid = {...pageData, id: newPageId};
+
+                processLoadedData(pageDataWithNewGuid, file.name.replace(/\.page\.json$|\.json$/, ''));
+            } catch (error) {
+                console.error(`Error importing page ${file.name}:`, error);
+                alert(`Failed to import page ${file.name}.`);
+            }
+        }
+        // Reset file input value
+        event.target.value = '';
     };
 
     const continueSimulation = async (selectedTransitionId: string) => {
@@ -1416,6 +1531,68 @@ export default function App() {
         });
     };
 
+    // ===== FILE UTILITY FUNCTIONS =====
+    const downloadJSON = (data: object, filename: string) => {
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const href = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(href);
+    };
+
+    const readJSONFile = (file: File): Promise<any> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    if (event.target?.result) {
+                        const parsed = JSON.parse(event.target.result as string);
+                        resolve(parsed);
+                    } else {
+                        reject(new Error("File reading resulted in null."));
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = (error) => reject(error);
+            reader.readAsText(file);
+        });
+    };
+
+    // ===== PROJECT/PAGE SAVE AND LOAD HANDLERS =====
+    const handleSaveProjectAs = (suggestedFilename?: string) => {
+        const filename = suggestedFilename || projectTitle.replace(/[^a-z0-9_\-\s]/gi, '_').replace(/\s+/g, '-') + '.petri' || 'project.petri';
+        const projectData: ProjectDTO = {
+            projectTitle,
+            pages,
+            pageOrder,
+            activePageId,
+            version: '1.0.0' // Example version
+        };
+        downloadJSON(projectData, filename);
+    };
+
+    const handleSaveProject = () => {
+        // For now, Save behaves like Save As. 
+        // True "Save" to an existing file path is complex for web apps.
+        handleSaveProjectAs(); 
+    };
+
+    const handleExportActivePage = (suggestedFilename?: string) => {
+        if (!activePageData) {
+            alert("No active page to export.");
+            return;
+        }
+        const filename = suggestedFilename || activePageData.title.replace(/[^a-z0-9_\-\s]/gi, '_').replace(/\s+/g, '-') + '.page.json' || 'page.page.json';
+        downloadJSON(activePageData, filename); // Exporting the full PetriNetPageData
+    };
+
     // ===== RENDER =====
     return (
         <div className="app" style={{ 
@@ -1431,9 +1608,15 @@ export default function App() {
             />
             
             <MenuBar
-                petriNetData={petriNetDTO}
-                onImport={handleImport}
+                projectData={currentProjectDTO}
+                onImport={handleLegacyImport}
                 highlightTitle={handleHighlightTitle}
+                onOpenProject={handleOpenProject}
+                onSaveProject={handleSaveProject}
+                onSaveProjectAs={handleSaveProjectAs}
+                onImportPages={handleImportPages}
+                onExportActivePage={handleExportActivePage}
+                onExportProject={handleSaveProjectAs}
             />
 
             <div style={{ 
@@ -1623,7 +1806,7 @@ export default function App() {
                     {/* Conditionally render TabbedPanel */}
                     {petriNetDTO && (
                     <TabbedPanel 
-                            data={petriNetDTO} // Guaranteed non-null here
+                            data={petriNetDTO} 
                         onValidationResult={handleValidationResult}
                             selectedElements={activePageData?.selectedElements || []}
                         autoScrollEnabled={autoScrollEnabled}
@@ -1631,6 +1814,7 @@ export default function App() {
                         currentMode={currentMode}
                         width="100%" 
                         height="100%"
+                        activePageId={activePageId} // Pass activePageId
                     />
                     )}
                     {/* Optional placeholder when no page is active */}

@@ -3,34 +3,13 @@
 > vite
 
 
-  VITE v6.2.0  ready in 154 ms
+  VITE v6.2.0  ready in 186 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-5:21:52 PM [vite] (client) hmr update /src/App.tsx
-5:30:51 PM [vite] (client) hmr update /src/App.tsx
-5:31:22 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
-5:31:41 PM [vite] (client) hmr update /src/components/MenuBar.tsx
-5:31:59 PM [vite] (client) hmr update /src/App.tsx
-5:33:02 PM [vite] (client) hmr update /src/components/MenuBar.tsx
-5:37:16 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
-5:37:37 PM [vite] (client) hmr update /src/App.tsx
-5:38:18 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
-5:39:20 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-5:40:51 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
-5:41:35 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
-5:42:26 PM [vite] (client) hmr update /src/App.tsx
-5:42:54 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
-5:43:18 PM [vite] (client) hmr update /src/App.tsx
-5:45:02 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
-5:45:21 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-5:45:54 PM [vite] (client) hmr update /src/App.tsx
-5:46:32 PM [vite] (client) hmr update /src/App.tsx
-5:50:13 PM [vite] (client) hmr update /src/App.tsx
-5:50:13 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
-5:50:42 PM [vite] (client) hmr update /src/App.tsx
-5:50:42 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
-5:52:13 PM [vite] (client) hmr update /src/App.tsx
-5:52:22 PM [vite] (client) hmr update /src/App.tsx
-5:54:29 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
-5:54:29 PM [vite] (client) hmr update /src/App.tsx
+10:48:25 AM [vite] vite.config.ts changed, restarting server...
+10:48:25 AM [vite] server restarted.
+10:48:54 AM [vite] vite.config.ts changed, restarting server...
+10:48:54 AM [vite] server restarted.
+10:50:36 AM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+10:56:48 AM [vite] (client) hmr update /src/components/ValidatorTool.tsx

@@ -90,6 +90,7 @@ export interface PetriNetValidationRequest {
 export interface ValidationResult {
     valid: boolean;
     message: string;
+    errors?: string[];
     conflictingTransitions?: string[];
     finalState?: PetriNetDTO;
     outputMatches?: Record<string, boolean>;
@@ -115,3 +116,14 @@ export interface PetriNetPageData {
     zoomLevel?: number;
     panOffset?: { x: number; y: number };
 }
+
+export interface ProjectDTO {
+    projectTitle: string;
+    pages: Record<string, PetriNetPageData>;
+    pageOrder: string[];
+    activePageId: string | null;
+    version?: string; // For future compatibility, e.g., "1.0.0"
+}
+
+// Consider adding a global AppMode type if needed, e.g., for distinguishing between 'select', 'place', 'transition', 'arc'
+// export type AppMode = 'select' | 'place' | 'transition' | 'arc';

@@ -1,131 +1,128 @@
-import React from 'react';
-import { FileMenu } from './FileMenu';
-import { PetriNetDTO } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { PetriNetDTO, ProjectDTO } from '../types';
 // Remove API_ENDPOINTS import if no longer needed after removing handleValidate
 // import { API_ENDPOINTS } from '../utils/api';
 
 interface MenuBarProps {
-  petriNetData: PetriNetDTO | null;
+  projectData: ProjectDTO | null;
   onImport: (data: PetriNetDTO) => void;
   highlightTitle: () => void;
+  // New handlers for project/page operations
+  onOpenProject: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSaveProject: () => void;
+  onSaveProjectAs: () => void;
+  onImportPages: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onExportActivePage: () => void;
+  onExportProject: () => void; // Added for completeness, maps to onSaveProjectAs for now
 }
 
-export const MenuBar: React.FC<MenuBarProps> = ({ petriNetData, onImport, highlightTitle }) => {
-  // Remove fileInputRef, handleExport, handleValidate, handleOpenFileClick, handleFileChange
+export function MenuBar({
+  projectData: _projectData,
+  onImport, 
+  highlightTitle, 
+  onOpenProject,
+  onSaveProject,
+  onSaveProjectAs,
+  onImportPages,
+  onExportActivePage,
+  onExportProject
+}: MenuBarProps) {
+  const [showFileMenu, setShowFileMenu] = useState(false);
+  const [showExportSubMenu, setShowExportSubMenu] = useState(false);
+  // Add state for Import submenu if you create one
+  // const [showImportSubMenu, setShowImportSubMenu] = useState(false);
 
-  const handleSave = () => {
-    if (!petriNetData) {
-        console.warn("Cannot save: No active Petri net data.");
-        return; 
-    }
+  const fileMenuRef = useRef<HTMLDivElement>(null);
+  const exportSubMenuRef = useRef<HTMLDivElement>(null);
 
-    const pageTitle = petriNetData.title || "Untitled Page"; // Get title from DTO
+  // Refs for file inputs to allow programmatic click
+  const openProjectInputRef = useRef<HTMLInputElement>(null);
+  const importPagesInputRef = useRef<HTMLInputElement>(null);
+  const legacyImportInputRef = useRef<HTMLInputElement>(null);
 
-    // Include zoom and pan from the DTO if they exist
-    const dataToSave: PetriNetDTO = {
-      ...petriNetData,
-      title: pageTitle,
-      zoomLevel: petriNetData.zoomLevel, // Directly from DTO
-      panOffset: petriNetData.panOffset  // Directly from DTO
-    };
-
-    const jsonData = JSON.stringify(dataToSave, null, 2);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-
-    const sanitizedTitle = (pageTitle)
-      .replace(/[^\w\s-]/g, '') 
-      .trim()
-      .replace(/\s+/g, '-') 
-      .toLowerCase();
-
-    a.download = `${sanitizedTitle || 'petri-net'}.pats`; // Fallback filename
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const toggleFileMenu = () => setShowFileMenu(!showFileMenu);
+  const toggleExportSubMenu = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent file menu from closing
+    setShowExportSubMenu(!showExportSubMenu);
   };
 
-  const handleSaveAs = () => {
-    if (!petriNetData) {
-        console.warn("Cannot save as: No active Petri net data.");
-        return; 
-    }
-    
-    const pageTitle = petriNetData.title || "Untitled Page"; // Get title from DTO
-
-    // Include zoom and pan from the DTO if they exist
-    const dataToSave: PetriNetDTO = {
-      ...petriNetData,
-      title: pageTitle, 
-      zoomLevel: petriNetData.zoomLevel, 
-      panOffset: petriNetData.panOffset
-    };
-
-    const jsonData = JSON.stringify(dataToSave, null, 2);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-
-    const sanitizedTitle = (pageTitle)
-      .replace(/[^\w\s-]/g, '') 
-      .trim()
-      .replace(/\s+/g, '-') 
-      .toLowerCase();
-
-    if ('showSaveFilePicker' in window) {
-      const saveFile = async () => {
+  const handleLegacyFileOpen = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
         try {
-          // @ts-ignore
-          const fileHandle = await window.showSaveFilePicker({
-            suggestedName: `${sanitizedTitle || 'petri-net'}.pats`, // Fallback filename
-            types: [{
-              description: 'Petri Net Files',
-              accept: { 'application/json': ['.pats'] }
-            }]
-          });
-
-          // @ts-ignore
-          const writable = await fileHandle.createWritable();
-          // @ts-ignore
-          await writable.write(blob);
-          // @ts-ignore
-          await writable.close();
-        } catch (err: unknown) {
-          // if user cancels the save dialog
-          console.log('Save canceled or failed:', err);
-
-          // Fall back to the traditional method
-          if (err instanceof Error && err.name !== 'AbortError') {
-            handleSave();
-          }
+          const importedData = JSON.parse(e.target?.result as string) as PetriNetDTO;
+          onImport(importedData); // Call the legacy onImport
+        } catch (error) {
+          console.error("Error parsing imported file:", error);
+          alert("Failed to parse file. Please ensure it's a valid Petri net JSON.");
         }
       };
-
-      saveFile();
-    } else {
-      // Falling back to the traditional method for browsers that don't support the File System Access API
-      handleSave();
+      reader.readAsText(file);
     }
+    setShowFileMenu(false);
+    if (event.target) event.target.value = ''; // Reset file input
   };
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (fileMenuRef.current && !fileMenuRef.current.contains(event.target as Node)) {
+        setShowFileMenu(false);
+        setShowExportSubMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [fileMenuRef]);
+
   return (
-    <div className="menu-bar" style={{
-      display: 'flex',
-      alignItems: 'center',
-      padding: '6px 10px',
-      backgroundColor: '#252525',
-      borderBottom: '1px solid #4a4a4a',
-      height: '36px'
-    }}>
-      {/* Render FileMenu and pass necessary props */}
-      <FileMenu
-        petriNetData={petriNetData}
-        onImport={onImport}
-        onSaveAs={handleSaveAs}
-        highlightTitle={highlightTitle}
-      />
-      {/* Remove hidden input and buttons */}
+    <div className="menu-bar">
+      <div ref={fileMenuRef} style={{ position: 'relative' }}>
+        <div className="menu-item" onClick={toggleFileMenu}>
+          File
+        </div>
+        {showFileMenu && (
+          <div className="dropdown-menu">
+            <div className="menu-item" onClick={() => openProjectInputRef.current?.click()}>Open Project...</div>
+            <input type="file" ref={openProjectInputRef} style={{ display: 'none' }} accept=".petri,.pats,.json" onChange={(e) => { onOpenProject(e); setShowFileMenu(false); }} />
+            
+            <div className="menu-item-separator"></div>
+            
+            <div className="menu-item" onClick={() => { onSaveProject(); setShowFileMenu(false); }}>Save Project</div>
+            <div className="menu-item" onClick={() => { onSaveProjectAs(); setShowFileMenu(false); }}>Save Project As...</div>
+            
+            <div className="menu-item-separator"></div>
+            
+            <div className="menu-item" onClick={() => importPagesInputRef.current?.click()}>Import Page(s)...</div>
+            <input type="file" ref={importPagesInputRef} style={{ display: 'none' }} accept=".page.json,.json" multiple onChange={(e) => { onImportPages(e); setShowFileMenu(false); }} />
+            
+            <div className="menu-item" onClick={(e) => toggleExportSubMenu(e)} ref={exportSubMenuRef}>
+              Export
+              {showExportSubMenu && (
+                <div className="dropdown-menu submenu">
+                  <div className="menu-item" onClick={() => { onExportActivePage(); setShowExportSubMenu(false); setShowFileMenu(false); }}>Export Active Page...</div>
+                  <div className="menu-item" onClick={() => { onExportProject(); setShowExportSubMenu(false); setShowFileMenu(false); }}>Export Project...</div>
+                </div>
+              )}
+            </div>
+            
+            <div className="menu-item-separator"></div>
+            
+            <div className="menu-item" onClick={() => { highlightTitle(); setShowFileMenu(false); }}>Edit Project Title</div>
+            
+            {/* Legacy Import Option */}
+            <div className="menu-item-separator"></div>
+            <div className="menu-item" onClick={() => legacyImportInputRef.current?.click()}>Import Legacy Petri File</div>
+            <input type="file" ref={legacyImportInputRef} style={{ display: 'none' }} accept=".json,.pats" onChange={handleLegacyFileOpen} />
+
+          </div>
+        )}
+      </div>
+      {/* Other top-level menus like Edit, View can be added here */}
     </div>
   );
-}; 
+} 
