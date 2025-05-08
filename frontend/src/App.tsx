@@ -78,13 +78,12 @@ export default function App() {
             setPages({ [initialPageId]: newPage });
             setPageOrder([initialPageId]);
             setActivePageId(initialPageId);
-            setProjectHasUnsavedChanges(false); // A brand new page is considered saved initially
-            setProjectFileHandle(null); // Ensure no stale handle for a new project
-            setOriginalFileNameFromInput(null); // Ensure no stale input file name for a new project
+            setProjectHasUnsavedChanges(false); 
+            setProjectFileHandle(null); 
+            setOriginalFileNameFromInput(null);
         }
-    }, [initialPersistedState]); // Runs once based on whether localStorage was initially populated.
+    }, [initialPersistedState]); 
 
-    // Effect for saving the application state to localStorage whenever key persisted states change
     useEffect(() => {
         const stateToSave: PersistedAppState = {
             pages,
@@ -1734,12 +1733,12 @@ export default function App() {
     // XVII. PROJECT/PAGE SAVE AND LOAD HANDLERS
     // =========================================================================================
     
-    // --- Updated Save Project As using FSA API with fallback ---
+    // --- Save Project As using FSA API with fallback ---
     const handleSaveProjectAs = async (suggestedFilename?: string) => {
         const filenameToSuggest = suggestedFilename || `${projectTitle.replace(/\s+/g, '_')}.petri`;
 
         const projectDataToSave: ProjectDTO = {
-            projectTitle: projectTitle, // Ensure ProjectDTO includes projectTitle
+            projectTitle: projectTitle,
             pages: pages,
             pageOrder: pageOrder,
             activePageId: activePageId,
@@ -1766,7 +1765,7 @@ export default function App() {
                 await writable.write(JSON.stringify(projectDataToSave, null, 2));
                 await writable.close();
                 
-                // Optional: Update projectTitle state if user saved with a different name
+                // Update projectTitle state if user saved with a different name
                 if (handle.name && handle.name !== filenameToSuggest && handle.name.endsWith('.petri')) {
                     const newTitle = handle.name.replace(/\.petri$/, '');
                     if (newTitle !== projectTitle) {
@@ -1775,16 +1774,15 @@ export default function App() {
                 }
                 
                 console.log("Project saved successfully as new file with File System Access API");
-                setProjectHasUnsavedChanges(false); // Project is now saved
-                setOriginalFileNameFromInput(null); // Clear original file name after successful Save As
+                setProjectHasUnsavedChanges(false); 
+                setOriginalFileNameFromInput(null); 
                 
             } catch (error: any) {
-                // Handle user cancellation (AbortError) or other errors
                 if (error.name !== 'AbortError') {
                     console.error("Error saving file with FSA API:", error);
                     alert(`Failed to save project file: ${error.message}`);
                 }
-                // Don't clear handle on cancel, user might want to try saving again
+                
             }
         }
         // Fallback Branch (Download)
@@ -1792,8 +1790,8 @@ export default function App() {
             console.warn("FSA API not supported, falling back to download.");
             setProjectFileHandle(null); 
             downloadJSON(projectDataToSave, filenameToSuggest);
-            setProjectHasUnsavedChanges(false); // Project is now saved (via download)
-            setOriginalFileNameFromInput(null); // Clear original file name after download Save As
+            setProjectHasUnsavedChanges(false);
+            setOriginalFileNameFromInput(null);
         }
     };
     
@@ -1813,7 +1811,7 @@ export default function App() {
                 let permStatus = await projectFileHandle.queryPermission({ mode: 'readwrite' });
 
                 if (permStatus === 'prompt') {
-                    // Request permission. This might show a prompt.
+                    // Request permission.
                     permStatus = await projectFileHandle.requestPermission({ mode: 'readwrite' });
                 }
 
@@ -1823,29 +1821,22 @@ export default function App() {
                     await writable.write(projectJsonString);
                     await writable.close();
                     console.log("Project saved successfully with File System Access API");
-                    setProjectHasUnsavedChanges(false); // Project is now saved
-                    setOriginalFileNameFromInput(null); // Clear original file name if we successfully saved with a handle
+                    setProjectHasUnsavedChanges(false);
+                    setOriginalFileNameFromInput(null); 
                 } else {
-                    // Permission was denied or not obtainable silently
                     console.warn("Write permission not granted. Falling back to Save As.");
                     alert("Could not save directly. Please choose a location to save the project.");
-                    await handleSaveProjectAs(projectFileHandle.name); // Suggest current handle's name
+                    await handleSaveProjectAs(projectFileHandle.name);
                 }
             } catch (error: any) { 
                 console.error("Error saving project with File System Access API:", error);
                 alert(`Failed to save project: ${error.message}. Trying Save As...`);
-                // Fallback to Save As if writing fails (e.g., permissions changed or other errors)
-                await handleSaveProjectAs(projectFileHandle.name); // Suggest current handle's name
+                await handleSaveProjectAs(projectFileHandle.name);
             }
         }
-        // If no handle, but we remember the original filename from an input-based open
         else if (originalFileNameFromInput) { 
-            // This will trigger a download with the original name pre-filled.
-            // The user still needs to confirm, but it's not a "Save As" from scratch.
             await handleSaveProjectAs(originalFileNameFromInput);
-            // handleSaveProjectAs will set projectHasUnsavedChanges to false and originalFileNameFromInput to null
         }
-        // If no handle and no remembered input filename, then it's a true "Save As" for a new project
         else {
             await handleSaveProjectAs(); 
         }
