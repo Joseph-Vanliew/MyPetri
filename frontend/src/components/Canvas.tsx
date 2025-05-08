@@ -45,6 +45,7 @@ interface CanvasProps {
     zoomLevel: number;
     panOffset: { x: number; y: number };
     onViewChange: (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => void;
+    onCenterView: () => void;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -202,14 +203,55 @@ export const Canvas = (props: CanvasProps) => {
             margin: 0,
             padding: 0,
             display: 'flex',
+            position: 'relative'
         }}>
+            {/* Center View Button - Absolutely Positioned */}
+            <button
+                onClick={props.onCenterView}
+                style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '10px',
+                    zIndex: 10, 
+                    padding: '5px',
+                    backgroundColor: 'rgba(42, 42, 42, 0.85)', 
+                    border: '1px solid rgba(255, 255, 255, 0.2)', 
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    outline: 'none' 
+                }}
+                onMouseOver={(e) => { 
+                    e.currentTarget.style.backgroundColor = 'rgba(60, 60, 60, 0.9)'; 
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                }}
+                onMouseOut={(e) => { 
+                     e.currentTarget.style.backgroundColor = 'rgba(42, 42, 42, 0.85)'; 
+                     e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                }}
+                title="Center Canvas"
+            >
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="white"> 
+                    <circle cx="8" cy="8" r="2"/>
+                    <path d="M3.5 3.5 L 7.5 7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="7.5,6.0 7.5,7.5 6.0,7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <path d="M12.5 3.5 L 8.5 7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="8.5,6.0 8.5,7.5 10.0,7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <path d="M3.5 12.5 L 7.5 8.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="6.0,8.5 7.5,8.5 7.5,10.0" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <path d="M12.5 12.5 L 8.5 8.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="10.0,8.5 8.5,8.5 8.5,10.0" stroke="white" strokeWidth="1.5" fill="none"/>
+                </svg>
+            </button>
+
             <svg
                 ref={svgRef}
                 className="petri-canvas"
                 width={dimensions.width}
                 height={dimensions.height}
                 viewBox={`${zoomAndPan.viewBox.x} ${zoomAndPan.viewBox.y} ${zoomAndPan.viewBox.w} ${zoomAndPan.viewBox.h}`}
-                onWheel={zoomAndPan.handleZoom}
                 onClick={handleSvgClick}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}

@@ -101,35 +101,63 @@ export function useZoomAndPan(
     setLastMouseY(e.clientY);
   }, [isPanning, lastMouseX, lastMouseY, viewBox, svgRef, onViewChange, baseWidth]);
   
-  const handleZoom = useCallback((e: React.WheelEvent<SVGSVGElement>) => {
-    if (!svgRef.current) return;
 
-    const direction = e.deltaY < 0 ? -1 : 1;
-    const currentZoom = baseWidth > 0 && viewBox.w > 0 ? baseWidth / viewBox.w : 1;
-    let newZoom = currentZoom * (1 - direction * zoomSensitivity); 
-    
-    newZoom = Math.max(minZoomFactor, Math.min(maxZoomFactor, newZoom));
+  const handleZoom = useCallback((/* e: React.WheelEvent<SVGSVGElement> */) => {
+  }, []); 
 
-    if (newZoom === currentZoom) return;
+  useEffect(() => {
+    const svgElement = svgRef.current;
+    if (!svgElement) return;
 
-    const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
-    
-    const aspectRatio = viewBox.h > 0 ? viewBox.w / viewBox.h : initialAspectRatio;
-    const newW = baseWidth / newZoom;
-    const newH = aspectRatio > 0 ? newW / aspectRatio : newW;
-    const percentX = viewBox.w !== 0 ? (coords.x - viewBox.x) / viewBox.w : 0;
-    const percentY = viewBox.h !== 0 ? (coords.y - viewBox.y) / viewBox.h : 0;
-    const newX = coords.x - percentX * newW;
-    const newY = coords.y - percentY * newH;
+    const wheelListener = (e: WheelEvent) => {
+        e.preventDefault();
 
-    const newVB = { x: newX, y: newY, w: newW, h: newH };
-    setViewBox(newVB);
+        const svg = svgRef.current;
+        if (!svg) return; // Re-check ref inside listener
 
-    if (onViewChange) {
-        onViewChange({ zoomLevel: newZoom, panOffset: { x: newX, y: newY } });
-    }
-  }, [viewBox, minZoomFactor, maxZoomFactor, zoomSensitivity, svgRef, onViewChange, baseWidth, initialAspectRatio]);
-  
+        const direction = e.deltaY < 0 ? -1 : 1;
+        
+        // Calculate current zoom based on the current viewBox state
+        const currentZoom = baseWidth > 0 && viewBox.w > 0 ? baseWidth / viewBox.w : 1;
+        let newZoom = currentZoom * (1 - direction * zoomSensitivity); 
+        
+        newZoom = Math.max(minZoomFactor, Math.min(maxZoomFactor, newZoom));
+
+        if (newZoom === currentZoom) return; // No change
+
+        // Get coordinates relative to SVG
+        const coords = screenToSVGCoordinates(e.clientX, e.clientY, svg);
+        
+        // Calculate new viewBox dimensions and position based on zoom point
+        const aspectRatio = viewBox.h > 0 ? viewBox.w / viewBox.h : initialAspectRatio;
+        const newW = baseWidth / newZoom;
+        const newH = aspectRatio > 0 ? newW / aspectRatio : newW;
+        const percentX = viewBox.w !== 0 ? (coords.x - viewBox.x) / viewBox.w : 0;
+        const percentY = viewBox.h !== 0 ? (coords.y - viewBox.y) / viewBox.h : 0;
+        const newX = coords.x - percentX * newW;
+        const newY = coords.y - percentY * newH;
+
+        const newVB = { x: newX, y: newY, w: newW, h: newH };
+        
+        // Update the state - triggers re-render
+        setViewBox(newVB);
+
+        // Notify parent component via callback
+        if (onViewChange) {
+            onViewChange({ zoomLevel: newZoom, panOffset: { x: newX, y: newY } });
+        }
+    };
+
+    // Add the listener (without passive: false for now)
+    svgElement.addEventListener('wheel', wheelListener);
+
+    // Cleanup function to remove the listener
+    return () => {
+      svgElement.removeEventListener('wheel', wheelListener);
+    };
+  // Dependencies: Include everything used inside the listener that comes from outside
+  }, [svgRef, viewBox, baseWidth, zoomSensitivity, minZoomFactor, maxZoomFactor, initialAspectRatio, onViewChange, setViewBox]); 
+
   return {
     viewBox,
     setViewBox,

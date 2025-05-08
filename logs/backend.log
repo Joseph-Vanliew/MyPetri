@@ -244,3 +244,1069 @@ DEBUG Place place_1746715739229_page_1746715736333: getCapacity() called, return
 DEBUG Place place_1746715742212_page_1746715736333: isBounded() called, returning false
 DEBUG Place place_1746715742212_page_1746715736333: getCapacity() called, returning null
 Validator: Received processedState.
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716786541_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+    - Place place_1746716788639_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 2
+Randomly selected transition: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716775091_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716786541_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 2
+Randomly selected transition: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716792990_page_1746716745088
+DEBUG Place place_1746716788639_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716775091_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716786541_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716792990_page_1746716745088
+DEBUG Place place_1746716788639_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716792990_page_1746716745088
+DEBUG Place place_1746716788639_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716775091_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716786541_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716792990_page_1746716745088
+DEBUG Place place_1746716788639_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716792990_page_1746716745088
+DEBUG Place place_1746716788639_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716775091_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716786541_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716792990_page_1746716745088
+DEBUG Place place_1746716788639_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716792990_page_1746716745088
+DEBUG Place place_1746716788639_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716775091_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716788639_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716779241_page_1746716745088
+DEBUG Place place_1746716773010_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716786541_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716790758_page_1746716745088
+DEBUG Place place_1746716786541_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 2, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+    - Place place_1746716773010_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+    - Place place_1746716775091_page_1746716745088: Has=2, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+    - Place place_1746716786541_page_1746716745088: Has=0, Needs=1. Condition (tokens < required): true
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716773010_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716775091_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716786541_page_1746716745088, Tokens: 0, Bounded: false, Capacity: null)
+DEBUG Mapper: Mapping PlaceDTO (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null
+DEBUG Mapper: Created Place Model (ID: place_1746716788639_page_1746716745088, Tokens: 1, Bounded: false, Capacity: null)
+    - Place place_1746716775091_page_1746716745088: Has=1, Needs=1. Condition (tokens < required): false
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+Number of enabled transitions: 1
+Only one transition enabled: trans_1746716781142_page_1746716745088
+DEBUG Place place_1746716775091_page_1746716745088: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1746716786541_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716786541_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716773010_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716773010_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716775091_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716775091_page_1746716745088: getCapacity() called, returning null
+DEBUG Place place_1746716788639_page_1746716745088: isBounded() called, returning false
+DEBUG Place place_1746716788639_page_1746716745088: getCapacity() called, returning null

@@ -8,7 +8,7 @@ interface MenuBarProps {
   onImport: (data: PetriNetDTO) => void;
   highlightTitle: () => void;
   // New handlers for project/page operations
-  onOpenProject: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onOpenProject: (event?: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveProject: () => void;
   onSaveProjectAs: () => void;
   onImportPages: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -89,7 +89,16 @@ export function MenuBar({
         </div>
         {showFileMenu && (
           <div className="dropdown-menu">
-            <div className="menu-item" onClick={() => openProjectInputRef.current?.click()}>Open Project...</div>
+            <div className="menu-item" onClick={() => {
+              if ('showOpenFilePicker' in window) {
+                onOpenProject(); // Call without event for FSA path
+                setShowFileMenu(false);
+              } else {
+                // FSA not available, trigger the input.
+                // The input's onChange will handle calling onOpenProject(event) and setShowFileMenu(false).
+                openProjectInputRef.current?.click();
+              }
+            }}>Open Project...</div>
             <input type="file" ref={openProjectInputRef} style={{ display: 'none' }} accept=".petri,.pats,.json" onChange={(e) => { onOpenProject(e); setShowFileMenu(false); }} />
             
             <div className="menu-item-separator"></div>

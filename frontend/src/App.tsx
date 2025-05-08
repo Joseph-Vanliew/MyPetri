@@ -20,6 +20,7 @@ export default function App() {
     const [pageOrder, setPageOrder] = useState<string[]>([]);
     // Add state for the overall project title
     const [projectTitle, setProjectTitle] = useState<string>("Untitled MyPetri Project");
+    const [projectFileHandle, setProjectFileHandle] = useState<FileSystemFileHandle | null>(null); // State for FSA API handle
 
     // ===== TRANSIENT STATE (for active page's last interaction) =====
     const [currentFiredTransitions, setCurrentFiredTransitions] = useState<string[]>([]);
@@ -579,7 +580,7 @@ export default function App() {
                 const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
                 const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
                 const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
-                // --- End History Update ---
+
                 return {
                     ...prevPages,
                     [activePageId!]: {
@@ -873,11 +874,11 @@ export default function App() {
             };
         });
 
-    } catch (error) {
-        console.error('Simulation error:', error);
+        } catch (error) {
+            console.error('Simulation error:', error);
         // TODO: Optionally set an error state here to display to the user
-    }
-};
+        }
+    };
 
     const handleReset = async () => {
         if (!activePageId || !pages[activePageId]) {
@@ -1115,28 +1116,28 @@ export default function App() {
         // Ensure all fields of PetriNetPageData are present, using defaults where necessary
         const loadedPlaces: UIPlace[] = (pageToLoad.places || []).map(place => ({ 
             id: place.id || `place_${Date.now()}_${newPageId}`, 
-            name: place.name || '', 
+            name: place.name || '',
             tokens: place.tokens || 0,
             x: place.x ?? Math.random() * 500 + 100, 
             y: place.y ?? Math.random() * 300 + 100,
-            radius: place.radius ?? 46, 
-            bounded: place.bounded ?? false, 
+            radius: place.radius ?? 46,
+            bounded: place.bounded ?? false,
             capacity: place.capacity ?? null
         }));
         const loadedTransitions: UITransition[] = (pageToLoad.transitions || []).map(transition => ({ 
              id: transition.id || `trans_${Date.now()}_${newPageId}`, 
-             name: transition.name || '', 
+            name: transition.name || '',
              enabled: transition.enabled ?? false,
              arcIds: transition.arcIds || [], 
              x: transition.x ?? Math.random() * 500 + 200,
              y: transition.y ?? Math.random() * 300 + 200, 
-             width: transition.width ?? 120, 
-             height: transition.height ?? 54
+            width: transition.width ?? 120,
+            height: transition.height ?? 54
         }));
         const loadedArcs: UIArc[] = (pageToLoad.arcs || []).map(arc => ({ 
              id: arc.id || `arc_${Date.now()}_${newPageId}`, 
              type: arc.type ?? 'REGULAR', 
-             incomingId: arc.incomingId, 
+            incomingId: arc.incomingId,
              outgoingId: arc.outgoingId
         }));
 
@@ -1203,31 +1204,79 @@ export default function App() {
         processLoadedData(partialPageData, "Imported Page");
     };
 
-    const handleOpenProject = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+    // --- Updated Open Project using FSA API with fallback --- 
+    const handleOpenProject = async (event?: React.ChangeEvent<HTMLInputElement>) => {
+        // Fallback Branch: Executed if an event is provided (meaning called from input element)
+        if (event && event.target && event.target.files && event.target.files[0]) {
+            setProjectFileHandle(null); // Cannot get a persistent handle via input
+            const file = event.target.files[0];
+            try {
+                const contents = await file.text();
+                const projectData = JSON.parse(contents) as ProjectDTO;
+                
+                if (!projectData || typeof projectData.projectTitle !== 'string' || !projectData.pages || !projectData.pageOrder) {
+                  throw new Error('Invalid project file format.');
+                }
 
-        try {
-            const projectData = await readJSONFile(file) as ProjectDTO;
-            // Basic validation (can be expanded)
-            if (!projectData || !projectData.pages || !projectData.pageOrder || typeof projectData.projectTitle !== 'string') {
-                alert('Invalid project file format.');
-                return;
+                setProjectTitle(projectData.projectTitle || file.name.replace(/\.[^/.]+$/, ""));
+                setPages(projectData.pages || {});
+                setPageOrder(projectData.pageOrder || []);
+                setActivePageId(projectData.activePageId || (projectData.pageOrder?.[0] ?? null));
+                setCurrentFiredTransitions([]);
+                clearClipboard(); 
+
+            } catch (error: any) {
+                console.error("Error opening project from input:", error);
+                alert(`Failed to open project file: ${error.message}`);
             }
+            // Reset file input value
+            if (event.target) event.target.value = '';
+        }
+        // FSA API Branch: Executed if no event is provided AND API is available
+        else if ('showOpenFilePicker' in window) {
+            try {
+                const [handle] = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'Petri Net Projects',
+                            accept: {
+                                'application/json': ['.petri', '.pats', '.json']
+                            }
+                        },
+                    ],
+                    excludeAcceptAllOption: true,
+                    multiple: false,
+                });
 
-            // Clear existing project state
-            setProjectTitle(projectData.projectTitle);
-            setPages(projectData.pages); // Directly set the pages from the project
-            setPageOrder(projectData.pageOrder);
-            setActivePageId(projectData.activePageId || (projectData.pageOrder.length > 0 ? projectData.pageOrder[0] : null));
-            setCurrentFiredTransitions([]);
-            clearClipboard(); // Clear clipboard for the new project
+                setProjectFileHandle(handle); // Store the handle
+                const file = await handle.getFile();
+                const contents = await file.text();
+                const projectData = JSON.parse(contents) as ProjectDTO;
 
-            // Reset file input value to allow re-opening the same file if needed
-            event.target.value = '';
-        } catch (error) {
-            console.error("Error opening project:", error);
-            alert("Failed to open project file. Ensure it is a valid .pats.json file.");
+                if (!projectData || typeof projectData.projectTitle !== 'string' || !projectData.pages || !projectData.pageOrder) {
+                  throw new Error('Invalid project file format.');
+                }
+
+                setProjectTitle(projectData.projectTitle || file.name.replace(/\.[^/.]+$/, ""));
+                setPages(projectData.pages || {});
+                setPageOrder(projectData.pageOrder || []);
+                setActivePageId(projectData.activePageId || (projectData.pageOrder?.[0] ?? null));
+                setCurrentFiredTransitions([]);
+                clearClipboard(); 
+
+            } catch (error: any) {
+                 if (error.name !== 'AbortError') {
+                     console.error("Error opening file with FSA API:", error);
+                     alert(`Failed to open project file: ${error.message}`);
+                 }
+                 setProjectFileHandle(null); // Clear handle on any FSA error/cancel
+            }
+        } 
+        // Error Case: No event, and FSA API not supported.
+        // This shouldn't be reached if MenuBar logic is correct.
+        else {
+            console.error("handleOpenProject: FSA not available and no input event provided. This indicates an issue in the calling logic (e.g., MenuBar).");
+            alert("File open functionality is not available. Your browser might be outdated or not support this feature.");
         }
     };
 
@@ -1531,6 +1580,35 @@ export default function App() {
         });
     };
 
+    // ===== VIEW HANDLERS =====
+    const handleCenterView = () => {
+      if (!activePageId) return;
+
+      // default centered view
+      const defaultZoom = 1.0;
+      const defaultPanOffset = { x: -750, y: -421.875 }; 
+
+      setPages(prev => {
+        if (!prev[activePageId!]) return prev;
+        const currentPage = prev[activePageId!];
+
+        if (currentPage.zoomLevel === defaultZoom && 
+            currentPage.panOffset?.x === defaultPanOffset.x &&
+            currentPage.panOffset?.y === defaultPanOffset.y) {
+           return prev; 
+        }
+        
+        return {
+          ...prev,
+          [activePageId!]: {
+            ...currentPage,
+            zoomLevel: defaultZoom,
+            panOffset: defaultPanOffset
+          }
+        };
+      });
+    };
+
     // ===== FILE UTILITY FUNCTIONS =====
     const downloadJSON = (data: object, filename: string) => {
         const json = JSON.stringify(data, null, 2);
@@ -1566,8 +1644,9 @@ export default function App() {
     };
 
     // ===== PROJECT/PAGE SAVE AND LOAD HANDLERS =====
-    const handleSaveProjectAs = (suggestedFilename?: string) => {
-        const filename = suggestedFilename || projectTitle.replace(/[^a-z0-9_\-\s]/gi, '_').replace(/\s+/g, '-') + '.petri' || 'project.petri';
+    
+    // --- Updated Save Project As using FSA API with fallback ---
+    const handleSaveProjectAs = async (suggestedFilename?: string) => {
         const projectData: ProjectDTO = {
             projectTitle,
             pages,
@@ -1575,13 +1654,87 @@ export default function App() {
             activePageId,
             version: '1.0.0' // Example version
         };
-        downloadJSON(projectData, filename);
-    };
+        const projectJsonString = JSON.stringify(projectData, null, 2);
 
-    const handleSaveProject = () => {
-        // For now, Save behaves like Save As. 
-        // True "Save" to an existing file path is complex for web apps.
-        handleSaveProjectAs(); 
+        // Suggest filename based on current title, ensuring .petri extension
+        const defaultFilename = projectTitle.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9_\-\s]/gi, '_').replace(/\s+/g, '-') || 'project';
+        const finalSuggestedName = suggestedFilename || `${defaultFilename}.petri`;
+
+        // FSA API Branch
+        if ('showSaveFilePicker' in window) {
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: finalSuggestedName,
+                    types: [
+                        {
+                            description: 'Petri Net Project',
+                            accept: {
+                                'application/json': ['.petri'],
+                            },
+                        },
+                    ],
+                });
+                
+                setProjectFileHandle(handle); // Store the handle for future Saves
+                const writable = await handle.createWritable();
+                await writable.write(projectJsonString);
+                await writable.close();
+                
+                // Optional: Update projectTitle state if user saved with a different name
+                if (handle.name && handle.name !== finalSuggestedName && handle.name.endsWith('.petri')) {
+                    const newTitle = handle.name.replace(/\.petri$/, '');
+                    if (newTitle !== projectTitle) {
+                        setProjectTitle(newTitle);
+                    }
+                }
+                
+            } catch (error: any) {
+                // Handle user cancellation (AbortError) or other errors
+                if (error.name !== 'AbortError') {
+                    console.error("Error saving file with FSA API:", error);
+                    alert(`Failed to save project file: ${error.message}`);
+                }
+                // Don't clear handle on cancel, user might want to try saving again
+            }
+        }
+        // Fallback Branch (Download)
+        else {
+            console.warn("FSA API not supported, falling back to download.");
+            setProjectFileHandle(null); // Cannot keep handle with download method
+            downloadJSON(projectData, finalSuggestedName);
+        }
+    };
+    
+    // --- Updated Save Project using FSA API handle if available ---
+    const handleSaveProject = async () => {
+        // If we have a handle and the API is supported, attempt silent save
+        if (projectFileHandle && 'createWritable' in projectFileHandle) {
+            try {
+                const projectData: ProjectDTO = {
+                    projectTitle,
+                    pages,
+                    pageOrder,
+                    activePageId,
+                    version: '1.0.0' 
+                };
+                const projectJsonString = JSON.stringify(projectData, null, 2);
+                
+                const writable = await projectFileHandle.createWritable();
+                await writable.write(projectJsonString);
+                await writable.close();
+                // Optional: Add visual feedback for successful save (e.g., toast message)
+                console.log('Project saved successfully using FileSystemFileHandle.');
+            } catch(error: any) {
+                 console.error("Error saving file with existing handle:", error);
+                 alert(`Failed to save project: ${error.message}. Trying Save As...`);
+                 // Fallback to Save As if writing fails (e.g., permissions changed)
+                 await handleSaveProjectAs(); 
+            }
+        }
+        // If no handle or API not supported, behave like Save As
+        else {
+            await handleSaveProjectAs(); 
+        }
     };
 
     const handleExportActivePage = (suggestedFilename?: string) => {
@@ -1768,7 +1921,7 @@ export default function App() {
                             onSelectTool={setSelectedTool} 
                             arcType={arcType}
                             onUpdateToken={handleTokenUpdate}
-                            onTypingChange={handleTypingChange} 
+                            onTypingChange={handleTypingChange}
                             onUpdateName={handleNameUpdate}
                             conflictResolutionMode={activePageData?.conflictResolutionMode ?? false}
                             conflictingTransitions={activePageData?.conflictingTransitions || []}
@@ -1779,6 +1932,7 @@ export default function App() {
                             zoomLevel={activePageData?.zoomLevel ?? 1}
                             panOffset={activePageData?.panOffset ?? {x: 0, y: 0}}
                             onViewChange={handleViewChange}
+                            onCenterView={handleCenterView} // Pass the handler
                         />
                     </div>
                     
@@ -1806,7 +1960,7 @@ export default function App() {
                     {/* Conditionally render TabbedPanel */}
                     {petriNetDTO && (
                     <TabbedPanel 
-                            data={petriNetDTO} 
+                        data={petriNetDTO}
                         onValidationResult={handleValidationResult}
                             selectedElements={activePageData?.selectedElements || []}
                         autoScrollEnabled={autoScrollEnabled}
