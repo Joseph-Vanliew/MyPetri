@@ -9,65 +9,60 @@ import { API_ENDPOINTS } from './utils/api';
 import { TabbedPanel } from './components/TabbedPanel';
 import { useClipboard } from './hooks/useClipboard';
 import { PagesComponent } from './components/PagesComponent';
+import { loadAppState, saveAppState, PersistedAppState } from './hooks/appPersistence';
 
-// Define max history length
-const MAX_HISTORY_LENGTH = 50; 
+const MAX_HISTORY_LENGTH = 50;
+
+const initialPersistedState = loadAppState();
 
 export default function App() {
-    // ===== NEW MULTI-PAGE STATE MANAGEMENT =====
-    const [pages, setPages] = useState<Record<string, PetriNetPageData>>({});
-    const [activePageId, setActivePageId] = useState<string | null>(null);
-    const [pageOrder, setPageOrder] = useState<string[]>([]);
-    // Add state for the overall project title
-    const [projectTitle, setProjectTitle] = useState<string>("Untitled MyPetri Project");
-    const [projectFileHandle, setProjectFileHandle] = useState<FileSystemFileHandle | null>(null); // State for FSA API handle
+    // =========================================================================================
+    // I. STATE MANAGEMENT
+    // =========================================================================================
+    
+    // ----- Core Application State (Persisted via localStorage) -----
+    const [pages, setPages] = useState<Record<string, PetriNetPageData>>(
+        initialPersistedState?.pages || {}
+    );
+    const [activePageId, setActivePageId] = useState<string | null>(
+        initialPersistedState?.activePageId || null
+    );
+    const [pageOrder, setPageOrder] = useState<string[]>(
+        initialPersistedState?.pageOrder || []
+    );
+    const [projectTitle, setProjectTitle] = useState<string>(
+        initialPersistedState?.projectTitle || "Untitled MyPetri Project"
+    );
+    const [projectHasUnsavedChanges, setProjectHasUnsavedChanges] = useState<boolean>(
+        initialPersistedState?.projectHasUnsavedChanges || false
+    );
+    // projectFileHandle is not persisted due to its nature.
+    const [projectFileHandle, setProjectFileHandle] = useState<FileSystemFileHandle | null>(null);
 
-    // ===== TRANSIENT STATE (for active page's last interaction) =====
+    // ----- Transient UI & Interaction State (Not Persisted) -----
     const [currentFiredTransitions, setCurrentFiredTransitions] = useState<string[]>([]);
-    // const [currentAnimatingTransitions, setCurrentAnimatingTransitions] = useState<Record<string, boolean>>({}); // Keep commented for now
-
-    // ===== EXISTING GLOBAL/APP-LEVEL STATE (to be kept for now) =====
     const [selectedTool, setSelectedTool] = useState<'NONE' |'PLACE' | 'TRANSITION' | 'ARC'>('NONE');
     const [arcType, setArcType] = useState<UIArc['type']>('REGULAR');
-    const [isTyping, setIsTyping] = useState(false);
+    const [isTyping, setIsTyping] = useState(false); // Tracks if user is typing in an input field to prevent shortcut collisions
     const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
-    const [currentMode, setCurrentMode] = useState('select'); // Derived from selectedTool, might be removable later
+    const [currentMode, setCurrentMode] = useState('select');
     const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false);
     
-    // Refs will likely remain global or need context if used by children extensively
+    // ----- Refs for Direct DOM Access or Persistent Mutable Values -----
     const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
-    const titleRef = useRef<EditableTitleRef>(null); // This will interact with activePageData.title
+    const titleRef = useRef<EditableTitleRef>(null); // Ref for the main project title editor
 
-    // ===== REMOVED SINGLE-NET STATE =====
-    /*
-    const [places, setPlaces] = useState<UIPlace[]>([]);
-    const [transitions, setTransitions] = useState<UITransition[]>([]);
-    const [arcs, setArcs] = useState<UIArc[]>([]);
-    const [selectedElements, setSelectedElements] = useState<string[]>([]); // Now in PetriNetPageData
-    const [deterministicMode, setDeterministicMode] = useState(false); // Now in PetriNetPageData
-    const [conflictResolutionMode, setConflictResolutionMode] = useState(false); // Now in PetriNetPageData
-    const [conflictingTransitions, setConflictingTransitions] = useState<string[]>([]); // Now in PetriNetPageData
-    const [title, setTitle] = useState<string>("Untitled Petri Net"); // Now in PetriNetPageData
-    const [firedTransitions, setFiredTransitions] = useState<string[]>([]); // Replaced by currentFiredTransitions
-    const [animatingTransitions, setAnimatingTransitions] = useState<Record<string, boolean>>({}); // Replaced by currentAnimatingTransitions (if used)
-    const [history, setHistory] = useState<{
-        places: UIPlace[][],
-        transitions: UITransition[][],
-        arcs: UIArc[][]
-    }>({
-        places: [],
-        transitions: [],
-        arcs: []
-    }); // Now in PetriNetPageData
-    */
+    // =========================================================================================
+    // II. INITIALIZATION & PERSISTENCE EFFECTS
+    // =========================================================================================
 
-    // ===== INITIAL PAGE CREATION =====
+    // Effect for creating an initial page if no state was loaded from localStorage
     useEffect(() => {
-        if (Object.keys(pages).length === 0 && pageOrder.length === 0) {
+        if (Object.keys(pages).length === 0 && pageOrder.length === 0 && !initialPersistedState) {
             const initialPageId = `page_${Date.now()}`;
             const newPage: PetriNetPageData = {
                 id: initialPageId,
-                title: "Page 1", // Default page title
+                title: "Page 1",
                 places: [],
                 transitions: [],
                 arcs: [],
@@ -82,137 +77,29 @@ export default function App() {
             setPages({ [initialPageId]: newPage });
             setPageOrder([initialPageId]);
             setActivePageId(initialPageId);
+            setProjectHasUnsavedChanges(false); // A brand new page is considered saved initially
         }
-    }, [pages, pageOrder]); // Added pageOrder dependency for safety
+    }, [initialPersistedState]); // Runs once based on whether localStorage was initially populated.
 
-    // ===== DERIVED STATE FOR ACTIVE PAGE ( Placeholder - Step III.1 ) =====
+    // Effect for saving the application state to localStorage whenever key persisted states change
+    useEffect(() => {
+        const stateToSave: PersistedAppState = {
+            pages,
+            activePageId,
+            pageOrder,
+            projectTitle,
+            projectHasUnsavedChanges,
+        };
+        saveAppState(stateToSave);
+    }, [pages, activePageId, pageOrder, projectTitle, projectHasUnsavedChanges]);
+
+    // =========================================================================================
+    // III. DERIVED STATE & MEMOIZED VALUES
+    // =========================================================================================
+    // Memoized data for the currently active page
     const activePageData = useMemo(() => activePageId ? pages[activePageId] : null, [pages, activePageId]);
-
-    // ===== HANDLERS AND EFFECTS =====
     
-    const handleHighlightTitle = () => {
-        if (titleRef.current) {
-            titleRef.current.startEditing();
-        }
-    };
-    
-    // ===== HISTORY HANDLERS =====
-    // Re-introducing saveToHistory specifically for drag start
-    const saveToHistory = useCallback((pageDataToSave: PetriNetPageData) => { 
-        if (!activePageId) return; 
-
-        const { places, transitions, arcs, history, title } = pageDataToSave; 
-        const currentHistory = history || { places: [], transitions: [], arcs: [], title: [] };
-        
-        const currentPlacesState = JSON.parse(JSON.stringify(places));
-        const currentTransitionsState = JSON.parse(JSON.stringify(transitions));
-        const currentArcsState = JSON.parse(JSON.stringify(arcs));
-        const currentTitleState = title;
-
-        const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
-        const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
-        const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
-        const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
-
-        setPages(prevPages => {
-            if (!prevPages[activePageId!]) return prevPages;
-            return {
-                ...prevPages,
-                [activePageId!]: {
-                    ...prevPages[activePageId!],
-                    history: {
-                        places: nextPlacesHistory,
-                        transitions: nextTransitionsHistory,
-                        arcs: nextArcsHistory,
-                        title: nextTitleHistory
-                    }
-                }
-            };
-        });
-    }, [activePageId, setPages]);
-    
-    const handleUndo = useCallback(() => {
-        if (!activePageId || !activePageData) return; 
-        const currentHistory = activePageData.history || { places: [], transitions: [], arcs: [], title: [] };
-        if (currentHistory.places.length === 0) return; 
-        const placesToRestore = currentHistory.places[currentHistory.places.length - 1];
-        const transitionsToRestore = currentHistory.transitions[currentHistory.transitions.length - 1];
-        const arcsToRestore = currentHistory.arcs[currentHistory.arcs.length - 1];
-        const titleToRestore = currentHistory.title[currentHistory.title.length - 1];
-        const nextPlacesHistory = currentHistory.places.slice(0, -1);
-        const nextTransitionsHistory = currentHistory.transitions.slice(0, -1);
-        const nextArcsHistory = currentHistory.arcs.slice(0, -1);
-        const nextTitleHistory = currentHistory.title.slice(0, -1);
-        setPages(prevPages => ({
-            ...prevPages,
-            [activePageId!]: {
-                ...prevPages[activePageId!],
-                title: titleToRestore ?? prevPages[activePageId!].title, 
-                places: placesToRestore,
-                transitions: transitionsToRestore,
-                arcs: arcsToRestore,
-                history: {
-                    places: nextPlacesHistory,
-                    transitions: nextTransitionsHistory,
-                    arcs: nextArcsHistory,
-                    title: nextTitleHistory
-                },
-                selectedElements: [], 
-            }
-        }));
-        setCurrentFiredTransitions([]);
-    }, [activePageId, activePageData, setPages]);
-
-    
-    const { handleCopy, handlePaste, clearClipboard } = useClipboard({
-        places: activePageData?.places || [],
-        transitions: activePageData?.transitions || [],
-        arcs: activePageData?.arcs || [],
-        selectedElements: activePageData?.selectedElements || [],
-        setPlaces: (updater) => {
-            if (!activePageId) return;
-            setPages(prev => {
-                if (!prev[activePageId!]) return prev;
-                const currentPlaces = prev[activePageId!].places;
-                const newPlaces = typeof updater === 'function' ? updater(currentPlaces) : updater;
-                return { ...prev, [activePageId!]: { ...prev[activePageId!], places: newPlaces } };
-            });
-        },
-        setTransitions: (updater) => {
-            if (!activePageId) return;
-            setPages(prev => {
-                if (!prev[activePageId!]) return prev;
-                const currentTransitions = prev[activePageId!].transitions;
-                const newTransitions = typeof updater === 'function' ? updater(currentTransitions) : updater;
-                return { ...prev, [activePageId!]: { ...prev[activePageId!], transitions: newTransitions } };
-            });
-        },
-        setArcs: (updater) => {
-            if (!activePageId) return;
-            setPages(prev => {
-                if (!prev[activePageId!]) return prev;
-                const currentArcs = prev[activePageId!].arcs;
-                const newArcs = typeof updater === 'function' ? updater(currentArcs) : updater;
-                return { ...prev, [activePageId!]: { ...prev[activePageId!], arcs: newArcs } };
-            });
-        },
-        setSelectedElements: (updater) => {
-            if (!activePageId) return;
-            setPages(prev => {
-                if (!prev[activePageId!]) return prev;
-                const currentSelected = prev[activePageId!].selectedElements;
-                const newSelected = typeof updater === 'function' ? updater(currentSelected) : updater;
-                return { ...prev, [activePageId!]: { ...prev[activePageId!], selectedElements: newSelected } };
-            });
-        },
-        saveToHistory: () => {
-            if (activePageData) {
-                 saveToHistory(activePageData); // Call the re-introduced function
-            }
-        }, 
-    });
-
-    // ===== DERIVED STATE / CONSTANTS =====
+    // Memoized DTO for the active Petri net (e.g., for simulation, validation, export)
     const petriNetDTO: PetriNetDTO | null = useMemo(() => {
         if (!activePageData) return null;
             return {
@@ -248,31 +135,168 @@ export default function App() {
     }, [activePageData]);
 
     const currentProjectDTO: ProjectDTO | null = useMemo(() => {
-        // Construct the full project DTO to pass to the MenuBar
-        // It can be null if there are no pages yet, or represent the current state.
-        if (Object.keys(pages).length === 0 && !projectTitle) return null; // Or a default initial project DTO
+
+        if (Object.keys(pages).length === 0 && !projectTitle) return null;
 
         return {
             projectTitle,
             pages,
             pageOrder,
             activePageId,
-            version: '1.0.0' // Consistent with save logic
+            version: '1.0.0' 
         };
     }, [projectTitle, pages, pageOrder, activePageId]);
 
-    // ===== EVENT HANDLERS =====
+    // =========================================================================================
+    // IV. HISTORY MANAGEMENT (Undo & State Snapshots)
+    // =========================================================================================
+    
+    // Callback to save the current state of a page to its history stack
+    // Primarily used before operations that modify elements directly (drag, resize) or for explicit history points.
+    const saveToHistory = useCallback((pageDataToSave: PetriNetPageData) => { 
+        if (!activePageId) return; 
+
+        const { places, transitions, arcs, history, title } = pageDataToSave; 
+        const currentHistory = history || { places: [], transitions: [], arcs: [], title: [] };
+        
+        const currentPlacesState = JSON.parse(JSON.stringify(places));
+        const currentTransitionsState = JSON.parse(JSON.stringify(transitions));
+        const currentArcsState = JSON.parse(JSON.stringify(arcs));
+        const currentTitleState = title;
+
+        const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
+        const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
+        const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+        const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
+
+        setPages(prevPages => {
+            if (!prevPages[activePageId!]) return prevPages;
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...prevPages[activePageId!],
+                    history: {
+                        places: nextPlacesHistory,
+                        transitions: nextTransitionsHistory,
+                        arcs: nextArcsHistory,
+                        title: nextTitleHistory
+                    }
+                }
+            };
+        });
+        // setProjectHasUnsavedChanges(true); // Individual actions triggering history save will set this
+    }, [activePageId, setPages]);
+    
+    // Handler for the Undo action
+    const handleUndo = useCallback(() => {
+        if (!activePageId || !activePageData) return; 
+        const currentHistory = activePageData.history || { places: [], transitions: [], arcs: [], title: [] };
+        if (currentHistory.places.length === 0) return; 
+        const placesToRestore = currentHistory.places[currentHistory.places.length - 1];
+        const transitionsToRestore = currentHistory.transitions[currentHistory.transitions.length - 1];
+        const arcsToRestore = currentHistory.arcs[currentHistory.arcs.length - 1];
+        const titleToRestore = currentHistory.title[currentHistory.title.length - 1];
+        const nextPlacesHistory = currentHistory.places.slice(0, -1);
+        const nextTransitionsHistory = currentHistory.transitions.slice(0, -1);
+        const nextArcsHistory = currentHistory.arcs.slice(0, -1);
+        const nextTitleHistory = currentHistory.title.slice(0, -1);
+        setPages(prevPages => ({
+            ...prevPages,
+            [activePageId!]: {
+                ...prevPages[activePageId!],
+                title: titleToRestore ?? prevPages[activePageId!].title, 
+                places: placesToRestore,
+                transitions: transitionsToRestore,
+                arcs: arcsToRestore,
+                history: {
+                    places: nextPlacesHistory,
+                    transitions: nextTransitionsHistory,
+                    arcs: nextArcsHistory,
+                    title: nextTitleHistory
+                },
+                selectedElements: [], 
+            }
+        }));
+        setCurrentFiredTransitions([]);
+        setProjectHasUnsavedChanges(true);
+    }, [activePageId, activePageData, setPages]);
+
+    // =========================================================================================
+    // V. CLIPBOARD FUNCTIONALITY (Copy, Paste)
+    // =========================================================================================
+    const { handleCopy, handlePaste, clearClipboard } = useClipboard({
+        places: activePageData?.places || [],
+        transitions: activePageData?.transitions || [],
+        arcs: activePageData?.arcs || [],
+        selectedElements: activePageData?.selectedElements || [],
+        setPlaces: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentPlaces = prev[activePageId!].places;
+                const newPlaces = typeof updater === 'function' ? updater(currentPlaces) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], places: newPlaces } };
+            });
+            setProjectHasUnsavedChanges(true);
+        },
+        setTransitions: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentTransitions = prev[activePageId!].transitions;
+                const newTransitions = typeof updater === 'function' ? updater(currentTransitions) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], transitions: newTransitions } };
+            });
+            setProjectHasUnsavedChanges(true);
+        },
+        setArcs: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentArcs = prev[activePageId!].arcs;
+                const newArcs = typeof updater === 'function' ? updater(currentArcs) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], arcs: newArcs } };
+            });
+            setProjectHasUnsavedChanges(true);
+        },
+        setSelectedElements: (updater) => {
+            if (!activePageId) return;
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentSelected = prev[activePageId!].selectedElements;
+                const newSelected = typeof updater === 'function' ? updater(currentSelected) : updater;
+                return { ...prev, [activePageId!]: { ...prev[activePageId!], selectedElements: newSelected } };
+            });
+        },
+        saveToHistory: () => {
+            if (activePageData) {
+                 saveToHistory(activePageData);
+                 setProjectHasUnsavedChanges(true);
+            }
+        }, 
+    });
+
+    // =========================================================================================
+    // VI. GENERAL UI HANDLERS
+    // =========================================================================================
+    const handleHighlightTitle = () => {
+        if (titleRef.current) {
+            titleRef.current.startEditing();
+        }
+    };
+
     const handleTypingChange = (typing: boolean) => {
         setIsTyping(typing);
     };
 
-    // ===== EFFECTS =====
+    // =========================================================================================
+    // VII. KEYBOARD SHORTCUTS & GLOBAL EVENT LISTENERS
+    // =========================================================================================
     useEffect(() => {
         function handleKeyDown(e: KeyboardEvent) {
             if (isTyping) return;
             const isModifier = e.metaKey || e.ctrlKey; 
 
-            // Use hook handlers
             if (isModifier && e.key === 'c') { 
                 e.preventDefault();
                 handleCopy(); 
@@ -298,9 +322,6 @@ export default function App() {
             
             const handleDeleteLocal = () => {
                 if (!activePageId || !activePageData || activePageData.selectedElements.length === 0) return;
-                 
-                // History saving is integrated into setPages now
-                // saveToHistory(activePageData); // REMOVE this standalone call
 
                 setPages(prevPages => {
                     const currentPage = prevPages[activePageId!];
@@ -350,12 +371,12 @@ export default function App() {
 
                     // Construct the full updated page state
                     const updatedPageData: PetriNetPageData = {
-                        ...currentPage, // Keep id, title, mode, view state etc.
+                        ...currentPage,
                         places: updatedPlaces,
                         transitions: updatedTransitions,
                         arcs: updatedArcs,
-                        selectedElements: [], // Clear selection
-                        history: nextHistory  // Set updated history
+                        selectedElements: [],
+                        history: nextHistory  
                     };
 
                     return {
@@ -363,6 +384,7 @@ export default function App() {
                         [activePageId!]: updatedPageData
                     };
                 });
+                setProjectHasUnsavedChanges(true);
             };
 
             if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -381,11 +403,9 @@ export default function App() {
     }, [
         isTyping, 
         selectedTool, 
-        activePageData, // For reading selectedElements inside handleDeleteLocal & conditions
-        pages, // For setPages call in handleDeleteLocal & clearActivePageSelection
-        // handleCopy, handlePaste, handleUndo, saveToHistory will be added back once adapted
+        activePageData,
+        pages,
         setSelectedTool,
-        // Removed clearActivePageSelection from deps as it's defined in App scope and doesn't change
     ]);
 
     useEffect(() => {
@@ -400,7 +420,9 @@ export default function App() {
         }
     }, [selectedTool]);
 
-    // ===== ARC MANAGEMENT =====
+    // =========================================================================================
+    // VIII. ARC MANAGEMENT
+    // =========================================================================================
     const handleArcPortClick = (clickedId: string) => {
         if (!activePageId || !activePageData) return;
         const currentSelectedElements = activePageData.selectedElements;
@@ -468,6 +490,7 @@ export default function App() {
                         }
                     };
                 });
+                setProjectHasUnsavedChanges(true);
             } else {
                 console.warn('Invalid arc connection');
                 clearActivePageSelection(); 
@@ -547,6 +570,7 @@ export default function App() {
                         }
                     };
                  });
+                 setProjectHasUnsavedChanges(true);
             } else {
                 console.warn(`Invalid arc from ${sourceId} to ${targetId} (${arcType}).`);
                 clearActivePageSelection(); 
@@ -559,7 +583,7 @@ export default function App() {
             clearActivePageSelection();
             return;
         }
-        if (!activePageId) return; // Only need activePageId now
+        if (!activePageId) return;
 
         if (selectedTool === 'PLACE') {
             const newPlace: UIPlace = {
@@ -570,7 +594,6 @@ export default function App() {
             setPages(prevPages => {
                 const currentPage = prevPages[activePageId!];
                 if (!currentPage) return prevPages;
-                // --- Integrate History Update ---
                 const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], title: [] };
                 const currentPlacesState = JSON.parse(JSON.stringify(currentPage.places));
                 const currentTransitionsState = JSON.parse(JSON.stringify(currentPage.transitions));
@@ -585,8 +608,8 @@ export default function App() {
                     ...prevPages,
                     [activePageId!]: {
                         ...currentPage,
-                        places: [...currentPage.places, newPlace], // Apply change
-                        history: { // Save new history
+                        places: [...currentPage.places, newPlace], 
+                        history: {
                             places: nextPlacesHistory,
                             transitions: nextTransitionsHistory,
                             arcs: nextArcsHistory,
@@ -596,6 +619,7 @@ export default function App() {
                 };
             });
             setSelectedTool('NONE');
+            setProjectHasUnsavedChanges(true);
 
         } else if (selectedTool === 'TRANSITION') {
             const newTransition: UITransition = {
@@ -605,7 +629,6 @@ export default function App() {
              setPages(prevPages => {
                 const currentPage = prevPages[activePageId!];
                 if (!currentPage) return prevPages;
-                // --- Integrate History Update --- 
                 const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], title: [] };
                 const currentPlacesState = JSON.parse(JSON.stringify(currentPage.places)); 
                 const currentTransitionsState = JSON.parse(JSON.stringify(currentPage.transitions));
@@ -615,13 +638,12 @@ export default function App() {
                 const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
                 const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
                 const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
-                // --- End History Update --- 
                 return {
                     ...prevPages,
                     [activePageId!]: {
                         ...currentPage,
-                        transitions: [...currentPage.transitions, newTransition], // Apply change
-                        history: { // Save new history
+                        transitions: [...currentPage.transitions, newTransition],
+                        history: {
                             places: nextPlacesHistory,
                             transitions: nextTransitionsHistory,
                             arcs: nextArcsHistory,
@@ -631,13 +653,12 @@ export default function App() {
                 };
             });
             setSelectedTool('NONE');
+            setProjectHasUnsavedChanges(true);
 
         } else if (selectedTool === 'ARC') {
-             // handleArcCreation needs to be updated with integrated history saving
             handleArcCreation(x, y);
             setSelectedTool('NONE');
         }
-    // Dependencies updated - no longer needs activePageData directly, no longer needs saveToHistory
     }, [selectedTool, activePageId, pages, setSelectedTool, handleArcCreation]); 
 
     const handleSelectElement = (elementId: string, event?: React.MouseEvent | KeyboardEvent) => {
@@ -720,7 +741,9 @@ export default function App() {
         });
     };
 
-    // ===== HELPER FUNCTIONS =====
+    // =========================================================================================
+    // IX. HELPER FUNCTIONS
+    // =========================================================================================
     const findClickedElement = (x: number, y: number, currentPlaces: UIPlace[], currentTransitions: UITransition[]) => {
         const gridX = Math.round(x / GRID_CELL_SIZE) * GRID_CELL_SIZE;
         const gridY = Math.round(y / GRID_CELL_SIZE) * GRID_CELL_SIZE;
@@ -773,7 +796,9 @@ export default function App() {
         }
     }
 
-    // ===== SIMULATION CONTROLS =====
+    // =========================================================================================
+    // X. SIMULATION CONTROLS
+    // =========================================================================================
     const handleSimulate = async () => {
         if (!activePageId || !activePageData) {
             console.log("No active page to simulate.");
@@ -781,7 +806,6 @@ export default function App() {
         }
         
         setCurrentFiredTransitions([]); 
-        // setCurrentAnimatingTransitions({}); // This was correctly commented out as per plan
         
         // Small delay to ensure the animation class is removed before adding it again
         await new Promise(resolve => setTimeout(resolve, 10));
@@ -803,8 +827,6 @@ export default function App() {
         };
 
         try {
-            // Construct the URL correctly for the paged endpoint
-            // Assuming API_ENDPOINTS.PROCESS is just "/api"
             const apiUrl = `${API_ENDPOINTS.PROCESS}/page/${activePageId}/process`;
 
             const response = await fetch(apiUrl, {
@@ -823,16 +845,14 @@ export default function App() {
 
             // Update the active page's state using setPages
             setPages(prevPages => {
-                const pageToUpdate = prevPages[activePageId!]; // activePageId is confirmed not null
-                if (!pageToUpdate) return prevPages; // Should not happen
+                const pageToUpdate = prevPages[activePageId!];
+                if (!pageToUpdate) return prevPages;
 
-                // Map response DTO places to UIPlace, preserving existing UI properties not in DTO if necessary
                 const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
                     const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
                     return updatedPlaceData ? { 
-                        ...p_ui, // Preserve existing UI properties like x,y,radius,name etc.
-                        tokens: updatedPlaceData.tokens // Only update tokens from DTO
-                        // If DTO could also update name/x/y, merge them here too.
+                        ...p_ui,
+                        tokens: updatedPlaceData.tokens 
                     } : p_ui;
             });
 
@@ -873,10 +893,10 @@ export default function App() {
                 }
             };
         });
+        setProjectHasUnsavedChanges(true); // Simulation changes data
 
         } catch (error) {
             console.error('Simulation error:', error);
-        // TODO: Optionally set an error state here to display to the user
         }
     };
 
@@ -885,8 +905,11 @@ export default function App() {
             console.log("No active page to reset.");
             return;
         }
-        handleUndo(); // Call before resetting page
-        const pageToReset = pages[activePageId];
+        const pageToReset = pages[activePageId]; // Get page data before potential undo modifies it if undo is added back
+        if (pageToReset.places.length > 0 || pageToReset.transitions.length > 0 || pageToReset.arcs.length > 0) {
+            handleUndo(); // Save current state to history if not empty, then undo to "previous"
+        }
+
         const defaultPageData: PetriNetPageData = {
             id: pageToReset.id, 
             title: pageToReset.title, 
@@ -907,65 +930,71 @@ export default function App() {
         }));
         setCurrentFiredTransitions([]);
         clearClipboard(); 
+        setProjectHasUnsavedChanges(true); // Resetting implies a change from the saved state
     };
 
     const updatePlaceSize = (id: string, newRadius: number, resizeState: 'start' | 'resizing' | 'end') => {
-        if (!activePageId || !pages[activePageId]) return;
+        if (!activePageId) return;
         
-        // Save history only at the start of the resize
         if (resizeState === 'start') {
-            saveToHistory(pages[activePageId]);
+            // Save history only at the start of the resize, if the page data exists
+            if (pages[activePageId!]) {
+                saveToHistory(pages[activePageId!]);
+            }
         }
 
-        // Update the size in the main state
-        setPages(prevPages => {
-            const currentPage = prevPages[activePageId!];
-            if (!currentPage) return prevPages;
-            
-            const updatedPlaces = currentPage.places.map(p => 
+        setPages(prev => {
+            if (!prev[activePageId!]) return prev;
+            const currentPageData = prev[activePageId!];
+
+            const updatedPlaces = currentPageData.places.map(p => 
                 p.id === id ? { ...p, radius: newRadius } : p
             );
 
-            // Optimization: Check if change actually occurred
-            if (JSON.stringify(currentPage.places) === JSON.stringify(updatedPlaces)) return prevPages;
+            if (JSON.stringify(currentPageData.places) === JSON.stringify(updatedPlaces)) return prev;
             
+            if (resizeState === 'end') {
+                setProjectHasUnsavedChanges(true);
+            }
+
             return {
-                ...prevPages,
+                ...prev,
                 [activePageId!]: { 
-                    ...currentPage, 
-                    places: updatedPlaces, // Apply size change
-                    // DO NOT update history here
+                    ...currentPageData, 
+                    places: updatedPlaces,
                 }
             };
         });
     };
 
     const updateTransitionSize = (id: string, newWidth: number, newHeight: number, resizeState: 'start' | 'resizing' | 'end') => {
-        if (!activePageId || !pages[activePageId]) return;
+        if (!activePageId) return;
 
-        // Save history only at the start of the resize
         if (resizeState === 'start') {
-            saveToHistory(pages[activePageId]);
+            if (pages[activePageId!]) {
+                saveToHistory(pages[activePageId!]);
+            }
         }
 
-        // Update the size in the main state
-        setPages(prevPages => {
-            const currentPage = prevPages[activePageId!];
-            if (!currentPage) return prevPages;
+        setPages(prev => {
+            if (!prev[activePageId!]) return prev;
+            const currentPageData = prev[activePageId!];
 
-            const updatedTransitions = currentPage.transitions.map(t => 
+            const updatedTransitions = currentPageData.transitions.map(t => 
                  t.id === id ? { ...t, width: newWidth, height: newHeight } : t
             );
 
-             // Optimization: Check if change actually occurred
-             if (JSON.stringify(currentPage.transitions) === JSON.stringify(updatedTransitions)) return prevPages;
+             if (JSON.stringify(currentPageData.transitions) === JSON.stringify(updatedTransitions)) return prev;
              
+            if (resizeState === 'end') {
+                setProjectHasUnsavedChanges(true);
+            }
+
             return {
-                ...prevPages,
+                ...prev,
                 [activePageId!]: { 
-                    ...currentPage, 
-                    transitions: updatedTransitions, // Apply size change
-                    // DO NOT update history here
+                    ...currentPageData, 
+                    transitions: updatedTransitions, 
                 }
             };
         });
@@ -976,7 +1005,6 @@ export default function App() {
         
         // --- Drag Start Logic ---
         if (dragState === 'start') {
-            // Call standalone saveToHistory here
             saveToHistory(activePageData); 
             const { places: placesAtDragStart, transitions: transitionsAtDragStart, selectedElements: currentSelectedElements } = activePageData; 
             dragStartPositionsRef.current.clear();
@@ -1034,7 +1062,6 @@ export default function App() {
                 return t;
                  });
 
-                 // Optimization: Use stringify for a quick check, though not perfectly performant
                  const placesChanged = JSON.stringify(currentPage.places) !== JSON.stringify(updatedPlaces);
                  const transitionsChanged = JSON.stringify(currentPage.transitions) !== JSON.stringify(updatedTransitions);
 
@@ -1073,6 +1100,7 @@ export default function App() {
                 [activePageId!]: { ...currentPage, places: updatedPlaces }
             };
         });
+        setProjectHasUnsavedChanges(true);
     };
 
     const handleNameUpdate = (id: string, newName: string) => {
@@ -1108,9 +1136,12 @@ export default function App() {
                 }
             };
         });
+        setProjectHasUnsavedChanges(true);
     };
 
-    // ===== MENU HANDLERS =====
+    // =========================================================================================
+    // XI. MENU HANDLERS
+    // =========================================================================================
     const processLoadedData = (pageToLoad: Partial<PetriNetPageData>, sourceTitle?: string) => {
         const newPageId = pageToLoad.id || `page_${Date.now()}`;
         // Ensure all fields of PetriNetPageData are present, using defaults where necessary
@@ -1161,18 +1192,16 @@ export default function App() {
             [newPageId]: newPageData
         })); 
         // Only add to pageOrder and set active if it's a truly new page (not part of project load)
-        // This logic will be refined when handleOpenProject calls this.
         if (!Object.keys(pages).includes(newPageId)) {
              setPageOrder(prevOrder => [...prevOrder, newPageId]); 
         }
         setActivePageId(newPageId);
         setCurrentFiredTransitions([]);
+        setProjectHasUnsavedChanges(true); // Loading data or importing is an unsaved change until saved as project
     };
 
     // This function is kept for the legacy import in MenuBar for now.
-    // It can be removed if the new import/open project fully replaces it.
     const handleLegacyImport = (importedData: PetriNetDTO) => {
-        // Create a structure that processLoadedData can understand
         const partialPageData: Partial<PetriNetPageData> = {
             title: importedData.title,
             places: importedData.places.map(p => ({
@@ -1192,14 +1221,15 @@ export default function App() {
                 width: t.width ?? 120,
                 height: t.height ?? 54
             })), 
-            arcs: importedData.arcs.map(a => ({ // Ensure arc has all required UIArc fields
-                id: a.id, // UIArc requires id
-                type: a.type ?? 'REGULAR', // UIArc requires type
-                incomingId: a.incomingId, // UIArc requires incomingId
-                outgoingId: a.outgoingId // UIArc requires outgoingId
+            arcs: importedData.arcs.map(a => ({
+                id: a.id,
+                type: a.type ?? 'REGULAR',
+                incomingId: a.incomingId,
+                outgoingId: a.outgoingId 
             })),
             deterministicMode: importedData.deterministicMode,
-            // zoomLevel and panOffset might not be in PetriNetDTO, so they'll get defaults in processLoadedData
+            zoomLevel: importedData.zoomLevel ?? 1,
+            panOffset: importedData.panOffset ?? { x: -750, y: -421.875 }
         };
         processLoadedData(partialPageData, "Imported Page");
     };
@@ -1224,6 +1254,7 @@ export default function App() {
                 setActivePageId(projectData.activePageId || (projectData.pageOrder?.[0] ?? null));
                 setCurrentFiredTransitions([]);
                 clearClipboard(); 
+                setProjectHasUnsavedChanges(false); // Freshly opened project is considered saved
 
             } catch (error: any) {
                 console.error("Error opening project from input:", error);
@@ -1263,6 +1294,7 @@ export default function App() {
                 setActivePageId(projectData.activePageId || (projectData.pageOrder?.[0] ?? null));
                 setCurrentFiredTransitions([]);
                 clearClipboard(); 
+                setProjectHasUnsavedChanges(false); // Freshly opened project is considered saved
 
             } catch (error: any) {
                  if (error.name !== 'AbortError') {
@@ -1283,7 +1315,7 @@ export default function App() {
     const handleImportPages = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
-
+        let changesMade = false;
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             try {
@@ -1302,13 +1334,16 @@ export default function App() {
                 const pageDataWithNewGuid = {...pageData, id: newPageId};
 
                 processLoadedData(pageDataWithNewGuid, file.name.replace(/\.page\.json$|\.json$/, ''));
+                changesMade = true;
             } catch (error) {
                 console.error(`Error importing page ${file.name}:`, error);
                 alert(`Failed to import page ${file.name}.`);
             }
         }
-        // Reset file input value
         event.target.value = '';
+        if (changesMade) {
+            setProjectHasUnsavedChanges(true); // Importing pages marks project as having unsaved changes
+        }
     };
 
     const continueSimulation = async (selectedTransitionId: string) => {
@@ -1320,8 +1355,6 @@ export default function App() {
         setCurrentFiredTransitions([]); 
         await new Promise(resolve => setTimeout(resolve, 10));
         
-        // OPTIONAL: Visually mark only the selected transition as "enabled" immediately 
-        //           before sending the request, for better UX.
         const tempUpdatedTransitions = activePageData.transitions.map(t => ({
             ...t,
             enabled: t.id === selectedTransitionId
@@ -1350,7 +1383,6 @@ export default function App() {
         };
         
         try {
-            // Assuming API_ENDPOINTS.RESOLVE = "/api/process"
             const apiUrl = `${API_ENDPOINTS.RESOLVE}/page/${activePageId}/resolve`; 
             const response = await fetch(apiUrl, {
                 method: 'POST',
@@ -1408,6 +1440,7 @@ export default function App() {
                     }
                 };
             });
+            setProjectHasUnsavedChanges(true); // Simulation/resolution changes data
 
         } catch (error) {
             console.error('Error resolving conflict:', error);
@@ -1419,7 +1452,9 @@ export default function App() {
         }
     };
 
-    // ===== VALIDATION HANDLERS =====
+    // =========================================================================================
+    // XII. VALIDATION HANDLERS
+    // =========================================================================================
     const handleValidationResult = (result: ValidationResult) => {
         console.log('Validation result:', result);
     };
@@ -1457,6 +1492,7 @@ export default function App() {
                 [activePageId!]: { ...currentPage, places: updatedPlaces }
             };
         });
+        setProjectHasUnsavedChanges(true);
     };
 
     const handleSetDeterministicMode = (newValue: boolean) => {
@@ -1482,9 +1518,12 @@ export default function App() {
                 }
             };
         });
+        setProjectHasUnsavedChanges(true);
     };
 
-    // ===== PAGE HANDLERS =====
+    // =========================================================================================
+    // XIII. PAGE HANDLERS
+    // =========================================================================================
     const handleCreatePage = () => {
         const newPageId = `page_${Date.now()}`;
         const pageCount = pageOrder.length; 
@@ -1500,7 +1539,7 @@ export default function App() {
             selectedElements: [],
             history: { places: [], transitions: [], arcs: [], title: [] }, 
             zoomLevel: 1, 
-            panOffset: { x: -750, y: -421.875 } // Set default centered pan
+            panOffset: { x: -750, y: -421.875 }
         };
         setPages(prevPages => ({
             ...prevPages,
@@ -1508,18 +1547,29 @@ export default function App() {
         }));
         setPageOrder(prevOrder => [...prevOrder, newPageId]);
         setActivePageId(newPageId); 
+        setProjectHasUnsavedChanges(true); // Creating a new page is an unsaved change
     };
 
     const handleRenamePage = (pageId: string, newTitle: string) => {
-        if (!pageId || !newTitle.trim() || !pages[pageId]) return; // Basic validation
+        // This is now primarily handled by EditableTitle calling handlePageTitleSave
+        // Kept for other potential direct calls.
+        if (!pageId || !newTitle.trim() || !pages[pageId] || pages[pageId].title === newTitle.trim()) return;
 
-        setPages(prevPages => ({
-            ...prevPages,
-            [pageId]: {
-                ...prevPages[pageId],
-                title: newTitle.trim() // Update the title for the specific page
-            }
-        }));
+        setPages(prevPages => {
+            const pageToUpdate = prevPages[pageId];
+            if (!pageToUpdate || pageToUpdate.title === newTitle.trim()) return prevPages;
+            
+            saveToHistory(pageToUpdate); // Save state BEFORE renaming for undo
+
+            return {
+                ...prevPages,
+                [pageId]: {
+                    ...pageToUpdate,
+                    title: newTitle.trim() 
+                }
+            };
+        });
+        setProjectHasUnsavedChanges(true); 
     };
 
     const handleDeletePage = (pageIdToDelete: string) => {
@@ -1550,16 +1600,23 @@ export default function App() {
         
         setActivePageId(nextActivePageId);
         setCurrentFiredTransitions([]);
+        setProjectHasUnsavedChanges(true); // Deleting a page is an unsaved change
     };
 
     // Handler for reordering pages
     const handleReorderPages = (newPageOrder: string[]) => {
-        setPageOrder(newPageOrder);
+        // Compare old and new order to see if a change actually occurred
+        if (JSON.stringify(pageOrder) !== JSON.stringify(newPageOrder)) {
+            setPageOrder(newPageOrder);
+            setProjectHasUnsavedChanges(true); // Reordering pages is an unsaved change
+        }
     };
 
-    // ===== ZOOM/PAN HANDLER =====
+    // =========================================================================================
+    // XIV. ZOOM/PAN HANDLER
+    // =========================================================================================
     const handleViewChange = (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => {
-        if (!activePageId || !pages[activePageId]) return; // Check activePageId before saving/setting
+        if (!activePageId || !pages[activePageId]) return; 
         setPages(prev => {
             if (!prev[activePageId!]) return prev;
             // Check if update is necessary
@@ -1578,9 +1635,28 @@ export default function App() {
                 }
             };
         });
+        // Zooming and panning DO NOT set projectHasUnsavedChanges
     };
 
-    // ===== VIEW HANDLERS =====
+    // New handler specifically for zoom level changes from MenuBar
+    const handleZoomLevelChange = (newZoom: number) => {
+        if (activePageId && pages[activePageId]) { // Check pages[activePageId] for robustness
+            setPages(prev => {
+                if (!prev[activePageId!]) return prev;
+                const currentPage = prev[activePageId!];
+                if (currentPage.zoomLevel === newZoom) return prev; // Avoid unnecessary updates
+                return {
+                    ...prev,
+                    [activePageId!]: { ...currentPage, zoomLevel: newZoom }
+                };
+            });
+            // Zooming does not set projectHasUnsavedChanges to true
+        }
+    };
+
+    // =========================================================================================
+    // XV. VIEW HANDLERS
+    // =========================================================================================
     const handleCenterView = () => {
       if (!activePageId) return;
 
@@ -1607,9 +1683,12 @@ export default function App() {
           }
         };
       });
+      // Centering view DOES NOT set projectHasUnsavedChanges
     };
 
-    // ===== FILE UTILITY FUNCTIONS =====
+    // =========================================================================================
+    // XVI. FILE UTILITY FUNCTIONS
+    // =========================================================================================
     const downloadJSON = (data: object, filename: string) => {
         const json = JSON.stringify(data, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
@@ -1643,33 +1722,32 @@ export default function App() {
         });
     };
 
-    // ===== PROJECT/PAGE SAVE AND LOAD HANDLERS =====
+    // =========================================================================================
+    // XVII. PROJECT/PAGE SAVE AND LOAD HANDLERS
+    // =========================================================================================
     
     // --- Updated Save Project As using FSA API with fallback ---
     const handleSaveProjectAs = async (suggestedFilename?: string) => {
-        const projectData: ProjectDTO = {
-            projectTitle,
-            pages,
-            pageOrder,
-            activePageId,
-            version: '1.0.0' // Example version
-        };
-        const projectJsonString = JSON.stringify(projectData, null, 2);
+        const filenameToSuggest = suggestedFilename || `${projectTitle.replace(/\s+/g, '_')}.pats`;
 
-        // Suggest filename based on current title, ensuring .petri extension
-        const defaultFilename = projectTitle.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9_\-\s]/gi, '_').replace(/\s+/g, '-') || 'project';
-        const finalSuggestedName = suggestedFilename || `${defaultFilename}.petri`;
+        const projectDataToSave: ProjectDTO = {
+            projectTitle: projectTitle, // Ensure ProjectDTO includes projectTitle
+            pages: pages,
+            pageOrder: pageOrder,
+            activePageId: activePageId,
+            version: '1.0.0' 
+        };
 
         // FSA API Branch
         if ('showSaveFilePicker' in window) {
             try {
                 const handle = await window.showSaveFilePicker({
-                    suggestedName: finalSuggestedName,
+                    suggestedName: filenameToSuggest,
                     types: [
                         {
                             description: 'Petri Net Project',
                             accept: {
-                                'application/json': ['.petri'],
+                                'application/json': ['.pats'],
                             },
                         },
                     ],
@@ -1677,16 +1755,19 @@ export default function App() {
                 
                 setProjectFileHandle(handle); // Store the handle for future Saves
                 const writable = await handle.createWritable();
-                await writable.write(projectJsonString);
+                await writable.write(JSON.stringify(projectDataToSave, null, 2));
                 await writable.close();
                 
                 // Optional: Update projectTitle state if user saved with a different name
-                if (handle.name && handle.name !== finalSuggestedName && handle.name.endsWith('.petri')) {
-                    const newTitle = handle.name.replace(/\.petri$/, '');
+                if (handle.name && handle.name !== filenameToSuggest && handle.name.endsWith('.pats')) {
+                    const newTitle = handle.name.replace(/\.pats$/, '');
                     if (newTitle !== projectTitle) {
                         setProjectTitle(newTitle);
                     }
                 }
+                
+                console.log("Project saved successfully as new file with File System Access API");
+                setProjectHasUnsavedChanges(false); // Project is now saved
                 
             } catch (error: any) {
                 // Handle user cancellation (AbortError) or other errors
@@ -1700,35 +1781,36 @@ export default function App() {
         // Fallback Branch (Download)
         else {
             console.warn("FSA API not supported, falling back to download.");
-            setProjectFileHandle(null); // Cannot keep handle with download method
-            downloadJSON(projectData, finalSuggestedName);
+            setProjectFileHandle(null); 
+            downloadJSON(projectDataToSave, filenameToSuggest);
+            setProjectHasUnsavedChanges(false); // Project is now saved (via download)
         }
     };
     
     // --- Updated Save Project using FSA API handle if available ---
     const handleSaveProject = async () => {
-        // If we have a handle and the API is supported, attempt silent save
-        if (projectFileHandle && 'createWritable' in projectFileHandle) {
+        const projectToSave: ProjectDTO = {
+            projectTitle: projectTitle, 
+            pages: pages,
+            pageOrder: pageOrder,
+            activePageId: activePageId,
+            version: '1.0.0'
+        };
+
+        if (projectFileHandle) {
             try {
-                const projectData: ProjectDTO = {
-                    projectTitle,
-                    pages,
-                    pageOrder,
-                    activePageId,
-                    version: '1.0.0' 
-                };
-                const projectJsonString = JSON.stringify(projectData, null, 2);
+                const projectJsonString = JSON.stringify(projectToSave, null, 2);
                 
                 const writable = await projectFileHandle.createWritable();
                 await writable.write(projectJsonString);
                 await writable.close();
-                // Optional: Add visual feedback for successful save (e.g., toast message)
-                console.log('Project saved successfully using FileSystemFileHandle.');
-            } catch(error: any) {
-                 console.error("Error saving file with existing handle:", error);
-                 alert(`Failed to save project: ${error.message}. Trying Save As...`);
-                 // Fallback to Save As if writing fails (e.g., permissions changed)
-                 await handleSaveProjectAs(); 
+                console.log("Project saved successfully with File System Access API");
+                setProjectHasUnsavedChanges(false); // Project is now saved
+            } catch (error: any) { // Explicitly type error as any or a more specific error type
+                console.error("Error saving project with File System Access API:", error);
+                alert(`Failed to save project: ${error.message}. Trying Save As...`);
+                // Fallback to Save As if writing fails (e.g., permissions changed)
+                await handleSaveProjectAs(); 
             }
         }
         // If no handle or API not supported, behave like Save As
@@ -1746,7 +1828,9 @@ export default function App() {
         downloadJSON(activePageData, filename); // Exporting the full PetriNetPageData
     };
 
-    // ===== RENDER =====
+    // =========================================================================================
+    // XVIII. RENDER
+    // =========================================================================================
     return (
         <div className="app" style={{ 
             display: 'flex',
@@ -1757,11 +1841,16 @@ export default function App() {
             <EditableTitle 
                 ref={titleRef}
                 title={projectTitle} 
-                onTitleChange={setProjectTitle}
+                onTitleChange={(newTitle) => {
+                    if (newTitle !== projectTitle) {
+                        setProjectTitle(newTitle);
+                        setProjectHasUnsavedChanges(true); // Project title change is an unsaved change
+                    }
+                }}
             />
             
             <MenuBar
-                projectData={currentProjectDTO}
+                projectData={currentProjectDTO} 
                 onImport={handleLegacyImport}
                 highlightTitle={handleHighlightTitle}
                 onOpenProject={handleOpenProject}
@@ -1769,7 +1858,30 @@ export default function App() {
                 onSaveProjectAs={handleSaveProjectAs}
                 onImportPages={handleImportPages}
                 onExportActivePage={handleExportActivePage}
-                onExportProject={handleSaveProjectAs}
+                onExportProject={() => { 
+                    const projectToExport: ProjectDTO = { 
+                        projectTitle: projectTitle,
+                        pages: pages,
+                        pageOrder: pageOrder,
+                        activePageId: activePageId,
+                        version: '1.0.0'
+                    };
+                    downloadJSON(projectToExport, `${projectTitle.replace(/\s+/g, '_')}_project.pats`);
+                }}
+                onUndo={handleUndo}
+                currentZoom={activePageData?.zoomLevel || 1}
+                onZoomChange={handleZoomLevelChange} // Use the new specific handler
+                canUndo={activePageData ? activePageData.history.places.length > 0 : false}
+                canRedo={false} // Placeholder
+                onCreatePage={handleCreatePage}
+                projectFileHandle={projectFileHandle}
+                projectHasUnsavedChanges={projectHasUnsavedChanges} // Pass the new state
+                onRenameProjectTitle={(newTitle: string) => { // For MenuBar to trigger project title change
+                    if (newTitle !== projectTitle) {
+                        setProjectTitle(newTitle);
+                        setProjectHasUnsavedChanges(true);
+                    }
+                }}
             />
 
             <div style={{ 

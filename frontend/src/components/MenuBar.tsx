@@ -1,19 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PetriNetDTO, ProjectDTO } from '../types';
-// Remove API_ENDPOINTS import if no longer needed after removing handleValidate
-// import { API_ENDPOINTS } from '../utils/api';
 
 interface MenuBarProps {
   projectData: ProjectDTO | null;
   onImport: (data: PetriNetDTO) => void;
   highlightTitle: () => void;
-  // New handlers for project/page operations
   onOpenProject: (event?: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveProject: () => void;
   onSaveProjectAs: () => void;
   onImportPages: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onExportActivePage: () => void;
-  onExportProject: () => void; // Added for completeness, maps to onSaveProjectAs for now
+  onExportProject: () => void;
+  onUndo: () => void;
+  currentZoom: number;
+  onZoomChange: (newZoom: number) => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onCreatePage: () => void;
+  projectFileHandle: FileSystemFileHandle | null;
+  projectHasUnsavedChanges: boolean;
+  onRenameProjectTitle: (newTitle: string) => void;
 }
 
 export function MenuBar({
@@ -25,24 +31,25 @@ export function MenuBar({
   onSaveProjectAs,
   onImportPages,
   onExportActivePage,
-  onExportProject
+  onExportProject,
+  onUndo,
+  canUndo,
+  onCreatePage,
+  projectHasUnsavedChanges,
 }: MenuBarProps) {
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showExportSubMenu, setShowExportSubMenu] = useState(false);
-  // Add state for Import submenu if you create one
-  // const [showImportSubMenu, setShowImportSubMenu] = useState(false);
 
   const fileMenuRef = useRef<HTMLDivElement>(null);
   const exportSubMenuRef = useRef<HTMLDivElement>(null);
 
-  // Refs for file inputs to allow programmatic click
   const openProjectInputRef = useRef<HTMLInputElement>(null);
   const importPagesInputRef = useRef<HTMLInputElement>(null);
   const legacyImportInputRef = useRef<HTMLInputElement>(null);
 
   const toggleFileMenu = () => setShowFileMenu(!showFileMenu);
   const toggleExportSubMenu = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent file menu from closing
+    e.stopPropagation(); 
     setShowExportSubMenu(!showExportSubMenu);
   };
 
@@ -79,13 +86,25 @@ export function MenuBar({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside, true);
     };
-  }, [fileMenuRef]); // Dependency array ensures this runs once
+  }, [fileMenuRef, setShowFileMenu, setShowExportSubMenu]);
 
   return (
     <div className="menu-bar">
       <div ref={fileMenuRef} style={{ position: 'relative' }}>
-        <div className="menu-item" onClick={toggleFileMenu}>
-          File
+        <div style={{ display: 'flex', alignItems: 'center' }} className="menu-item" onClick={toggleFileMenu}>
+          <span>File</span>
+          <span 
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: projectHasUnsavedChanges ? '#FF1744' : '#76FF03',
+              marginLeft: '8px',
+              display: 'inline-block',
+              boxShadow: '0 0 3px 1px rgba(0,0,0,0.2)'
+            }}
+            title={projectHasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}
+          ></span>
         </div>
         {showFileMenu && (
           <div className="dropdown-menu">
@@ -120,6 +139,11 @@ export function MenuBar({
                 </div>
               )}
             </div>
+            
+            <div className="menu-item-separator"></div>
+            
+            <div className={`menu-item ${!canUndo ? 'disabled' : ''}`} onClick={() => { if(canUndo) { onUndo(); setShowFileMenu(false); } }}>Undo</div>
+            <div className="menu-item" onClick={() => { onCreatePage(); setShowFileMenu(false); }}>Create New Page</div>
             
             <div className="menu-item-separator"></div>
             
