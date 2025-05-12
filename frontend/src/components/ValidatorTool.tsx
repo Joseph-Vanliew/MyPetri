@@ -10,8 +10,8 @@ interface ValidatorToolProps {
   // Props for persisting state
   inputConfigs?: PlaceConfig[];
   setInputConfigs?: Dispatch<SetStateAction<PlaceConfig[]>>;
-  expectedOutputs?: PlaceConfig[];
-  setExpectedOutputs?: Dispatch<SetStateAction<PlaceConfig[]>>;
+  outputConfigs?: PlaceConfig[];
+  setOutputConfigs?: Dispatch<SetStateAction<PlaceConfig[]>>;
   persistedValidationResult?: ValidationResult | null;
   setValidationResult?: Dispatch<SetStateAction<ValidationResult | null>>;
   emptyInputFields?: {[index: number]: boolean};
@@ -27,8 +27,8 @@ export function ValidatorTool({
   // Persisted state from parent
   inputConfigs: externalInputConfigs,
   setInputConfigs: externalSetInputConfigs,
-  expectedOutputs: externalExpectedOutputs,
-  setExpectedOutputs: externalSetExpectedOutputs,
+  outputConfigs: externalOutputConfigs,
+  setOutputConfigs: externalSetOutputConfigs,
   persistedValidationResult,
   setValidationResult: externalSetValidationResult,
   emptyInputFields: externalEmptyInputFields,
@@ -39,7 +39,7 @@ export function ValidatorTool({
 }: ValidatorToolProps) {
   // Use local state if no external state is provided (backwards compatibility)
   const [localInputConfigs, setLocalInputConfigs] = useState<PlaceConfig[]>([]);
-  const [localExpectedOutputs, setLocalExpectedOutputs] = useState<PlaceConfig[]>([]);
+  const [localOutputConfigs, setLocalOutputConfigs] = useState<PlaceConfig[]>([]);
   const [localValidationResult, setLocalValidationResult] = useState<ValidationResult | null>(null);
   const [localEmptyInputFields, setLocalEmptyInputFields] = useState<{[index: number]: boolean}>({});
   const [localEmptyOutputFields, setLocalEmptyOutputFields] = useState<{[index: number]: boolean}>({});
@@ -47,8 +47,8 @@ export function ValidatorTool({
   // Determine which state and state setters to use
   const inputConfigs = externalInputConfigs !== undefined ? externalInputConfigs : localInputConfigs;
   const setInputConfigs = externalSetInputConfigs || setLocalInputConfigs;
-  const expectedOutputs = externalExpectedOutputs !== undefined ? externalExpectedOutputs : localExpectedOutputs;
-  const setExpectedOutputs = externalSetExpectedOutputs || setLocalExpectedOutputs;
+  const outputConfigs = externalOutputConfigs !== undefined ? externalOutputConfigs : localOutputConfigs;
+  const setOutputConfigs = externalSetOutputConfigs || setLocalOutputConfigs;
   const validationResult = persistedValidationResult !== undefined ? persistedValidationResult : localValidationResult;
   const setValidationResult = externalSetValidationResult || setLocalValidationResult;
   const emptyInputFields = externalEmptyInputFields !== undefined ? externalEmptyInputFields : localEmptyInputFields;
@@ -72,17 +72,17 @@ export function ValidatorTool({
       setInputConfigs(newInputConfigs);
     }
     
-    // Filter out expected output configs with places that no longer exist
-    const newExpectedOutputs = expectedOutputs.filter(config => currentPlaceIds.has(config.placeId));
-    if (newExpectedOutputs.length !== expectedOutputs.length) {
-      setExpectedOutputs(newExpectedOutputs);
+    // Filter out output configs with places that no longer exist
+    const newOutputConfigs = outputConfigs.filter(config => currentPlaceIds.has(config.placeId));
+    if (newOutputConfigs.length !== outputConfigs.length) {
+      setOutputConfigs(newOutputConfigs);
     }
     
     // If validation result exists, clear it when places change
-    if (validationResult && (newInputConfigs.length !== inputConfigs.length || newExpectedOutputs.length !== expectedOutputs.length)) {
+    if (validationResult && (newInputConfigs.length !== inputConfigs.length || newOutputConfigs.length !== outputConfigs.length)) {
       setValidationResult(null);
     }
-  }, [data.places, inputConfigs, expectedOutputs, validationResult]);
+  }, [data.places, inputConfigs, outputConfigs, validationResult]);
 
   // Update dropdown selections only for places that exist but have no name
   useEffect(() => {
@@ -91,8 +91,8 @@ export function ValidatorTool({
       if (inputConfigs.length > 0) {
         setInputConfigs([]);
       }
-      if (expectedOutputs.length > 0) {
-        setExpectedOutputs([]);
+      if (outputConfigs.length > 0) {
+        setOutputConfigs([]);
       }
       return;
     }
@@ -123,7 +123,7 @@ export function ValidatorTool({
     
     // Check if any output configs use places that exist but have no name
     let outputConfigsNeedUpdate = false;
-    const updatedOutputs = expectedOutputs.filter(config => {
+    const updatedOutputs = outputConfigs.filter(config => {
       // Keep only configs for places that exist
       if (!allPlaceIds.has(config.placeId)) {
         return false;
@@ -143,17 +143,17 @@ export function ValidatorTool({
       setInputConfigs(updatedInputs);
     }
     
-    if (outputConfigsNeedUpdate || updatedOutputs.length !== expectedOutputs.length) {
-      setExpectedOutputs(updatedOutputs);
+    if (outputConfigsNeedUpdate || updatedOutputs.length !== outputConfigs.length) {
+      setOutputConfigs(updatedOutputs);
     }
     
     // Clear validation result if configurations changed
     if ((inputConfigsNeedUpdate || updatedInputs.length !== inputConfigs.length || 
-         outputConfigsNeedUpdate || updatedOutputs.length !== expectedOutputs.length) && 
+         outputConfigsNeedUpdate || updatedOutputs.length !== outputConfigs.length) && 
         validationResult) {
       setValidationResult(null);
     }
-  }, [namedPlaces, data.places, inputConfigs, expectedOutputs, validationResult]);
+  }, [namedPlaces, data.places, inputConfigs, outputConfigs, validationResult]);
 
   // Add a place to input configurations
   const addInputPlace = () => {
@@ -161,7 +161,7 @@ export function ValidatorTool({
 
     const usedPlaceIds = new Set([
       ...inputConfigs.map(c => c.placeId),
-      ...expectedOutputs.map(c => c.placeId)
+      ...outputConfigs.map(c => c.placeId)
     ]);
     
     const availablePlaces = namedPlaces.filter(p => !usedPlaceIds.has(p.id));
@@ -189,13 +189,13 @@ export function ValidatorTool({
     setEmptyInputFields({ ...emptyInputFields, [newIndex]: false });
   };
 
-  // Add a place to expected outputs
+  // Add a place to output configurations
   const addOutputPlace = () => {
     if (namedPlaces.length === 0) return;
 
     const usedPlaceIds = new Set([
       ...inputConfigs.map(c => c.placeId),
-      ...expectedOutputs.map(c => c.placeId)
+      ...outputConfigs.map(c => c.placeId)
     ]);
     
     const availablePlaces = namedPlaces.filter(p => !usedPlaceIds.has(p.id));
@@ -218,71 +218,87 @@ export function ValidatorTool({
       tokens: 0
     };
     
-    const newIndex = expectedOutputs.length;
-    setExpectedOutputs([...expectedOutputs, newOutput]);
+    const newIndex = outputConfigs.length;
+    setOutputConfigs([...outputConfigs, newOutput]);
     setEmptyOutputFields({ ...emptyOutputFields, [newIndex]: false });
   };
 
   // Update input configuration
   const updateInputConfig = (index: number, field: keyof PlaceConfig, value: string | number) => {
-    const updatedInputs = [...inputConfigs];
-    if (field === 'placeId') {
-      updatedInputs[index].placeId = value as string;
-    } else if (field === 'tokens') {
-      // Allow empty string but store as 0
-      updatedInputs[index].tokens = value === '' ? 0 : parseInt(value as string, 10) || 0;
-    }
+    const updatedInputs = inputConfigs.map((item, idx) => {
+      if (idx === index) {
+        if (field === 'placeId') {
+          return { ...item, placeId: value as string };
+        } else if (field === 'tokens') {
+          const newTokens = value === '' ? 0 : parseInt(value as string, 10) || 0;
+          return { ...item, tokens: newTokens };
+        }
+      }
+      return item;
+    });
     setInputConfigs(updatedInputs);
   };
 
-  // Update expected output
-  const updateExpectedOutput = (index: number, field: keyof PlaceConfig, value: string | number) => {
-    const updatedOutputs = [...expectedOutputs];
-    if (field === 'placeId') {
-      updatedOutputs[index].placeId = value as string;
-    } else if (field === 'tokens') {
-      // Allow empty string but store as 0
-      updatedOutputs[index].tokens = value === '' ? 0 : parseInt(value as string, 10) || 0;
-    }
-    setExpectedOutputs(updatedOutputs);
+  // Update output configuration
+  const updateOutputConfig = (index: number, field: keyof PlaceConfig, value: string | number) => {
+    const updatedOutputs = outputConfigs.map((item, idx) => {
+      if (idx === index) {
+        if (field === 'placeId') {
+          return { ...item, placeId: value as string };
+        } else if (field === 'tokens') {
+          const newTokens = value === '' ? 0 : parseInt(value as string, 10) || 0;
+          return { ...item, tokens: newTokens };
+        }
+      }
+      return item;
+    });
+    setOutputConfigs(updatedOutputs);
   };
 
   // Handle token increment for input
   const incrementInputTokens = (index: number) => {
-    const updatedInputs = [...inputConfigs];
-    updatedInputs[index].tokens += 1;
+    const updatedInputs = inputConfigs.map((item, idx) => {
+      if (idx === index) {
+        return { ...item, tokens: item.tokens + 1 };
+      }
+      return item;
+    });
     setInputConfigs(updatedInputs);
     setEmptyInputFields({ ...emptyInputFields, [index]: false });
   };
 
   // Handle token decrement for input
   const decrementInputTokens = (index: number) => {
-    const updatedInputs = [...inputConfigs];
-    if (updatedInputs[index].tokens > 0) {
-      updatedInputs[index].tokens -= 1;
-      setInputConfigs(updatedInputs);
-    }
+    const updatedInputs = inputConfigs.map((item, idx) => {
+      if (idx === index && item.tokens > 0) {
+        return { ...item, tokens: item.tokens - 1 };
+      }
+      return item;
+    });
+    setInputConfigs(updatedInputs);
   };
 
   // Handle token increment for output
   const incrementOutputTokens = (index: number) => {
-    const updatedOutputs = [...expectedOutputs];
-    updatedOutputs[index].tokens += 1;
-    setExpectedOutputs(updatedOutputs);
+    const updatedOutputs = outputConfigs.map((item, idx) => {
+      if (idx === index) {
+        return { ...item, tokens: item.tokens + 1 };
+      }
+      return item;
+    });
+    setOutputConfigs(updatedOutputs);
     setEmptyOutputFields({ ...emptyOutputFields, [index]: false });
   };
 
   // Handle token decrement for output
   const decrementOutputTokens = (index: number) => {
-    const updatedOutputs = [...expectedOutputs];
-    if (updatedOutputs[index].tokens > 0) {
-      updatedOutputs[index].tokens -= 1;
-      setExpectedOutputs(updatedOutputs);
-      // No longer set to empty when decrementing to 0
-      // if (updatedOutputs[index].tokens === 0) {
-      //   setEmptyOutputFields({ ...emptyOutputFields, [index]: true });
-      // }
-    }
+    const updatedOutputs = outputConfigs.map((item, idx) => {
+      if (idx === index && item.tokens > 0) {
+        return { ...item, tokens: item.tokens - 1 };
+      }
+      return item;
+    });
+    setOutputConfigs(updatedOutputs);
   };
 
   // Remove input configuration
@@ -307,11 +323,11 @@ export function ValidatorTool({
     setEmptyInputFields(newEmptyFields);
   };
 
-  // Remove expected output
-  const removeExpectedOutput = (index: number) => {
-    const updatedOutputs = [...expectedOutputs];
+  // Remove output configuration
+  const removeOutputConfig = (index: number) => {
+    const updatedOutputs = [...outputConfigs];
     updatedOutputs.splice(index, 1);
-    setExpectedOutputs(updatedOutputs);
+    setOutputConfigs(updatedOutputs);
     
     // Update the empty fields state
     const newEmptyFields = { ...emptyOutputFields };
@@ -339,7 +355,7 @@ export function ValidatorTool({
       });
       return;
     }
-    if (inputConfigs.length === 0 || expectedOutputs.length === 0) {
+    if (inputConfigs.length === 0 || outputConfigs.length === 0) {
       setValidationResult({
         valid: false,
         message: 'You must specify at least one input and one expected output.',
@@ -348,18 +364,80 @@ export function ValidatorTool({
       return;
     }
 
+    if (!data) {
+      setValidationResult({
+        valid: false,
+        message: 'Cannot validate: Petri net data is missing.',
+        errors: ['Petri net data is missing.']
+      });
+      return;
+    }
+
     setIsValidating(true);
     try {
+      // Log the incoming data for debugging
+      console.log('Incoming Petri net data:', data);
+
+      // Ensure we have a valid PetriNetDTO with all required fields
+      const petriNetData: PetriNetDTO = {
+        places: data.places.map(place => ({
+          id: place.id,
+          tokens: place.tokens,
+          name: place.name || '',
+          x: place.x || 0,
+          y: place.y || 0,
+          radius: place.radius || 46,
+          bounded: place.bounded || false,
+          capacity: place.capacity || null
+        })),
+        transitions: data.transitions.map(transition => ({
+          id: transition.id,
+          enabled: transition.enabled,
+          arcIds: transition.arcIds || [],
+          name: transition.name || '',
+          x: transition.x || 0,
+          y: transition.y || 0,
+          width: transition.width || 120,
+          height: transition.height || 54
+        })),
+        arcs: data.arcs.map(arc => ({
+          id: arc.id,
+          type: arc.type,
+          incomingId: arc.incomingId,
+          outgoingId: arc.outgoingId
+        })),
+        deterministicMode: data.deterministicMode ?? false,
+        title: data.title || ''
+      };
+
+      // Log the constructed DTO for debugging
+      console.log('Constructed PetriNetDTO:', petriNetData);
+
+      const requestBody = {
+        places: petriNetData.places,
+        transitions: petriNetData.transitions,
+        arcs: petriNetData.arcs,
+        deterministicMode: petriNetData.deterministicMode,
+        title: petriNetData.title,
+        inputConfigs: inputConfigs.map(config => ({
+          placeId: config.placeId,
+          tokens: config.tokens
+        })),
+        expectedOutputs: outputConfigs.map(config => ({
+          placeId: config.placeId,
+          tokens: config.tokens
+        }))
+      };
+
+      // Log the full request body for debugging
+      console.log('Validation request body:', requestBody);
+
       const response = await fetch(`/api/page/${activePageId}/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...data,
-          inputConfigs,
-          expectedOutputs
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -393,7 +471,7 @@ export function ValidatorTool({
   // Reset validation
   const resetValidation = () => {
     setInputConfigs([]);
-    setExpectedOutputs([]);
+    setOutputConfigs([]);
     setValidationResult(null);
     setEmptyInputFields({});
     setEmptyOutputFields({});
@@ -517,7 +595,7 @@ export function ValidatorTool({
         )}
       </div>
 
-      {/* Expected Output Section */}
+      {/* Output Configuration Section */}
       <div className="validator-section">
         <div className="validator-section-header">
           <h4 className="validator-section-title">Expected Outputs</h4>
@@ -530,14 +608,14 @@ export function ValidatorTool({
           </button>
         </div>
         
-        {expectedOutputs.length === 0 ? (
+        {outputConfigs.length === 0 ? (
           <p className="validator-empty-message">No expected outputs named, please name your places.</p>
         ) : (
           <div>
-            {expectedOutputs.map((output, index) => {
+            {outputConfigs.map((output, index) => {
               // Determine available places for this specific dropdown
               const otherOutputPlaceIds = new Set(
-                expectedOutputs
+                outputConfigs
                   .filter((_, i) => i !== index) // Exclude current row
                   .map(o => o.placeId)
               );
@@ -550,7 +628,7 @@ export function ValidatorTool({
                   <select
                     className="validator-select"
                     value={output.placeId}
-                    onChange={(e) => updateExpectedOutput(index, 'placeId', e.target.value)}
+                    onChange={(e) => updateOutputConfig(index, 'placeId', e.target.value)}
                     disabled={isValidating}
                   >
                     {availableOutputPlaces.map(place => {
@@ -570,7 +648,7 @@ export function ValidatorTool({
                       value={emptyOutputFields[index] ? '' : output.tokens}
                       onChange={(e) => {
                         const value = e.target.value;
-                        updateExpectedOutput(index, 'tokens', value);
+                        updateOutputConfig(index, 'tokens', value);
                         if (value === '') {
                           setEmptyOutputFields({ ...emptyOutputFields, [index]: true });
                         } else {
@@ -607,7 +685,7 @@ export function ValidatorTool({
                   
                   <button
                     className="validator-button-remove"
-                    onClick={() => removeExpectedOutput(index)}
+                    onClick={() => removeOutputConfig(index)}
                     disabled={isValidating}
                   >
                     ✕
@@ -624,7 +702,7 @@ export function ValidatorTool({
         <button
           className="validator-button-run"
           onClick={runValidation}
-          disabled={inputConfigs.length === 0 || expectedOutputs.length === 0 || isValidating}
+          disabled={inputConfigs.length === 0 || outputConfigs.length === 0 || isValidating}
         >
           {isValidating ? 'Validating...' : 'Run Validation'}
         </button>
@@ -687,7 +765,7 @@ export function ValidatorTool({
                   const finalTokens = finalPlace?.tokens ?? 'N/A';
                   
           
-                  const expectedConfig = expectedOutputs.find(eo => eo.placeId === placeId);
+                  const expectedConfig = outputConfigs.find(eo => eo.placeId === placeId);
                   const expectedTokens = expectedConfig?.tokens ?? 'N/A';
 
                   return (

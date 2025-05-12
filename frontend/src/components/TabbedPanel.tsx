@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { JSONViewer } from './JSONViewer';
 import { ValidatorTool } from './ValidatorTool';
 import { AnalysisTool } from './AnalysisTool';
-import { PetriNetDTO, ValidationResult, PlaceConfig } from '../types';
+import { PetriNetDTO, ValidationResult, ValidatorPageConfig } from '../types';
 import './styles/TabbedPanel.css';
 
 type Tab = 'json' | 'validator' | 'analysis';
@@ -17,6 +17,8 @@ interface TabbedPanelProps {
   currentMode?: string;
   onValidationResult?: (result: ValidationResult) => void;
   activePageId?: string | null;
+  validatorConfigs?: ValidatorPageConfig;
+  onValidatorConfigsChange?: (newConfigs: Partial<ValidatorPageConfig>) => void;
 }
 
 export function TabbedPanel({
@@ -28,22 +30,29 @@ export function TabbedPanel({
   onAutoScrollToggle,
   currentMode = '',
   onValidationResult,
-  activePageId
+  activePageId,
+  validatorConfigs,
+  onValidatorConfigsChange
 }: TabbedPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>('validator');
   
-  // Maintain validator state between tab switches
-  const [inputConfigs, setInputConfigs] = useState<PlaceConfig[]>([]);
-  const [expectedOutputs, setExpectedOutputs] = useState<PlaceConfig[]>([]);
-  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
-  const [emptyInputFields, setEmptyInputFields] = useState<{[index: number]: boolean}>({});
-  const [emptyOutputFields, setEmptyOutputFields] = useState<{[index: number]: boolean}>({});
+  // Use provided configs or a default if somehow not passed (shouldn't happen with App.tsx changes)
+  const currentValidatorConfigs = validatorConfigs || {
+      inputConfigs: [],
+      outputConfigs: [],
+      validationResult: null,
+      emptyInputFields: {},
+      emptyOutputFields: {},
+  };
 
-  // Handle validation results
-  const handleValidate = (result: ValidationResult) => {
-    setValidationResult(result);
+  const handleFullValidate = (result: ValidationResult) => {
+    if (onValidatorConfigsChange) {
+        onValidatorConfigsChange({ validationResult: result });
+    }
+    // If App.tsx still has a direct onValidationResult, call it.
+    // This might be redundant if App.tsx only cares about the config object changing.
     if (onValidationResult) {
-      onValidationResult(result);
+        onValidationResult(result);
     }
   };
 
@@ -94,17 +103,42 @@ export function TabbedPanel({
             data={data}
             width="100%"
             height="100%"
-            onValidate={handleValidate}
-            inputConfigs={inputConfigs}
-            setInputConfigs={setInputConfigs}
-            expectedOutputs={expectedOutputs}
-            setExpectedOutputs={setExpectedOutputs}
-            persistedValidationResult={validationResult}
-            setValidationResult={setValidationResult}
-            emptyInputFields={emptyInputFields}
-            setEmptyInputFields={setEmptyInputFields}
-            emptyOutputFields={emptyOutputFields}
-            setEmptyOutputFields={setEmptyOutputFields}
+            onValidate={handleFullValidate}
+            inputConfigs={currentValidatorConfigs.inputConfigs}
+            setInputConfigs={(updater) => {
+                if (onValidatorConfigsChange) {
+                    const newValues = typeof updater === 'function' ? updater(currentValidatorConfigs.inputConfigs) : updater;
+                    onValidatorConfigsChange({ inputConfigs: newValues });
+                }
+            }}
+            outputConfigs={currentValidatorConfigs.outputConfigs}
+            setOutputConfigs={(updater) => {
+                if (onValidatorConfigsChange) {
+                    const newValues = typeof updater === 'function' ? updater(currentValidatorConfigs.outputConfigs) : updater;
+                    onValidatorConfigsChange({ outputConfigs: newValues });
+                }
+            }}
+            persistedValidationResult={currentValidatorConfigs.validationResult}
+            setValidationResult={(updater) => {
+                if (onValidatorConfigsChange) {
+                    const newValues = typeof updater === 'function' ? updater(currentValidatorConfigs.validationResult) : updater;
+                    onValidatorConfigsChange({ validationResult: newValues });
+                }
+            }}
+            emptyInputFields={currentValidatorConfigs.emptyInputFields}
+            setEmptyInputFields={(updater) => {
+                if (onValidatorConfigsChange) {
+                    const newValues = typeof updater === 'function' ? updater(currentValidatorConfigs.emptyInputFields) : updater;
+                    onValidatorConfigsChange({ emptyInputFields: newValues });
+                }
+            }}
+            emptyOutputFields={currentValidatorConfigs.emptyOutputFields}
+            setEmptyOutputFields={(updater) => {
+                if (onValidatorConfigsChange) {
+                    const newValues = typeof updater === 'function' ? updater(currentValidatorConfigs.emptyOutputFields) : updater;
+                    onValidatorConfigsChange({ emptyOutputFields: newValues });
+                }
+            }}
             activePageId={activePageId}
           />
         )}

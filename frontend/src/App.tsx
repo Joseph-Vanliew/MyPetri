@@ -2,7 +2,7 @@
 import React, {useState, useCallback, useEffect, useRef, useMemo} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
-import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult, PetriNetPageData, ProjectDTO} from './types';
+import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult, PetriNetPageData, ProjectDTO, ValidatorPageConfig} from './types';
 import { MenuBar } from './components/MenuBar';
 import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
 import { API_ENDPOINTS } from './utils/api';
@@ -13,6 +13,15 @@ import { loadAppState, saveAppState, PersistedAppState } from './hooks/appPersis
 
 const MAX_HISTORY_LENGTH = 50;
 
+// Define default validator configs
+const defaultValidatorConfigs: ValidatorPageConfig = {
+    inputConfigs: [],
+    expectedOutputs: [],
+    validationResult: null,
+    emptyInputFields: {},
+    emptyOutputFields: {}
+};
+
 const initialPersistedState = loadAppState();
 
 export default function App() {
@@ -21,36 +30,36 @@ export default function App() {
     // =========================================================================================
     
     // ----- Core Application State (Persisted via localStorage) -----
-    const [pages, setPages] = useState<Record<string, PetriNetPageData>>(
+    const [pages, setPages] = useState<Record<string, PetriNetPageData>>( // Holds all the pages of the current project, keyed by page ID.
         initialPersistedState?.pages || {}
     );
-    const [activePageId, setActivePageId] = useState<string | null>(
+    const [activePageId, setActivePageId] = useState<string | null>( // ID of the currently visible/active page.
         initialPersistedState?.activePageId || null
     );
-    const [pageOrder, setPageOrder] = useState<string[]>(
+    const [pageOrder, setPageOrder] = useState<string[]>( // Array of page IDs defining the order of pages in the UI.
         initialPersistedState?.pageOrder || []
     );
-    const [projectTitle, setProjectTitle] = useState<string>(
+    const [projectTitle, setProjectTitle] = useState<string>( // The title of the overall project.
         initialPersistedState?.projectTitle || "Untitled MyPetri Project"
     );
-    const [projectHasUnsavedChanges, setProjectHasUnsavedChanges] = useState<boolean>(
+    const [projectHasUnsavedChanges, setProjectHasUnsavedChanges] = useState<boolean>( // Flag indicating if there are unsaved changes in the project.
         initialPersistedState?.projectHasUnsavedChanges || false
     );
     // projectFileHandle is not persisted due to its nature.
-    const [projectFileHandle, setProjectFileHandle] = useState<FileSystemFileHandle | null>(null);
-    const [originalFileNameFromInput, setOriginalFileNameFromInput] = useState<string | null>(null);
+    const [projectFileHandle, setProjectFileHandle] = useState<FileSystemFileHandle | null>(null); // File system handle for the project file (if using File System Access API).
+    const [originalFileNameFromInput, setOriginalFileNameFromInput] = useState<string | null>(null); // Stores the original filename when a project is opened via a traditional file input.
 
     // ----- Transient UI & Interaction State (Not Persisted) -----
-    const [currentFiredTransitions, setCurrentFiredTransitions] = useState<string[]>([]);
-    const [selectedTool, setSelectedTool] = useState<'NONE' |'PLACE' | 'TRANSITION' | 'ARC'>('NONE');
-    const [arcType, setArcType] = useState<UIArc['type']>('REGULAR');
+    const [currentFiredTransitions, setCurrentFiredTransitions] = useState<string[]>([]); // IDs of transitions that are currently visually "fired" in the simulation.
+    const [selectedTool, setSelectedTool] = useState<'NONE' |'PLACE' | 'TRANSITION' | 'ARC'>('NONE'); // The currently active tool selected from the toolbar (e.g., Place, Transition, Arc).
+    const [arcType, setArcType] = useState<UIArc['type']>('REGULAR'); // The type of arc to be created (e.g., Regular, Inhibitor).
     const [isTyping, setIsTyping] = useState(false); // Tracks if user is typing in an input field to prevent shortcut collisions
-    const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
-    const [currentMode, setCurrentMode] = useState('select');
-    const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false);
+    const [autoScrollEnabled, setAutoScrollEnabled] = useState(true); // Controls whether the properties panel automatically scrolls to selected elements.
+    const [currentMode, setCurrentMode] = useState('select'); // Represents the current interaction mode of the canvas (e.g., select, place, arc).
+    const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false); // Toggles the visibility of the place capacity editor.
     
     // ----- Refs for Direct DOM Access or Persistent Mutable Values -----
-    const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+    const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map()); // Stores the initial {x, y} positions of elements at the beginning of a drag operation.
     const titleRef = useRef<EditableTitleRef>(null); // Ref for the main project title editor
 
     // =========================================================================================
@@ -73,16 +82,17 @@ export default function App() {
                 selectedElements: [],
                 history: { places: [], transitions: [], arcs: [], title: [] },
                 zoomLevel: .85,
-                panOffset: { x: -880, y: -400 }
+                panOffset: { x: -880, y: -400 },
+                validatorConfigs: { ...defaultValidatorConfigs } // Initialize
             };
             setPages({ [initialPageId]: newPage });
             setPageOrder([initialPageId]);
             setActivePageId(initialPageId);
-            setProjectHasUnsavedChanges(false); 
-            setProjectFileHandle(null); 
+            setProjectHasUnsavedChanges(false);
+            setProjectFileHandle(null);
             setOriginalFileNameFromInput(null);
         }
-    }, [initialPersistedState]); 
+    }, [initialPersistedState]); // Removed 'pages' and 'pageOrder' from deps as they are set inside
 
     useEffect(() => {
         const stateToSave: PersistedAppState = {
@@ -477,18 +487,11 @@ export default function App() {
                     return {
                         ...prevPages,
                         [activePageId!]: {
-                            id: currentPage.id,
-                            title: currentPage.title,
-                            places: currentPage.places, // Places don't change
+                            ...currentPage,
                             transitions: updatedTransitions,
                             arcs: updatedArcs,
-                            deterministicMode: currentPage.deterministicMode,
-                            conflictResolutionMode: currentPage.conflictResolutionMode,
-                            conflictingTransitions: currentPage.conflictingTransitions,
-                            selectedElements: [], // Clear selection
-                            history: nextHistory, // Set updated history
-                            zoomLevel: currentPage.zoomLevel,
-                            panOffset: currentPage.panOffset
+                            selectedElements: [],
+                            history: nextHistory,
                         }
                     };
                 });
@@ -557,18 +560,13 @@ export default function App() {
                     return {
                         ...prevPages,
                         [activePageId!]: {
-                            id: currentPage.id,
-                            title: currentPage.title,
-                            places: currentPage.places,
-                            transitions: updatedTransitions,
+                            ...currentPage, // Spread all existing properties first
+                            transitions: updatedTransitions, // Then overwrite the ones that changed
                             arcs: updatedArcs,
-                            deterministicMode: currentPage.deterministicMode,
-                            conflictResolutionMode: currentPage.conflictResolutionMode,
-                            conflictingTransitions: currentPage.conflictingTransitions,
-                            selectedElements: [],
-                            history: nextHistory,
-                            zoomLevel: currentPage.zoomLevel,
-                            panOffset: currentPage.panOffset
+                            selectedElements: [], // Clear selection
+                            history: nextHistory, // Set updated history
+                            // No need to list id, title, places, deterministicMode, validatorConfigs etc.
+                            // if they didn't change, as ...currentPage already brought them.
                         }
                     };
                  });
@@ -1186,7 +1184,8 @@ export default function App() {
             selectedElements: pageToLoad.selectedElements || [], 
             history: pageToLoad.history || { places: [], transitions: [], arcs: [], title: [] }, 
             zoomLevel: pageToLoad.zoomLevel ?? 1, 
-            panOffset: pageToLoad.panOffset ?? { x: -750, y: -421.875 } 
+            panOffset: pageToLoad.panOffset ?? { x: -750, y: -421.875 },
+            validatorConfigs: pageToLoad.validatorConfigs ? { ...pageToLoad.validatorConfigs } : { ...defaultValidatorConfigs }
         };
         
         setPages(prevPages => ({
@@ -1528,15 +1527,50 @@ export default function App() {
         setProjectHasUnsavedChanges(true);
     };
 
+    const handleUpdateValidatorConfigs = useCallback((pageId: string, newConfigs: Partial<ValidatorPageConfig>) => {
+        setPages(prevPages => {
+            if (!prevPages[pageId]) {
+                console.warn(`Attempted to update validator configs for non-existent page: ${pageId}`);
+                return prevPages;
+            }
+            const currentPageData = prevPages[pageId];
+            const currentValidatorConfigs = currentPageData.validatorConfigs || { ...defaultValidatorConfigs };
+            
+            const updatedConfigs: ValidatorPageConfig = { 
+                ...currentValidatorConfigs, 
+                ...newConfigs 
+            };
+    
+            if (JSON.stringify(currentValidatorConfigs) === JSON.stringify(updatedConfigs)) {
+                return prevPages;
+            }
+    
+            return {
+                ...prevPages,
+                [pageId]: {
+                    ...currentPageData,
+                    validatorConfigs: updatedConfigs
+                }
+            };
+        });
+        setProjectHasUnsavedChanges(true);
+    }, [setPages]);
+
+    const onValidatorConfigsChangeCallback = useCallback((updatedConfigParts: Partial<ValidatorPageConfig>) => {
+        if (activePageId) {
+            handleUpdateValidatorConfigs(activePageId, updatedConfigParts);
+        }
+    }, [activePageId, handleUpdateValidatorConfigs]);
+
     // =========================================================================================
     // XIII. PAGE HANDLERS
     // =========================================================================================
     const handleCreatePage = () => {
         const newPageId = `page_${Date.now()}`;
-        const pageCount = pageOrder.length; 
+        const pageCount = pageOrder.length;
         const newPage: PetriNetPageData = {
             id: newPageId,
-            title: `Page ${pageCount + 1}`, 
+            title: `Page ${pageCount + 1}`,
             places: [],
             transitions: [],
             arcs: [],
@@ -1544,17 +1578,18 @@ export default function App() {
             conflictResolutionMode: false,
             conflictingTransitions: [],
             selectedElements: [],
-            history: { places: [], transitions: [], arcs: [], title: [] }, 
-            zoomLevel: 1, 
-            panOffset: { x: -750, y: -421.875 }
+            history: { places: [], transitions: [], arcs: [], title: [] },
+            zoomLevel: 1,
+            panOffset: { x: -750, y: -421.875 },
+            validatorConfigs: { ...defaultValidatorConfigs } // Initialize
         };
         setPages(prevPages => ({
             ...prevPages,
             [newPageId]: newPage
         }));
         setPageOrder(prevOrder => [...prevOrder, newPageId]);
-        setActivePageId(newPageId); 
-        setProjectHasUnsavedChanges(true); // Creating a new page is an unsaved change
+        setActivePageId(newPageId);
+        setProjectHasUnsavedChanges(true);
     };
 
     const handleRenamePage = (pageId: string, newTitle: string) => {
@@ -1690,7 +1725,7 @@ export default function App() {
           }
         };
       });
-      // Centering view DOES NOT set projectHasUnsavedChanges
+      // Centering view DOES NOT set projectHasUnsavedChanges to true
     };
 
     // =========================================================================================
@@ -2093,17 +2128,19 @@ export default function App() {
                      height: '100%'
                 }}>
                     {/* Conditionally render TabbedPanel */}
-                    {petriNetDTO && (
-                    <TabbedPanel 
+                    {petriNetDTO && activePageData && ( // Ensure activePageData exists
+                    <TabbedPanel
                         data={petriNetDTO}
-                        onValidationResult={handleValidationResult}
-                            selectedElements={activePageData?.selectedElements || []}
+                        onValidationResult={handleValidationResult} // This can likely be removed if ValidatorTool handles it via onValidatorConfigsChange
+                        selectedElements={activePageData?.selectedElements || []}
                         autoScrollEnabled={autoScrollEnabled}
                         onAutoScrollToggle={setAutoScrollEnabled}
                         currentMode={currentMode}
-                        width="100%" 
+                        width="100%"
                         height="100%"
-                        activePageId={activePageId} // Pass activePageId
+                        activePageId={activePageId}
+                        validatorConfigs={activePageData.validatorConfigs || defaultValidatorConfigs} // Pass current page's config
+                        onValidatorConfigsChange={onValidatorConfigsChangeCallback}
                     />
                     )}
                     {/* Optional placeholder when no page is active */}

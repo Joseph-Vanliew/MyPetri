@@ -30,7 +30,6 @@ export function AnalysisTool({
       {/* Overlay Element */}
       <div className="analysis-overlay">
         <div className="analysis-overlay-text">Under Construction</div>
-        <div className="analysis-overlay-cross">✕</div> 
       </div>
       {/*--------------------- TODO: Remove when done! --------------------- */}
 

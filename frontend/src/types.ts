@@ -1,12 +1,13 @@
 // src/types.ts
 
-// --------------------------
-// API Request/Response Types (Mirror Java DTOs)
-// --------------------------
 
 export const GRID_CELL_SIZE = 50; // Pixels per grid cell for aspect rations ranging from 16:9 to 21:9
 export type GridPosition = { gridX: number; gridY: number };
 
+
+// --------------------------
+// API Request/Response Types 
+// --------------------------
 export interface PetriNetDTO {
     places: {
         id: string;
@@ -42,7 +43,7 @@ export interface PetriNetDTO {
 }
 
 // --------------------------
-// UI State Types (Additional frontend-only fields)
+// UI State Types 
 // --------------------------
 export interface UIPlace {
     id: string;
@@ -89,14 +90,24 @@ export interface PetriNetValidationRequest {
 
 export interface ValidationResult {
     valid: boolean;
-    message: string;
+    message?: string;
     errors?: string[];
-    conflictingTransitions?: string[];
-    finalState?: PetriNetDTO;
     outputMatches?: Record<string, boolean>;
+    finalState?: PetriNetDTO;
+    conflictingTransitions?: string[];
 }
 
-// Page Data
+export interface ValidatorPageConfig {
+    inputConfigs: PlaceConfig[];
+    outputConfigs: PlaceConfig[];
+    validationResult: ValidationResult | null;
+    emptyInputFields: {[index: number]: boolean};
+    emptyOutputFields: {[index: number]: boolean};
+}
+
+// --------------------------
+// Page and project data types
+// --------------------------
 export interface PetriNetPageData {
     id: string;
     title: string;
@@ -115,6 +126,7 @@ export interface PetriNetPageData {
     };
     zoomLevel?: number;
     panOffset?: { x: number; y: number };
+    validatorConfigs?: ValidatorPageConfig;
 }
 
 export interface ProjectDTO {
@@ -124,6 +136,3 @@ export interface ProjectDTO {
     activePageId: string | null;
     version?: string; // For future compatibility, e.g., "1.0.0"
 }
-
-// Consider adding a global AppMode type if needed, e.g., for distinguishing between 'select', 'place', 'transition', 'arc'
-// export type AppMode = 'select' | 'place' | 'transition' | 'arc';

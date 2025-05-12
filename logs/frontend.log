@@ -3,131 +3,29 @@
 > vite
 
 
-  VITE v6.2.0  ready in 186 ms
+  VITE v6.2.0  ready in 200 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-10:48:25 AM [vite] vite.config.ts changed, restarting server...
-10:48:25 AM [vite] server restarted.
-10:48:54 AM [vite] vite.config.ts changed, restarting server...
-10:48:54 AM [vite] server restarted.
-10:50:36 AM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-10:56:48 AM [vite] (client) hmr update /src/components/ValidatorTool.tsx
-11:34:13 AM [vite] (client) hmr update /src/components/MenuBar.tsx
-11:34:21 AM [vite] (client) hmr update /src/components/PagesComponent.tsx
-11:37:44 AM [vite] (client) hmr update /src/components/PagesComponent.tsx
-11:39:48 AM [vite] (client) hmr update /src/components/styles/PagesComponent.css
-11:45:56 AM [vite] (client) hmr update /src/components/PagesComponent.tsx
-11:45:58 AM [vite] (client) hmr update /src/components/MenuBar.tsx
-11:46:02 AM [vite] (client) hmr update /src/components/styles/PagesComponent.css
-12:06:30 PM [vite] (client) hmr update /src/App.tsx
-12:06:43 PM [vite] (client) hmr update /src/App.tsx
-12:07:01 PM [vite] (client) hmr update /src/App.tsx
-12:10:25 PM [vite] (client) hmr update /src/App.tsx
-12:10:39 PM [vite] (client) hmr update /src/App.tsx
-12:11:44 PM [vite] (client) hmr update /src/App.tsx
-12:12:10 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:13:56 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:15:16 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:15:45 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:15:59 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:17:23 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:18:26 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:19:51 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:39:38 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:39:47 PM [vite] (client) hmr update /src/App.tsx
-12:40:21 PM [vite] (client) hmr update /src/App.tsx
-12:42:01 PM [vite] (client) hmr update /src/App.tsx
-12:42:23 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:45:52 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:46:08 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:46:33 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:47:56 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:48:05 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:50:29 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:51:04 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:52:28 PM [vite] (client) hmr update /src/components/Canvas.tsx
-12:52:51 PM [vite] (client) hmr update /src/components/Canvas.tsx
-1:05:53 PM [vite] (client) hmr update /src/components/Canvas.tsx
-1:06:02 PM [vite] (client) hmr update /src/components/Canvas.tsx
-1:08:27 PM [vite] (client) hmr update /src/components/canvas/Grid.tsx
-1:09:35 PM [vite] (client) hmr update /src/components/canvas/Grid.tsx
-1:09:53 PM [vite] (client) hmr update /src/components/canvas/Grid.tsx
-1:10:19 PM [vite] (client) hmr update /src/components/canvas/Grid.tsx
-1:12:34 PM [vite] (client) hmr update /src/App.tsx
-1:12:58 PM [vite] (client) hmr update /src/App.tsx
-1:12:58 PM [vite] Internal server error: /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/src/App.tsx: Identifier 'handleExportActivePage' has already been declared. (1636:10)
-
-  1634 |     };
-  1635 |
-> 1636 |     const handleExportActivePage = (suggestedFilename?: string) => {
-       |           ^
-  1637 |         if (!activePageData) {
-  1638 |             alert("No active page to export.");
-  1639 |             return;
-  Plugin: vite:react-babel
-  File: /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/src/App.tsx:1636:10
-  1634|      };
-  1635|  
-  1636|      const handleExportActivePage = (suggestedFilename?: string) => {
-     |            ^
-  1637|          if (!activePageData) {
-  1638|              alert("No active page to export.");
-      at constructor (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:359:19)
-      at TypeScriptParserMixin.raise (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:3327:19)
-      at TypeScriptScopeHandler.checkRedeclarationInScope (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:1555:19)
-      at TypeScriptScopeHandler.declareName (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:1521:12)
-      at TypeScriptScopeHandler.declareName (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:7053:11)
-      at TypeScriptParserMixin.declareNameFromIdentifier (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:7476:16)
-      at TypeScriptParserMixin.checkIdentifier (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:7472:12)
-      at TypeScriptParserMixin.checkLVal (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:7413:12)
-      at TypeScriptParserMixin.parseVarId (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:13021:10)
-      at TypeScriptParserMixin.parseVarId (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9564:11)
-      at TypeScriptParserMixin.parseVar (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12996:12)
-      at TypeScriptParserMixin.parseVarStatement (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12843:10)
-      at TypeScriptParserMixin.parseVarStatement (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9291:31)
-      at TypeScriptParserMixin.parseStatementContent (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12458:23)
-      at TypeScriptParserMixin.parseStatementContent (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9321:18)
-      at TypeScriptParserMixin.parseStatementLike (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12375:17)
-      at TypeScriptParserMixin.parseStatementListItem (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12355:17)
-      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12929:61)
-      at TypeScriptParserMixin.parseBlockBody (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12922:10)
-      at TypeScriptParserMixin.parseBlock (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12910:10)
-      at TypeScriptParserMixin.parseFunctionBody (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:11752:24)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:11738:10)
-      at TypeScriptParserMixin.parseFunctionBodyAndFinish (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9054:18)
-      at /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:13054:12
-      at TypeScriptParserMixin.withSmartMixTopicForbiddingContext (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12046:14)
-      at TypeScriptParserMixin.parseFunction (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:13053:10)
-      at TypeScriptParserMixin.parseExportDefaultExpression (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:13508:19)
-      at TypeScriptParserMixin.parseExportDefaultExpression (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9285:18)
-      at TypeScriptParserMixin.parseExport (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:13434:25)
-      at TypeScriptParserMixin.parseExport (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9268:20)
-      at TypeScriptParserMixin.parseStatementContent (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12488:27)
-      at TypeScriptParserMixin.parseStatementContent (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9321:18)
-      at TypeScriptParserMixin.parseStatementLike (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12375:17)
-      at TypeScriptParserMixin.parseModuleItem (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12352:17)
-      at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12929:36)
-      at TypeScriptParserMixin.parseBlockBody (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12922:10)
-      at TypeScriptParserMixin.parseProgram (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12249:10)
-      at TypeScriptParserMixin.parseTopLevel (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:12239:25)
-      at TypeScriptParserMixin.parse (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:14089:10)
-      at TypeScriptParserMixin.parse (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:9944:18)
-      at parse (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/parser/lib/index.js:14123:38)
-      at parser (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
-      at parser.next (<anonymous>)
-      at normalizeFile (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
-      at normalizeFile.next (<anonymous>)
-      at run (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
-      at run.next (<anonymous>)
-      at transform (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/@babel/core/lib/transform.js:22:33)
-      at transform.next (<anonymous>)
-      at step (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/frontend/node_modules/gensync/index.js:261:32)
-1:13:11 PM [vite] (client) hmr update /src/App.tsx
-1:13:15 PM [vite] (client) hmr update /src/components/canvas/Grid.tsx
-1:17:48 PM [vite] (client) hmr update /src/App.tsx
-1:20:16 PM [vite] (client) hmr update /src/App.tsx
-1:28:55 PM [vite] (client) hmr update /src/components/MenuBar.tsx
-1:29:16 PM [vite] (client) hmr update /src/App.tsx
-1:34:28 PM [vite] (client) hmr update /src/App.tsx
-1:34:30 PM [vite] (client) hmr update /src/components/MenuBar.tsx
+2:50:56 PM [vite] (client) hmr update /src/App.tsx
+2:51:04 PM [vite] (client) hmr update /src/App.tsx
+2:55:50 PM [vite] (client) hmr update /src/App.tsx
+2:55:59 PM [vite] (client) hmr update /src/App.tsx
+2:58:08 PM [vite] (client) hmr update /src/App.tsx
+3:07:45 PM [vite] (client) hmr update /src/App.tsx
+3:09:29 PM [vite] (client) hmr update /src/App.tsx
+3:11:36 PM [vite] (client) hmr update /src/App.tsx
+3:15:34 PM [vite] (client) hmr update /src/App.tsx
+3:19:46 PM [vite] (client) hmr update /src/App.tsx
+3:31:36 PM [vite] (client) hmr update /src/App.tsx
+3:31:55 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
+3:31:59 PM [vite] (client) hmr update /src/components/TabbedPanel.tsx
+3:32:16 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+3:32:28 PM [vite] (client) hmr update /src/App.tsx, /src/components/canvas/Grid.tsx, /src/components/Canvas.tsx
+3:32:39 PM [vite] (client) hmr update /src/App.tsx
+1:41:37 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+1:42:19 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+1:42:57 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+1:44:55 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+1:46:40 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx
+1:48:30 PM [vite] (client) hmr update /src/components/ValidatorTool.tsx

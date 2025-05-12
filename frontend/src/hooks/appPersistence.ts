@@ -85,5 +85,6 @@ export function saveAppState(state: PersistedAppState): void {
     localStorage.setItem(LOCAL_STORAGE_KEY, serializedState);
   } catch (error) {
     console.error('Error saving state to localStorage:', error);
+
   }
 } 
