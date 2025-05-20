@@ -12,6 +12,7 @@ import { screenToSVGCoordinates, snapToGrid } from './canvas/utils/coordinateUti
 import { UIPlace, UITransition, UIArc } from '../types';
 import { TokenAnimations } from './elements/TokenAnimations';
 import { TokenAnimator } from '../animations/TokenAnimator';
+import { SpeedControl } from './controls/SpeedControl';
 
 
 declare global {
@@ -197,6 +198,10 @@ export const Canvas = (props: CanvasProps) => {
         
         props.onCanvasClick(snapped.x, snapped.y);
     }, [props.onSelectTool, props.onCanvasClick]);
+
+    const handleSpeedChange = (multiplier: number) => {
+        props.tokenAnimator?.setSpeedMultiplier(multiplier);
+    };
 
     return (
         <div className="canvas-container" style={{ 
@@ -418,6 +423,7 @@ export const Canvas = (props: CanvasProps) => {
                     />
                 )}
             </svg>
+            <SpeedControl onChange={handleSpeedChange} />
         </div>
     );
 };

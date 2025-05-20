@@ -17,6 +17,7 @@ interface MenuBarProps {
   projectFileHandle: FileSystemFileHandle | null;
   projectHasUnsavedChanges: boolean;
   onRenameProjectTitle: (newTitle: string) => void;
+  onNewProject: () => void;
 }
 
 export function MenuBar({
@@ -30,6 +31,7 @@ export function MenuBar({
   onExportProject,
   onCreatePage,
   projectHasUnsavedChanges,
+  onNewProject,
 }: MenuBarProps) {
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showExportSubMenu, setShowExportSubMenu] = useState(false);
@@ -102,24 +104,24 @@ export function MenuBar({
         </div>
         {showFileMenu && (
           <div className="dropdown-menu">
+            <div className="menu-item" onClick={() => { onNewProject(); setShowFileMenu(false); }}>New Project</div>
+            
             <div className="menu-item" onClick={() => {
               if ('showOpenFilePicker' in window) {
-                onOpenProject(); // Call without event for FSA path
+                onOpenProject();
                 setShowFileMenu(false);
               } else {
-                // FSA not available, trigger the input.
-                // The input's onChange will handle calling onOpenProject(event) and setShowFileMenu(false).
                 openProjectInputRef.current?.click();
               }
             }}>Open Project...</div>
             <input type="file" ref={openProjectInputRef} style={{ display: 'none' }} accept=".petri,.pats,.json" onChange={(e) => { onOpenProject(e); setShowFileMenu(false); }} />
             
-            <div className="menu-item-separator"></div>
+            
             
             <div className="menu-item" onClick={() => { onSaveProject(); setShowFileMenu(false); }}>Save Project</div>
             <div className="menu-item" onClick={() => { onSaveProjectAs(); setShowFileMenu(false); }}>Save Project As...</div>
             
-            <div className="menu-item-separator"></div>
+           
             
             <div className="menu-item" onClick={() => importPagesInputRef.current?.click()}>Import Page(s)...</div>
             <input type="file" ref={importPagesInputRef} style={{ display: 'none' }} accept=".page.json,.json" multiple onChange={(e) => { onImportPages(e); setShowFileMenu(false); }} />

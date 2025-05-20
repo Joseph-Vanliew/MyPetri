@@ -12,6 +12,13 @@ import { PagesComponent } from './components/PagesComponent';
 import { loadAppState, saveAppState, PersistedAppState } from './hooks/appPersistence';
 import { TokenAnimator } from './animations/TokenAnimator';
 
+const defaultValidatorConfigs: ValidatorPageConfig = {
+    inputConfigs: [],
+    outputConfigs: [],
+    validationResult: null,
+    emptyInputFields: {},
+    emptyOutputFields: {}
+};
 
 export default function App() {
     // =========================================================================================
@@ -20,7 +27,8 @@ export default function App() {
 
     const MAX_HISTORY_LENGTH = 50;
 
-    const initialPersistedState = loadAppState();
+    const isNewWindow = window.name === 'new_project';
+    const initialPersistedState = isNewWindow ? null : loadAppState();
     
     // ----- Core Application State (Persisted via localStorage) -----
     const [pages, setPages] = useState<Record<string, PetriNetPageData>>( // Holds all the pages of the current project, keyed by page ID.
@@ -32,10 +40,10 @@ export default function App() {
     const [pageOrder, setPageOrder] = useState<string[]>( // Array of page IDs defining the order of pages in the UI.
         initialPersistedState?.pageOrder || []
     );
-    const [projectTitle, setProjectTitle] = useState<string>( // The title of the overall project.
+    const [projectTitle, setProjectTitle] = useState<string>( 
         initialPersistedState?.projectTitle || "Untitled MyPetri Project"
     );
-    const [projectHasUnsavedChanges, setProjectHasUnsavedChanges] = useState<boolean>( // Flag indicating if there are unsaved changes in the project.
+    const [projectHasUnsavedChanges, setProjectHasUnsavedChanges] = useState<boolean>( // Flag indicating if there are unsaved changes.
         initialPersistedState?.projectHasUnsavedChanges || false
     );
     // projectFileHandle is not persisted due to its nature.
@@ -50,20 +58,13 @@ export default function App() {
     const [autoScrollEnabled, setAutoScrollEnabled] = useState(true); // Controls whether the properties panel automatically scrolls to selected elements.
     const [currentMode, setCurrentMode] = useState('select'); // Represents the current interaction mode of the canvas (e.g., select, place, arc).
     const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false); // Toggles the visibility of the place capacity editor.
+    const [animationMessage, setAnimationMessage] = useState<string | null>(null); // Message about animation status
     
     // ----- Refs for Direct DOM Access or Persistent Mutable Values -----
     const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map()); // Stores the initial {x, y} positions of elements at the beginning of a drag operation.
     const titleRef = useRef<EditableTitleRef>(null); // Ref for the main project title editor
 
-    const defaultValidatorConfigs: ValidatorPageConfig = {
-        inputConfigs: [],
-        outputConfigs: [],
-        validationResult: null,
-        emptyInputFields: {},
-        emptyOutputFields: {}
-    };
-    
-    // Add token animator instance
+    // token animator instance
     const tokenAnimator = useMemo(() => new TokenAnimator(), []);
 
     // =========================================================================================
@@ -304,6 +305,22 @@ export default function App() {
     const handleTypingChange = (typing: boolean) => {
         setIsTyping(typing);
     };
+
+    const handleNewProject = useCallback(() => {
+        if (projectHasUnsavedChanges) {
+            const confirmNew = window.confirm('You have unsaved changes in the current project. Do you want to proceed with creating a new project?');
+            if (!confirmNew) {
+                return;
+            }
+        }
+
+        const baseUrl = window.location.origin + window.location.pathname;
+        const newWindow = window.open(baseUrl, '_blank');
+        
+        if (newWindow) {
+            newWindow.localStorage.removeItem('patsAppState_v1');
+        }
+    }, [projectHasUnsavedChanges]);
 
     // =========================================================================================
     // VII. KEYBOARD SHORTCUTS & GLOBAL EVENT LISTENERS
@@ -809,11 +826,22 @@ export default function App() {
             return;
         }
         
+        // Check if animations are already running and prevent starting new ones
+        if (tokenAnimator.hasActiveAnimations()) {
+            console.log("Animation in progress. Please wait for it to complete.");
+            setAnimationMessage("Animation in progress. Please wait.");
+            // Clear the message after a delay
+            setTimeout(() => setAnimationMessage(null), 2000);
+            return;
+        }
+        
+        setAnimationMessage(null);
         setCurrentFiredTransitions([]); 
         
         // Small delay to ensure the animation class is removed before adding it again
         await new Promise(resolve => setTimeout(resolve, 10));
         
+        // --- Prepare the Petri Net DTO for the simulation API ---
         const requestBody: PetriNetDTO = {
             places: activePageData.places.map(p => ({ 
                 id: p.id, tokens: p.tokens, name: p.name, x: p.x, y: p.y, 
@@ -831,6 +859,7 @@ export default function App() {
         };
 
         try {
+            // --- Simulate the Petri Net next state ---
             const apiUrl = `${API_ENDPOINTS.PROCESS}/page/${activePageId}/process`;
 
             const response = await fetch(apiUrl, {
@@ -857,78 +886,90 @@ export default function App() {
                 height: t.height || 54
             })) || [];
             
-            // Update the active page's state using setPages
+            // Update the active page's state
             setPages(prevPages => {
                 const pageToUpdate = prevPages[activePageId!];
                 if (!pageToUpdate) return prevPages;
 
                 // Start animations for each fired transition
-                firedTransitions.forEach(firedTransition => {
-                    // Find input and output arcs for this transition
-                    const inputArcs = pageToUpdate.arcs.filter(a => 
-                        a.outgoingId === firedTransition.id && a.type !== 'INHIBITOR'
-                    );
-                    const outputArcs = pageToUpdate.arcs.filter(a => 
-                        a.incomingId === firedTransition.id
-                    );
+                const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
+                let newConflictResolutionMode = false;
+                let newConflictingTransitions: string[] = [];
 
-                    // Find the actual transition object from the page data
-                    const transitionObj = pageToUpdate.transitions.find(t => t.id === firedTransition.id);
-                    if (!transitionObj) return;
+                // Check for conflicts first
+                if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
+                    newConflictResolutionMode = true;
+                    newConflictingTransitions = responseEnabledTransitions;
+                    // Don't start animations if there's a conflict
+                    tokenAnimator.clear(); // Clear any ongoing animations
+                } else {
+                    // Only start animations if there's no conflict
+                    firedTransitions.forEach(firedTransition => {
+                        // Find input and output arcs for this transition
+                        const inputArcs = pageToUpdate.arcs.filter(a => 
+                            a.outgoingId === firedTransition.id && a.type !== 'INHIBITOR'
+                        );
+                        const outputArcs = pageToUpdate.arcs.filter(a => 
+                            a.incomingId === firedTransition.id
+                        );
 
-                    // Start animations for each token movement
-                    inputArcs.forEach(inputArc => {
-                        const sourcePlace = pageToUpdate.places.find(p => p.id === inputArc.incomingId);
-                        // If there are output places, animate to them
-                        if (outputArcs.length > 0) {
-                            outputArcs.forEach(outputArc => {
-                                const targetPlace = pageToUpdate.places.find(p => p.id === outputArc.outgoingId);
-                                if (sourcePlace && targetPlace) {
-                                    tokenAnimator.startAnimation(
-                                        sourcePlace,
-                                        targetPlace,
-                                        transitionObj, // Use the actual transition object with position info
-                                        pageToUpdate.arcs,
-                                        () => {
-                                            // Update target place tokens after animation completes
-                                            setPages(prevPages => {
-                                                const currentPage = prevPages[activePageId!];
-                                                if (!currentPage) return prevPages;
+                        // Find the transition object from the page data
+                        const transitionObj = pageToUpdate.transitions.find(t => t.id === firedTransition.id);
+                        if (!transitionObj) return;
 
-                                                const updatedPlaces = currentPage.places.map(p => {
-                                                    if (p.id === targetPlace.id) {
-                                                        const finalPlace = responseData.places.find(rp => rp.id === p.id);
-                                                        return finalPlace ? { ...p, tokens: finalPlace.tokens } : p;
-                                                    }
-                                                    return p;
-                                                });
-
-                                                return {
-                                                    ...prevPages,
-                                                    [activePageId!]: {
-                                                        ...currentPage,
-                                                        places: updatedPlaces
-                                                    }
-                                                };
-                                            });
-                                        }
-                                    );
-                                }
-                            });
-                        } else {
-                            // If no output places, just animate the consumption
+                        // Handle input arcs (consumption)
+                        inputArcs.forEach(inputArc => {
+                            const sourcePlace = pageToUpdate.places.find(p => p.id === inputArc.incomingId);
                             if (sourcePlace) {
                                 tokenAnimator.startAnimation(
                                     sourcePlace,
-                                    sourcePlace, // Use same place as target since we only want consumption
-                                    transitionObj, // Use the actual transition object with position info
+                                    transitionObj,
+                                    transitionObj,
                                     pageToUpdate.arcs,
-                                    () => {} // No token updates needed for pure consumption
+                                    () => {} // No callback needed for consumption
                                 );
                             }
-                        }
+                        });
+
+                        // Handle output arcs (production) separately
+                        outputArcs.forEach(outputArc => {
+                            const targetPlace = pageToUpdate.places.find(p => p.id === outputArc.outgoingId);
+                            if (targetPlace) {
+                                // Capture the final token value from responseData
+                                const finalTokens = responseData.places.find(rp => rp.id === targetPlace.id)?.tokens ?? targetPlace.tokens;
+                                
+                                tokenAnimator.startAnimation(
+                                    transitionObj,
+                                    targetPlace,
+                                    transitionObj,
+                                    pageToUpdate.arcs,
+                                    () => {
+                                        // Update target place tokens after animation completes
+                                        setPages(prevPages => {
+                                            const currentPage = prevPages[activePageId!];
+                                            if (!currentPage) return prevPages;
+
+                                            const updatedPlaces = currentPage.places.map(p => {
+                                                if (p.id === targetPlace.id) {
+                                                    return { ...p, tokens: finalTokens };
+                                                }
+                                                return p;
+                                            });
+
+                                            return {
+                                                ...prevPages,
+                                                [activePageId!]: {
+                                                    ...currentPage,
+                                                    places: updatedPlaces
+                                                }
+                                            };
+                                        });
+                                    }
+                                );
+                            }
+                        });
                     });
-                });
+                }
 
                 const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
                     const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
@@ -942,15 +983,6 @@ export default function App() {
                         tokens: updatedPlaceData.tokens 
                     } : p_ui;
                 });
-
-                let newConflictResolutionMode = false;
-                let newConflictingTransitions: string[] = [];
-                const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
-
-                if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
-                    newConflictResolutionMode = true;
-                    newConflictingTransitions = responseEnabledTransitions;
-                }
 
                 // Map response DTO transitions to UITransition
                 const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
@@ -984,6 +1016,228 @@ export default function App() {
         } catch (error) {
             console.error('Simulation error:', error);
         }
+    };
+
+    const continueSimulation = async (selectedTransitionId: string) => {
+        if (!activePageId || !activePageData) {
+            console.log("No active page for conflict resolution.");
+            return;
+        }
+
+        // Check if animations are already running and prevent starting new ones
+        if (tokenAnimator.hasActiveAnimations()) {
+            console.log("Animation in progress. Please wait for it to complete.");
+            setAnimationMessage("Animation in progress. Please wait.");
+            // Clear the message after a delay
+            setTimeout(() => setAnimationMessage(null), 2000);
+            return;
+        }
+
+        setAnimationMessage(null);
+        setCurrentFiredTransitions([]); 
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        const tempUpdatedTransitions = activePageData.transitions.map(t => ({
+            ...t,
+            enabled: t.id === selectedTransitionId
+        }));
+        setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: tempUpdatedTransitions } }));
+        
+        // Set animation state for the selected transition
+        setCurrentFiredTransitions([selectedTransitionId]);
+        
+        const requestBody = {
+            // Construct DTO from activePageData
+            places: activePageData.places.map(p => ({ 
+                 id: p.id, tokens: p.tokens, name: p.name, x: p.x, y: p.y,
+                 radius: p.radius, bounded: p.bounded, capacity: p.capacity
+            })),
+            transitions: activePageData.transitions.map(t => ({ // Send the original enabled state before temp update
+                 id: t.id, enabled: t.enabled, arcIds: t.arcIds, name: t.name, 
+                 x: t.x, y: t.y, width: t.width, height: t.height
+            })),
+            arcs: activePageData.arcs.map(a => ({
+                id: a.id, type: a.type, incomingId: a.incomingId, outgoingId: a.outgoingId,
+            })),
+            selectedTransitionId, // Add the selected ID for the backend
+            deterministicMode: activePageData.deterministicMode,
+            title: activePageData.title
+        };
+        
+        try {
+            const apiUrl = `${API_ENDPOINTS.RESOLVE}/page/${activePageId}/resolve`; 
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                 const errorBody = await response.text();
+                 console.error('Conflict resolution API error:', response.status, errorBody);
+                 // Revert temporary UI update? Or show error? Reverting for now.
+                 setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: activePageData.transitions, conflictResolutionMode: false } })); // Revert transitions and exit conflict mode on error
+                 setCurrentFiredTransitions([]);
+                 return;
+            }
+            
+            const responseData = await response.json() as PetriNetDTO;
+            
+            // Get the transition details
+            const transitionObj = activePageData.transitions.find(t => t.id === selectedTransitionId);
+            if (transitionObj) {
+                // Set animation state for the transition
+                setCurrentFiredTransitions([selectedTransitionId]);
+                
+                // Find input and output arcs for this transition
+                const inputArcs = activePageData.arcs.filter(a => 
+                    a.outgoingId === selectedTransitionId && a.type !== 'INHIBITOR'
+                );
+                const outputArcs = activePageData.arcs.filter(a => 
+                    a.incomingId === selectedTransitionId
+                );
+
+                // Handle input arcs (consumption)
+                inputArcs.forEach(inputArc => {
+                    const sourcePlace = activePageData.places.find(p => p.id === inputArc.incomingId);
+                    if (sourcePlace) {
+                        tokenAnimator.startAnimation(
+                            sourcePlace,
+                            transitionObj,
+                            transitionObj,
+                            activePageData.arcs,
+                            () => {} // No callback needed for consumption
+                        );
+                    }
+                });
+                
+                // Track if this is the last animation to complete
+                let outputArcCount = outputArcs.length;
+                let completedAnimations = 0;
+
+                // Handle output arcs (production) separately
+                outputArcs.forEach(outputArc => {
+                    const targetPlace = activePageData.places.find(p => p.id === outputArc.outgoingId);
+                    if (targetPlace) {
+                        // Capture the final token value from responseData
+                        const finalTokens = responseData.places.find(rp => rp.id === targetPlace.id)?.tokens ?? targetPlace.tokens;
+                        
+                        tokenAnimator.startAnimation(
+                            transitionObj,
+                            targetPlace,
+                            transitionObj,
+                            activePageData.arcs,
+                            () => {
+                                // Update target place tokens after animation completes
+                                setPages(prevPages => {
+                                    const currentPage = prevPages[activePageId!];
+                                    if (!currentPage) return prevPages;
+
+                                    const updatedPlaces = currentPage.places.map(p => {
+                                        if (p.id === targetPlace.id) {
+                                            return { ...p, tokens: finalTokens };
+                                        }
+                                        return p;
+                                    });
+
+                                    return {
+                                        ...prevPages,
+                                        [activePageId!]: {
+                                            ...currentPage,
+                                            places: updatedPlaces
+                                        }
+                                    };
+                                });
+                                
+                                // Check if all animations are complete
+                                completedAnimations++;
+                                if (completedAnimations === outputArcCount) {
+                                    // Check for conflicts after all animations are done
+                                    setPages(prevPages => {
+                                        const currentPage = prevPages[activePageId!];
+                                        if (!currentPage) return prevPages;
+                                        
+                                        // If we have new conflicts, update the conflict state
+                                        if (currentPage.conflictResolutionMode) {
+                                            setCurrentFiredTransitions([]);
+                                        }
+                                        
+                                        return prevPages; // No changes needed, just checking state
+                                    });
+                                }
+                            }
+                        );
+                    }
+                });
+                
+                // If there are no output arcs, clear fired transitions immediately
+                if (outputArcCount === 0) {
+                    setCurrentFiredTransitions([]);
+                }
+            }
+            
+            // Update page state based on response
+            setPages(prevPages => {
+                const pageToUpdate = prevPages[activePageId!];
+                if (!pageToUpdate) return prevPages;
+
+                const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
+                    const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
+                    // Only update tokens immediately for places being consumed from
+                    const isSourcePlace = activePageData.arcs.some(arc => 
+                        arc.incomingId === p_ui.id && 
+                        arc.outgoingId === selectedTransitionId
+                    );
+                    return updatedPlaceData && isSourcePlace ? { 
+                        ...p_ui,
+                        tokens: updatedPlaceData.tokens 
+                    } : p_ui;
+                });
+
+                const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
+                    const updatedTransitionData = responseData.transitions?.find(rt => rt.id === t_ui.id);
+                    return updatedTransitionData ? { ...t_ui, enabled: updatedTransitionData.enabled } : { ...t_ui, enabled: false };
+                });
+
+                const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
+                let newConflictResolutionMode = false;
+                let newConflictingTransitions: string[] = [];
+
+                // Check if *still* in conflict after resolution (possible if the fired transition enables others)
+                if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
+                     newConflictResolutionMode = true;
+                     newConflictingTransitions = responseEnabledTransitions;
+                     // Conflict state will be handled after animations complete
+                } else {
+                     // No new conflicts
+                }
+
+                return {
+                    ...prevPages,
+                    [activePageId!]: {
+                        ...pageToUpdate,
+                        places: updatedPagePlaces,
+                        transitions: updatedPageTransitions,
+                        conflictResolutionMode: newConflictResolutionMode,
+                        conflictingTransitions: newConflictingTransitions,
+                    }
+                };
+            });
+            setProjectHasUnsavedChanges(true); // Simulation/resolution changes data
+
+        } catch (error) {
+            console.error('Error resolving conflict:', error);
+            // Revert UI state and exit conflict mode on unexpected error
+            if (activePageId && pages[activePageId]) { // Check existence before accessing
+                 setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: pages[activePageId!].transitions, conflictResolutionMode: false } }));
+            }
+            setCurrentFiredTransitions([]);
+        }
+    };
+
+    const handleCompleteAnimations = () => {
+        tokenAnimator.completeCurrentAnimations();
+        setAnimationMessage(null);
     };
 
     const handleReset = async () => {
@@ -1438,112 +1692,6 @@ export default function App() {
         }
     };
 
-    const continueSimulation = async (selectedTransitionId: string) => {
-        if (!activePageId || !activePageData) {
-            console.log("No active page for conflict resolution.");
-            return;
-        }
-
-        setCurrentFiredTransitions([]); 
-        await new Promise(resolve => setTimeout(resolve, 10));
-        
-        const tempUpdatedTransitions = activePageData.transitions.map(t => ({
-            ...t,
-            enabled: t.id === selectedTransitionId
-        }));
-        setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: tempUpdatedTransitions } }));
-        
-        // Set animation state for the selected transition
-        setCurrentFiredTransitions([selectedTransitionId]);
-        
-        const requestBody = {
-            // Construct DTO from activePageData
-            places: activePageData.places.map(p => ({ 
-                 id: p.id, tokens: p.tokens, name: p.name, x: p.x, y: p.y,
-                 radius: p.radius, bounded: p.bounded, capacity: p.capacity
-            })),
-            transitions: activePageData.transitions.map(t => ({ // Send the original enabled state before temp update
-                 id: t.id, enabled: t.enabled, arcIds: t.arcIds, name: t.name, 
-                 x: t.x, y: t.y, width: t.width, height: t.height
-            })),
-            arcs: activePageData.arcs.map(a => ({
-                id: a.id, type: a.type, incomingId: a.incomingId, outgoingId: a.outgoingId,
-            })),
-            selectedTransitionId, // Add the selected ID for the backend
-            deterministicMode: activePageData.deterministicMode,
-            title: activePageData.title
-        };
-        
-        try {
-            const apiUrl = `${API_ENDPOINTS.RESOLVE}/page/${activePageId}/resolve`; 
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-            
-            if (!response.ok) {
-                 const errorBody = await response.text();
-                 console.error('Conflict resolution API error:', response.status, errorBody);
-                 // Revert temporary UI update? Or show error? Reverting for now.
-                 setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: activePageData.transitions, conflictResolutionMode: false } })); // Revert transitions and exit conflict mode on error
-                 setCurrentFiredTransitions([]);
-                 return;
-            }
-            
-            const responseData = await response.json() as PetriNetDTO;
-            
-            // Update page state based on response
-            setPages(prevPages => {
-                const pageToUpdate = prevPages[activePageId!];
-                if (!pageToUpdate) return prevPages;
-
-                const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
-                    const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
-                    return updatedPlaceData ? { ...p_ui, tokens: updatedPlaceData.tokens } : p_ui;
-            });
-
-                const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
-                    const updatedTransitionData = responseData.transitions?.find(rt => rt.id === t_ui.id);
-                    return updatedTransitionData ? { ...t_ui, enabled: updatedTransitionData.enabled } : { ...t_ui, enabled: false };
-                });
-
-                const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
-                let newConflictResolutionMode = false;
-                let newConflictingTransitions: string[] = [];
-
-                // Check if *still* in conflict after resolution (possible if the fired transition enables others)
-                if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
-                     newConflictResolutionMode = true;
-                     newConflictingTransitions = responseEnabledTransitions;
-                } 
-                
-                // Clear transient animation state after processing response
-                setCurrentFiredTransitions([]);
-
-                return {
-                    ...prevPages,
-                    [activePageId!]: {
-                        ...pageToUpdate,
-                        places: updatedPagePlaces,
-                        transitions: updatedPageTransitions,
-                        conflictResolutionMode: newConflictResolutionMode,
-                        conflictingTransitions: newConflictingTransitions,
-                    }
-                };
-            });
-            setProjectHasUnsavedChanges(true); // Simulation/resolution changes data
-
-        } catch (error) {
-            console.error('Error resolving conflict:', error);
-            // Revert UI state and exit conflict mode on unexpected error
-            if (activePageId && pages[activePageId]) { // Check existence before accessing
-                 setPages(prev => ({ ...prev, [activePageId!]: { ...prev[activePageId!], transitions: pages[activePageId!].transitions, conflictResolutionMode: false } }));
-            }
-            setCurrentFiredTransitions([]);
-        }
-    };
-
     // =========================================================================================
     // XII. VALIDATION HANDLERS
     // =========================================================================================
@@ -1741,7 +1889,6 @@ export default function App() {
         setProjectHasUnsavedChanges(true); // Deleting a page is an unsaved change
     };
 
-    // Handler for reordering pages
     const handleReorderPages = (newPageOrder: string[]) => {
         // Compare old and new order to see if a change actually occurred
         if (JSON.stringify(pageOrder) !== JSON.stringify(newPageOrder)) {
@@ -2004,7 +2151,8 @@ export default function App() {
             />
             
             <MenuBar
-                projectData={currentProjectDTO} 
+                projectData={currentProjectDTO}
+                onNewProject={handleNewProject}
                 onImport={handleLegacyImport}
                 highlightTitle={handleHighlightTitle}
                 onOpenProject={handleOpenProject}
@@ -2122,6 +2270,28 @@ export default function App() {
                         >
                             Next State
                         </button>
+                        
+                        {/* Animation status message */}
+                        {animationMessage && (
+                            <div style={{ marginTop: '4px', color: '#ffcc00', fontSize: '0.9rem', textAlign: 'center' }}>
+                                {animationMessage}
+                                <button 
+                                    onClick={handleCompleteAnimations}
+                                    style={{ 
+                                        marginLeft: '10px',
+                                        padding: '2px 8px',
+                                        background: '#444',
+                                        border: 'none',
+                                        borderRadius: '3px',
+                                        color: '#fff',
+                                        fontSize: '0.8rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Skip
+                                </button>
+                            </div>
+                        )}
                         
                         {activePageData?.conflictResolutionMode && (
                             <div style={{ marginTop: '10px', color: '#ff4d4d' }}>

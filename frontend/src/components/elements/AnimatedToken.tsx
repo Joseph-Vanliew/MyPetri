@@ -5,48 +5,30 @@ interface AnimatedTokenProps {
     progress: number;
     type: 'consume' | 'produce';
     isBackground: boolean;
-    phase: 'source' | 'middle' | 'target';
 }
 
-export const AnimatedToken: React.FC<AnimatedTokenProps> = ({ arcPath, progress, type, phase }) => {
-    // Get point along the path at current progress
-    const getPointAtLength = (path: SVGPathElement, progress: number) => {
-        const length = path.getTotalLength();
-        const point = path.getPointAtLength(length * progress);
-        return { x: point.x, y: point.y };
+export const AnimatedToken: React.FC<AnimatedTokenProps> = ({ arcPath, progress, type, isBackground }) => {
+    const pathRef = React.useRef<SVGPathElement>(null);
+
+    // Calculate position 
+    const getPosition = () => {
+        if (!pathRef.current) return null;
+        
+        try {
+            const length = pathRef.current.getTotalLength();
+            if (isNaN(length) || length === 0) return null;
+            
+            const point = pathRef.current.getPointAtLength(length * progress);
+            return { x: point.x, y: point.y };
+        } catch (error) {
+            console.error("Error calculating token position:", error);
+            return null;
+        }
     };
 
-    const pathRef = React.useRef<SVGPathElement>(null);
-    const [position, setPosition] = React.useState({ x: 0, y: 0 });
-
-    React.useEffect(() => {
-        if (pathRef.current) {
-            const point = getPointAtLength(pathRef.current, progress);
-            setPosition(point);
-        }
-    }, [progress]);
-
-    // Only render if it's a consume animation, or if it's a produce animation and progress has started
+    // Skip completely empty token 
     if (type === 'produce' && progress === 0) {
         return null;
-    }
-
-    // Handle visibility based on animation phase
-    if (phase === 'source') {
-        // Only show when emerging from source (first 30% of animation)
-        if (progress > 0.3) {
-            return null;
-        }
-    } else if (phase === 'target') {
-        // Only show when entering target (last 30% of animation)
-        if (progress < 0.7) {
-            return null;
-        }
-    } else { // middle phase
-        // Only show in the middle section
-        if (progress <= 0.3 || progress >= 0.7) {
-            return null;
-        }
     }
 
     return (
@@ -59,14 +41,16 @@ export const AnimatedToken: React.FC<AnimatedTokenProps> = ({ arcPath, progress,
             />
             
             {/* token circle */}
-            <circle
-                cx={position.x}
-                cy={position.y}
-                r={10}
-                fill="#ffffff"
-                stroke="#ffffff"
-                strokeWidth={1.5}
-            />
+            {pathRef.current && (
+                <circle
+                    cx={getPosition()?.x}
+                    cy={getPosition()?.y}
+                    r={10}
+                    fill={isBackground ? "#f0f0f0" : "#ffffff"}
+                    stroke={isBackground ? "#f0f0f0" : "#ffffff"}
+                    strokeWidth={1.5}
+                />
+            )}
         </g>
     );
 }; 

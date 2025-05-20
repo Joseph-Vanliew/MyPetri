@@ -489,7 +489,7 @@ export function ValidatorTool({
 
   return (
     <div className="validator-container">
-      <h3 className="validator-title">Petri Net Validator</h3>
+      <h3 className="validator-title">Petri Net Verifier</h3>
       
       {/* Input Configuration Section */}
       <div className="validator-section">
@@ -702,7 +702,7 @@ export function ValidatorTool({
           onClick={runValidation}
           disabled={inputConfigs.length === 0 || outputConfigs.length === 0 || isValidating}
         >
-          {isValidating ? 'Validating...' : 'Run Validation'}
+          {isValidating ? 'Validating...' : 'Run Verification'}
         </button>
         <button
           className="validator-button-reset"
@@ -800,7 +800,7 @@ export function ValidatorTool({
       {/* Explanation */}
       <div className="validator-footer">
         <p>
-          <strong>How it works:</strong> The validator runs your Petri net with the specified input tokens and checks if it reaches the expected output state. * The validator always runs in deterministic mode.
+          <strong>How it works:</strong> The verifier runs your Petri net with the specified input tokens and checks if it reaches the expected output state. * The verifier always runs in deterministic mode.
         </p>
         <p style={{ marginBottom: 0 }}>
           It runs until no more transitions can fire or a conflict is detected between transitions.

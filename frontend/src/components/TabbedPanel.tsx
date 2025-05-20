@@ -68,7 +68,7 @@ export function TabbedPanel({
       {/* Tab header */}
       <div className="tab-header">
         <TabButton 
-          label="Validator" 
+          label="Verifier" 
           isActive={activeTab === 'validator'} 
           onClick={() => setActiveTab('validator')}
         />

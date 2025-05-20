@@ -54,9 +54,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #242424; /* Dark background */
-  color: #e0e0e0; /* Light text */
-  overflow: hidden; /* Prevent body scrolling */
+  background-color: #242424; 
+  color: #e0e0e0; 
+  overflow: hidden; 
 }
 
 h1 {
@@ -87,7 +87,6 @@ button:focus-visible {
     background-color: #242424;
   }
   
-  /* Keep dark components consistent in light mode, but maintain visual hierarchy */
   .toolbar {
     background-color: #1a1a1a !important;
     color: rgba(255, 255, 255, 0.87) !important;
@@ -116,10 +115,10 @@ code {
 /* Switcher Styles */
 .switch-container {
   position: relative;
-  display: inline-flex; /* Use flex for alignment */
+  display: inline-flex; 
   align-items: center;
-  width: 28px; /* SMALLER: Was 34px */
-  height: 16px; /* SMALLER: Was 20px */
+  width: 28px; 
+  height: 16px; 
 }
 
 /* The slider track */
@@ -130,7 +129,7 @@ code {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #555; /* Darker background */
+  background-color: #555; 
   transition: .4s;
 }
 
@@ -138,57 +137,50 @@ code {
 .switch-slider:before {
   position: absolute;
   content: "";
-  height: 12px; /* SMALLER: Was 14px */
-  width: 12px;  /* SMALLER: Was 14px */
-  left: 2px;    /* Adjusted: Was 3px */
-  bottom: 2px;  /* Adjusted: Was 3px */
+  height: 12px; 
+  width: 12px;  
+  left: 2px;    
+  bottom: 2px;  
   background-color: white;
   transition: .4s;
 }
 
-/* Checked state: Darker gray background and glow */
 input:checked + .switch-slider {
-  background-color: #404040; /* Darker Gray instead of blue */
-  box-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* White glow */
+  background-color: #404040; 
 }
 
-/* Checked state: Move the dot */
 input:checked + .switch-slider:before {
-  transform: translateX(12px); /* SMALLER: Adjusted distance (28 - 12 - 2*2 = 12) */
+  transform: translateX(12px); 
 }
 
 /* Rounded sliders */
 .switch-slider.round {
-  border-radius: 16px; /* SMALLER: Adjusted for new height */
+  border-radius: 16px; 
 }
 
 .switch-slider.round:before {
-  border-radius: 50%; /* Make the dot round */
-}
-
-/* Focus style (optional) - removed blue glow */
-input:focus + .switch-slider {
-  box-shadow: 0 0 2px rgba(255, 255, 255, 0.5); /* Optional subtle white focus */
+  border-radius: 50%; 
 }
 
 /* MenuBar Styles */
 .menu-bar {
-  position: relative; /* Needed for absolute positioning of dropdown */
+  position: relative; 
   display: flex;
   align-items: center;
-  padding: 0; /* Remove padding if menu-items handle it */
+  padding: 0; 
   background-color: #252525;
   border-bottom: 1px solid #4a4a4a;
-  height: 36px;
+  height: 32px; 
   user-select: none;
 }
 
 .menu-bar .menu-item {
-  padding: 8px 12px;
+  padding: 6px 10px; 
   cursor: pointer;
   color: #e0e0e0;
-  position: relative; /* For submenu positioning */
+  position: relative; 
   white-space: nowrap;
+  font-size: 13px; 
 }
 
 .menu-bar .menu-item:hover {
@@ -197,22 +189,23 @@ input:focus + .switch-slider {
 
 .dropdown-menu {
   position: absolute;
-  top: 100%; /* Position below the "File" item */
+  top: calc(100% + 1px); 
   left: 0;
   background-color: #2c2c2c;
   border: 1px solid #4a4a4a;
-  border-top: none;
+  border-radius: 4px; 
   z-index: 1000;
-  min-width: 200px; /* Adjust as needed */
+  min-width: 180px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .dropdown-menu .menu-item {
-  display: block; /* Stack items vertically */
+  display: block; 
   width: 100%;
   text-align: left;
-  padding: 10px 15px;
-  box-sizing: border-box; /* Include padding in width calculation */
+  padding: 6px 12px; 
+  box-sizing: border-box; 
+  font-size: 13px;
 }
 
 .dropdown-menu .menu-item:hover {
@@ -222,13 +215,13 @@ input:focus + .switch-slider {
 .menu-item-separator {
   height: 1px;
   background-color: #4a4a4a;
-  margin: 5px 0;
+  margin: 3px 0; 
 }
 
 /* Submenu specific styling */
 .dropdown-menu.submenu {
-  top: 0; /* Align with parent menu item */
-  left: 100%; /* Position to the right of the parent "Export" item */
-  margin-top: -1px; /* Align borders nicely */
-  border-top: 1px solid #4a4a4a; /* Add top border that was removed from main dropdown */
+  top: -1px; 
+  left: 100%;
+  min-width: 160px;
+  border-radius: 4px;
 }

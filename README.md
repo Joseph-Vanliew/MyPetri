@@ -19,6 +19,8 @@ MyPetri is intended to be an open source web-application and educational tool me
 ## Basic Token Movement<br>
 <img src="screenshots/Basic%20Input.png" alt="Basic Input" width="200"/><br>
 <img src="screenshots/Basic%20Output.png" alt="Basic Output" width="200"/><br>
+## Token Animation<br/>
+<img src="screenshots/TOKEN_ANIMATION.gif" alt="Token Animation" width="500"/><br/>
 ## Transition Conflict<br>
 <img src="screenshots/Transition%20Conflict.png" alt="Transition Conflict" width="200"/><br>
 ## Solving Transition Conflict<br>
