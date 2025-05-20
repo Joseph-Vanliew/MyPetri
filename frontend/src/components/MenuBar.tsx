@@ -11,11 +11,8 @@ interface MenuBarProps {
   onImportPages: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onExportActivePage: () => void;
   onExportProject: () => void;
-  onUndo: () => void;
   currentZoom: number;
   onZoomChange: (newZoom: number) => void;
-  canUndo: boolean;
-  canRedo: boolean;
   onCreatePage: () => void;
   projectFileHandle: FileSystemFileHandle | null;
   projectHasUnsavedChanges: boolean;
@@ -25,15 +22,12 @@ interface MenuBarProps {
 export function MenuBar({
   projectData: _projectData,
   onImport, 
-  highlightTitle, 
   onOpenProject,
   onSaveProject,
   onSaveProjectAs,
   onImportPages,
   onExportActivePage,
   onExportProject,
-  onUndo,
-  canUndo,
   onCreatePage,
   projectHasUnsavedChanges,
 }: MenuBarProps) {
@@ -142,12 +136,7 @@ export function MenuBar({
             
             <div className="menu-item-separator"></div>
             
-            <div className={`menu-item ${!canUndo ? 'disabled' : ''}`} onClick={() => { if(canUndo) { onUndo(); setShowFileMenu(false); } }}>Undo</div>
             <div className="menu-item" onClick={() => { onCreatePage(); setShowFileMenu(false); }}>Create New Page</div>
-            
-            <div className="menu-item-separator"></div>
-            
-            <div className="menu-item" onClick={() => { highlightTitle(); setShowFileMenu(false); }}>Edit Project Title</div>
             
             {/* Legacy Import Option */}
             <div className="menu-item-separator"></div>

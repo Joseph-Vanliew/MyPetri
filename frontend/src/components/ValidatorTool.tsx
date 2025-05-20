@@ -375,8 +375,7 @@ export function ValidatorTool({
 
     setIsValidating(true);
     try {
-      // Log the incoming data for debugging
-      console.log('Incoming Petri net data:', data);
+      //console.log('Incoming Petri net data:', data);
 
       // Ensure we have a valid PetriNetDTO with all required fields
       const petriNetData: PetriNetDTO = {
@@ -410,8 +409,7 @@ export function ValidatorTool({
         title: data.title || ''
       };
 
-      // Log the constructed DTO for debugging
-      console.log('Constructed PetriNetDTO:', petriNetData);
+      //console.log('Constructed PetriNetDTO:', petriNetData);
 
       const requestBody = {
         places: petriNetData.places,

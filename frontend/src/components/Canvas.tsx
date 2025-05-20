@@ -10,6 +10,8 @@ import { useMouseTracking } from './canvas/hooks/useMouseTracking';
 import { useSelectionBox } from './canvas/hooks/useSelectionBox';
 import { screenToSVGCoordinates, snapToGrid } from './canvas/utils/coordinateUtils';
 import { UIPlace, UITransition, UIArc } from '../types';
+import { TokenAnimations } from './elements/TokenAnimations';
+import { TokenAnimator } from '../animations/TokenAnimator';
 
 
 declare global {
@@ -46,6 +48,7 @@ interface CanvasProps {
     panOffset: { x: number; y: number };
     onViewChange: (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => void;
     onCenterView: () => void;
+    tokenAnimator?: TokenAnimator;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -404,6 +407,16 @@ export const Canvas = (props: CanvasProps) => {
                         );
                     })}
                 </g>
+
+                {/* Add token animations layer */}
+                {props.tokenAnimator && (
+                    <TokenAnimations
+                        places={props.places}
+                        transitions={props.transitions}
+                        arcs={props.arcs}
+                        tokenAnimator={props.tokenAnimator}
+                    />
+                )}
             </svg>
         </div>
     );

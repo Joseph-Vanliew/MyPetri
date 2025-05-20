@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { PetriNetPageData } from '../types'; // Assuming types.ts is in the parent directory
 import './styles/PagesComponent.css'; // Import the CSS file
 
@@ -8,6 +8,7 @@ interface ContextMenuState {
   x: number;
   y: number;
   pageId: string;
+  positionAdjusted?: boolean; // Flag to prevent re-adjustment loops
 }
 
 interface PagesComponentProps {
@@ -19,6 +20,7 @@ interface PagesComponentProps {
   onRenamePage: (pageId: string, newTitle: string) => void;
   onDeletePage: (pageId: string) => void;
   onReorderPages: (newPageOrder: string[]) => void;
+  onCreatePageWithData: (pageData: PetriNetPageData) => void;
 }
 
 export const PagesComponent: React.FC<PagesComponentProps> = ({
@@ -30,10 +32,12 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
   onRenamePage,
   onDeletePage,
   onReorderPages,
+  onCreatePageWithData,
 }) => {
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null); // Ref for the context menu
   // State for context menu
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const dragItem = useRef<string | null>(null);
@@ -81,34 +85,36 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
   const handleContextMenu = (event: React.MouseEvent, pageId: string) => {
     event.preventDefault(); 
 
-    // Estimate menu dimensions (adjust based on actual content/styling)
-    const menuHeightEstimate = 60; 
-    const menuWidthEstimate = 110; 
-    const buffer = 5;
+    // Get the clicked element's position
+    const targetElement = event.currentTarget as HTMLElement;
+    const rect = targetElement.getBoundingClientRect();
 
-    let xPos = event.clientX + buffer;
-    let yPos = event.clientY - menuHeightEstimate - buffer; 
-
-    // Adjust if menu goes off viewport boundaries
-    if (xPos + menuWidthEstimate > window.innerWidth) {
-        xPos = event.clientX - menuWidthEstimate - buffer; // Position left of cursor
-    }
-    if (yPos < 0) {
-        yPos = event.clientY + buffer; // Position below cursor
-    }
-    // Ensure xPos is not negative if positioning left pushes it off-screen
-    if (xPos < 0) {
-        xPos = buffer; 
-    }
-
+    // Set initial position - y will be adjusted by useLayoutEffect
     setContextMenu({
       visible: true,
-      x: xPos,
-      y: yPos,
+      x: rect.right,       // x is the left edge of the menu, aligned with tab's right
+      y: rect.top,         // y is the top edge of the menu, initially at tab's top
       pageId: pageId,
+      positionAdjusted: false // Mark that position needs adjustment
     });
     setEditingTabId(null); // Ensure not in edit mode
   };
+
+  useLayoutEffect(() => {
+    // Adjust position once the menu is visible, rendered, and not yet adjusted
+    if (contextMenu?.visible && contextMenuRef.current && !contextMenu.positionAdjusted) {
+      const menuHeight = contextMenuRef.current.offsetHeight;
+      setContextMenu(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          y: prev.y - menuHeight, // Adjust y so bottom of menu is at the original prev.y (tab's top)
+          positionAdjusted: true   // Mark as adjusted to prevent loop
+        };
+      });
+    }
+    // Dependencies: run when menu becomes visible for a page or when positionAdjusted changes
+  }, [contextMenu?.visible, contextMenu?.pageId, contextMenu?.positionAdjusted]);
 
   const closeContextMenu = () => {
     setContextMenu(null);
@@ -144,13 +150,33 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
 
   const handleDeleteFromMenu = () => {
     if (contextMenu) {
+      const page = pages[contextMenu.pageId];
+      const hasElements = page.places.length > 0 || page.transitions.length > 0 || page.arcs.length > 0;
       
-      if (window.confirm(`Are you sure you want to delete page "${pages[contextMenu.pageId]?.title}"?`)) {
-      onDeletePage(contextMenu.pageId);
+      if (!hasElements || window.confirm(`Are you sure you want to delete page "${page.title}"?`)) {
+        onDeletePage(contextMenu.pageId);
       }
-      // }
     }
     closeContextMenu();
+  };
+
+  const handleDuplicateFromMenu = () => {
+    if (contextMenu) {
+      const page = pages[contextMenu.pageId];
+      const newPageId = `page_${Date.now()}`;
+      
+      // Create a deep copy of the page data
+      const newPage: PetriNetPageData = {
+        ...JSON.parse(JSON.stringify(page)), // Deep copy all properties
+        id: newPageId,
+        title: `${page.title} (copy)`,
+        selectedElements: [], // Reset selected elements for the new page
+      };
+      
+      // Create the new page with the copied data
+      onCreatePageWithData(newPage);
+      closeContextMenu();
+    }
   };
 
   // --- Drag and Drop Handlers ---
@@ -279,12 +305,14 @@ export const PagesComponent: React.FC<PagesComponentProps> = ({
 
       {contextMenu?.visible && (
         <div
+          ref={contextMenuRef} // Assign the ref to the menu div
           className="context-menu"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onMouseDown={(e) => e.stopPropagation()}
           onContextMenu={(e) => e.stopPropagation()}
         >
           <div className="context-menu-item" onClick={handleRenameFromMenu}>Rename</div>
+          <div className="context-menu-item" onClick={handleDuplicateFromMenu}>Duplicate</div>
           {Object.keys(pages).length > 1 && (
             <div className="context-menu-item" onClick={handleDeleteFromMenu}>Delete</div>
           )}

@@ -10,24 +10,17 @@ import { TabbedPanel } from './components/TabbedPanel';
 import { useClipboard } from './hooks/useClipboard';
 import { PagesComponent } from './components/PagesComponent';
 import { loadAppState, saveAppState, PersistedAppState } from './hooks/appPersistence';
+import { TokenAnimator } from './animations/TokenAnimator';
 
-const MAX_HISTORY_LENGTH = 50;
-
-// Define default validator configs
-const defaultValidatorConfigs: ValidatorPageConfig = {
-    inputConfigs: [],
-    expectedOutputs: [],
-    validationResult: null,
-    emptyInputFields: {},
-    emptyOutputFields: {}
-};
-
-const initialPersistedState = loadAppState();
 
 export default function App() {
     // =========================================================================================
     // I. STATE MANAGEMENT
     // =========================================================================================
+
+    const MAX_HISTORY_LENGTH = 50;
+
+    const initialPersistedState = loadAppState();
     
     // ----- Core Application State (Persisted via localStorage) -----
     const [pages, setPages] = useState<Record<string, PetriNetPageData>>( // Holds all the pages of the current project, keyed by page ID.
@@ -61,6 +54,17 @@ export default function App() {
     // ----- Refs for Direct DOM Access or Persistent Mutable Values -----
     const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map()); // Stores the initial {x, y} positions of elements at the beginning of a drag operation.
     const titleRef = useRef<EditableTitleRef>(null); // Ref for the main project title editor
+
+    const defaultValidatorConfigs: ValidatorPageConfig = {
+        inputConfigs: [],
+        outputConfigs: [],
+        validationResult: null,
+        emptyInputFields: {},
+        emptyOutputFields: {}
+    };
+    
+    // Add token animator instance
+    const tokenAnimator = useMemo(() => new TokenAnimator(), []);
 
     // =========================================================================================
     // II. INITIALIZATION & PERSISTENCE EFFECTS
@@ -843,57 +847,139 @@ export default function App() {
 
             const responseData: PetriNetDTO = await response.json();
 
+            // Find which transitions fired and animate tokens
+            const firedTransitions = responseData.transitions?.filter(t => t.enabled).map(t => ({
+                ...t,
+                name: t.name || '',  // Ensure name is never undefined
+                x: t.x || 0,        // Provide defaults for required properties
+                y: t.y || 0,
+                width: t.width || 120,
+                height: t.height || 54
+            })) || [];
+            
             // Update the active page's state using setPages
             setPages(prevPages => {
                 const pageToUpdate = prevPages[activePageId!];
                 if (!pageToUpdate) return prevPages;
 
+                // Start animations for each fired transition
+                firedTransitions.forEach(firedTransition => {
+                    // Find input and output arcs for this transition
+                    const inputArcs = pageToUpdate.arcs.filter(a => 
+                        a.outgoingId === firedTransition.id && a.type !== 'INHIBITOR'
+                    );
+                    const outputArcs = pageToUpdate.arcs.filter(a => 
+                        a.incomingId === firedTransition.id
+                    );
+
+                    // Find the actual transition object from the page data
+                    const transitionObj = pageToUpdate.transitions.find(t => t.id === firedTransition.id);
+                    if (!transitionObj) return;
+
+                    // Start animations for each token movement
+                    inputArcs.forEach(inputArc => {
+                        const sourcePlace = pageToUpdate.places.find(p => p.id === inputArc.incomingId);
+                        // If there are output places, animate to them
+                        if (outputArcs.length > 0) {
+                            outputArcs.forEach(outputArc => {
+                                const targetPlace = pageToUpdate.places.find(p => p.id === outputArc.outgoingId);
+                                if (sourcePlace && targetPlace) {
+                                    tokenAnimator.startAnimation(
+                                        sourcePlace,
+                                        targetPlace,
+                                        transitionObj, // Use the actual transition object with position info
+                                        pageToUpdate.arcs,
+                                        () => {
+                                            // Update target place tokens after animation completes
+                                            setPages(prevPages => {
+                                                const currentPage = prevPages[activePageId!];
+                                                if (!currentPage) return prevPages;
+
+                                                const updatedPlaces = currentPage.places.map(p => {
+                                                    if (p.id === targetPlace.id) {
+                                                        const finalPlace = responseData.places.find(rp => rp.id === p.id);
+                                                        return finalPlace ? { ...p, tokens: finalPlace.tokens } : p;
+                                                    }
+                                                    return p;
+                                                });
+
+                                                return {
+                                                    ...prevPages,
+                                                    [activePageId!]: {
+                                                        ...currentPage,
+                                                        places: updatedPlaces
+                                                    }
+                                                };
+                                            });
+                                        }
+                                    );
+                                }
+                            });
+                        } else {
+                            // If no output places, just animate the consumption
+                            if (sourcePlace) {
+                                tokenAnimator.startAnimation(
+                                    sourcePlace,
+                                    sourcePlace, // Use same place as target since we only want consumption
+                                    transitionObj, // Use the actual transition object with position info
+                                    pageToUpdate.arcs,
+                                    () => {} // No token updates needed for pure consumption
+                                );
+                            }
+                        }
+                    });
+                });
+
                 const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
                     const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
-                    return updatedPlaceData ? { 
+                    // Only update tokens immediately for places being consumed from
+                    const isSourcePlace = pageToUpdate.arcs.some(arc => 
+                        arc.incomingId === p_ui.id && 
+                        firedTransitions.some(t => t.id === arc.outgoingId)
+                    );
+                    return updatedPlaceData && isSourcePlace ? { 
                         ...p_ui,
                         tokens: updatedPlaceData.tokens 
                     } : p_ui;
-            });
+                });
 
-            let newConflictResolutionMode = false;
-            let newConflictingTransitions: string[] = [];
-            const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
+                let newConflictResolutionMode = false;
+                let newConflictingTransitions: string[] = [];
+                const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
 
-            if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
-                newConflictResolutionMode = true;
-                newConflictingTransitions = responseEnabledTransitions;
-            }
-
-            // Map response DTO transitions to UITransition
-            const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
-                const updatedTransitionData = responseData.transitions?.find(rt => rt.id === t_ui.id);
-                return updatedTransitionData ? { 
-                    ...t_ui, // Preserve existing UI properties
-                    enabled: updatedTransitionData.enabled // Update enabled status from DTO
-                } : { ...t_ui, enabled: false }; // Default to not enabled if not in response
-            });
-            
-            // Update transient animation state based on the outcome for the *active* page
-            if (!newConflictResolutionMode && responseEnabledTransitions.length > 0) {
-                 setCurrentFiredTransitions(responseEnabledTransitions);
-            } else {
-                 setCurrentFiredTransitions([]); // Clear if conflict or no newly enabled transitions to fire
-            }
-
-            return {
-                ...prevPages,
-                [activePageId!]: {
-                    ...pageToUpdate,
-                    places: updatedPagePlaces,
-                    transitions: updatedPageTransitions,
-                    conflictResolutionMode: newConflictResolutionMode,
-                    conflictingTransitions: newConflictingTransitions,
-                    // arcs are not changed by the /process endpoint directly, only places and transitions
+                if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
+                    newConflictResolutionMode = true;
+                    newConflictingTransitions = responseEnabledTransitions;
                 }
-            };
-        });
-        setProjectHasUnsavedChanges(true); // Simulation changes data
+
+                // Map response DTO transitions to UITransition
+                const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
+                    const updatedTransitionData = responseData.transitions?.find(rt => rt.id === t_ui.id);
+                    return updatedTransitionData ? { 
+                        ...t_ui,
+                        enabled: updatedTransitionData.enabled
+                    } : { ...t_ui, enabled: false };
+                });
+                
+                // Update transient animation state based on the outcome for the *active* page
+                if (!newConflictResolutionMode && responseEnabledTransitions.length > 0) {
+                     setCurrentFiredTransitions(responseEnabledTransitions);
+                } else {
+                     setCurrentFiredTransitions([]); // Clear if conflict or no newly enabled transitions to fire
+                }
+
+                return {
+                    ...prevPages,
+                    [activePageId!]: {
+                        ...pageToUpdate,
+                        places: updatedPagePlaces,
+                        transitions: updatedPageTransitions,
+                        conflictResolutionMode: newConflictResolutionMode,
+                        conflictingTransitions: newConflictingTransitions,
+                    }
+                };
+            });
+            setProjectHasUnsavedChanges(true);
 
         } catch (error) {
             console.error('Simulation error:', error);
@@ -1592,6 +1678,16 @@ export default function App() {
         setProjectHasUnsavedChanges(true);
     };
 
+    const handleCreatePageWithData = (pageData: PetriNetPageData) => {
+        setPages(prevPages => ({
+            ...prevPages,
+            [pageData.id]: pageData
+        }));
+        setPageOrder(prevOrder => [...prevOrder, pageData.id]);
+        setActivePageId(pageData.id);
+        setProjectHasUnsavedChanges(true);
+    };
+
     const handleRenamePage = (pageId: string, newTitle: string) => {
         // This is now primarily handled by EditableTitle calling handlePageTitleSave
         // Kept for other potential direct calls.
@@ -1926,11 +2022,8 @@ export default function App() {
                     };
                     downloadJSON(projectToExport, `${projectTitle.replace(/\s+/g, '_')}_project.pats`);
                 }}
-                onUndo={handleUndo}
                 currentZoom={activePageData?.zoomLevel || 1}
-                onZoomChange={handleZoomLevelChange} // Use the new specific handler
-                canUndo={activePageData ? activePageData.history.places.length > 0 : false}
-                canRedo={false} // Placeholder
+                onZoomChange={handleZoomLevelChange} 
                 onCreatePage={handleCreatePage}
                 projectFileHandle={projectFileHandle}
                 projectHasUnsavedChanges={projectHasUnsavedChanges} // Pass the new state
@@ -2103,6 +2196,7 @@ export default function App() {
                             panOffset={activePageData?.panOffset ?? {x: 0, y: 0}}
                             onViewChange={handleViewChange}
                             onCenterView={handleCenterView} // Pass the handler
+                            tokenAnimator={tokenAnimator}
                         />
                     </div>
                     
@@ -2116,6 +2210,7 @@ export default function App() {
                         onRenamePage={handleRenamePage}
                         onDeletePage={handleDeletePage}
                         onReorderPages={handleReorderPages}
+                        onCreatePageWithData={handleCreatePageWithData}
                     />
                 </div>
 
@@ -2127,7 +2222,7 @@ export default function App() {
                      flexShrink: 0,
                      height: '100%'
                 }}>
-                    {/* Conditionally render TabbedPanel */}
+                    {/* Render TabbedPanel */}
                     {petriNetDTO && activePageData && ( // Ensure activePageData exists
                     <TabbedPanel
                         data={petriNetDTO}
@@ -2143,7 +2238,7 @@ export default function App() {
                         onValidatorConfigsChange={onValidatorConfigsChangeCallback}
                     />
                     )}
-                    {/* Optional placeholder when no page is active */}
+                    {/* placeholder when no page is active */}
                     {!petriNetDTO && (
                         <div style={{ padding: '20px', color: '#888', textAlign: 'center' }}>
                             No active Petri net selected.
