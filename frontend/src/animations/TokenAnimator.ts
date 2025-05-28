@@ -19,7 +19,7 @@ export class TokenAnimator {
     private consumptionAnimations: AnimationState[] = [];
     private productionAnimations: AnimationState[] = [];
     private allConsumptionsComplete: boolean = false;
-    private speedMultiplier: number = 1.0;  // 1.0 is normal speed, higher is slower
+    private speedMultiplier: number = 1.0; 
 
     constructor() {
         this.animate = this.animate.bind(this);

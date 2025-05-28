@@ -4,7 +4,6 @@ import { PetriNetDTO, ProjectDTO } from '../types';
 interface MenuBarProps {
   projectData: ProjectDTO | null;
   onImport: (data: PetriNetDTO) => void;
-  highlightTitle: () => void;
   onOpenProject: (event?: React.ChangeEvent<HTMLInputElement>) => void;
   onSaveProject: () => void;
   onSaveProjectAs: () => void;

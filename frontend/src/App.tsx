@@ -296,11 +296,7 @@ export default function App() {
     // =========================================================================================
     // VI. GENERAL UI HANDLERS
     // =========================================================================================
-    const handleHighlightTitle = () => {
-        if (titleRef.current) {
-            titleRef.current.startEditing();
-        }
-    };
+    
 
     const handleTypingChange = (typing: boolean) => {
         setIsTyping(typing);
@@ -2154,7 +2150,6 @@ export default function App() {
                 projectData={currentProjectDTO}
                 onNewProject={handleNewProject}
                 onImport={handleLegacyImport}
-                highlightTitle={handleHighlightTitle}
                 onOpenProject={handleOpenProject}
                 onSaveProject={handleSaveProject}
                 onSaveProjectAs={handleSaveProjectAs}
