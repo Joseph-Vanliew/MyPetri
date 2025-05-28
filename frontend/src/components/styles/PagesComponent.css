@@ -1,0 +1,111 @@
+/* frontend/src/components/styles/PagesComponent.css */
+
+.pages-component-container {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border-top: 1px solid #4a4a4a;
+  background-color: #1a1a1a;
+  padding: 0 10px;
+  flex-shrink: 0;
+  overflow-x: auto; /* Allow horizontal scrolling if many tabs */
+  gap: 5px;
+}
+
+.page-tab {
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid transparent; /* For alignment */
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  color: #ccc;
+  white-space: nowrap;
+  font-size: 14px;
+  max-width: 150px; /* Prevent tabs from becoming too wide */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box; /* Include padding/border in element's total width/height */
+  display: flex; /* To center input vertically */
+  align-items: center;
+}
+
+.page-tab:hover {
+  background-color: #333; /* Subtle hover effect */
+}
+
+.page-tab.active {
+  border-color: #4a4a4a;
+  border-bottom: 1px solid #1a1a1a; /* Make bottom border match background */
+  background-color: #2a2a2a; /* Slightly lighter background for active tab */
+  color: white;
+  font-weight: bold;
+  z-index: 1; /* Ensure active tab border is above container border */
+  margin-top: -1px; /* Align with top border visually */
+}
+
+.page-tab.active:hover {
+  background-color: #2a2a2a; /* Keep active background on hover */
+}
+
+/* Style for when a tab is being clicked/held (before drag starts) */
+.page-tab:active {
+  transform: scale(0.98); /* Slightly shrink */
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.2); /* Subtle inner shadow */
+  transition: transform 0.05s ease-out, box-shadow 0.05s ease-out; /* Quick transition */
+}
+
+.page-tab-edit-input {
+  border: none;
+  outline: none;
+  background-color: inherit; /* Match tab background */
+  color: inherit; /* Match tab text color */
+  padding: 0; /* Input itself has no padding */
+  margin: 0;  /* Input itself has no margin */
+  font-size: 14px;
+  font-family: inherit;
+  width: 130px; /* Adjust as needed, slightly less than tab max-width */
+  box-sizing: border-box;
+  /* Vertically align text if needed, though flex on parent helps */
+  line-height: normal; 
+}
+
+.add-page-button {
+  margin-left: 10px;
+  padding: 4px 8px;
+  cursor: pointer;
+  background-color: #333;
+  border: 1px solid #555;
+  color: #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.add-page-button:hover {
+  background-color: #444;
+}
+
+.context-menu {
+  background-color: #333;
+  border: 1px solid #555;
+  border-radius: 4px;
+  z-index: 1001; /* Ensure above tabs */
+  min-width: 100px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  padding: 5px 0;
+  position: fixed; /* Use fixed for viewport positioning */
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: white;
+  font-size: 14px;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.context-menu-item:hover {
+  background-color: #444;
+} 

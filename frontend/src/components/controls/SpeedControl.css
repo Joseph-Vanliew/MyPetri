@@ -1,0 +1,24 @@
+.speed-slider {
+    width: 100px;
+    appearance: none;
+    background: #4a4a4a;
+    height: 2px;
+    outline: none;
+}
+
+.speed-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 2px;
+    height: 16px;
+    background: white;
+    cursor: pointer;
+}
+
+.speed-slider::-moz-range-thumb {
+    width: 2px;
+    height: 16px;
+    background: white;
+    border: none;
+    border-radius: 0;
+    cursor: pointer;
+} 

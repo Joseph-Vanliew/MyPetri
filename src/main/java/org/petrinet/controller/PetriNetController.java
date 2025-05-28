@@ -4,6 +4,7 @@ import org.petrinet.service.PetriNetService;
 import org.petrinet.client.PetriNetDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,30 +19,34 @@ public class PetriNetController {
         this.petriNetService = petriNetService;
     }
 
-    @PostMapping("/api/process")
-    public ResponseEntity<?> processPetriNet(@RequestBody PetriNetDTO petriNetDTO) {
+    @PostMapping("/api/process/page/{pageId}/process")
+    public ResponseEntity<?> processPetriNet(
+            @PathVariable String pageId,
+            @RequestBody PetriNetDTO currentPetriNetState) {
         try {
-            PetriNetDTO updatedPetriNetDTO = petriNetService.processPetriNet(petriNetDTO);
-            return ResponseEntity.ok(updatedPetriNetDTO);
+            PetriNetDTO nextPetriNetState = petriNetService.processPetriNet(currentPetriNetState);
+            return ResponseEntity.ok(nextPetriNetState);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error processing Petri net: " + e.getMessage());
+            // It's good practice to log the exception here
+            return ResponseEntity.badRequest().body("Error processing Petri net for page " + pageId + ": " + e.getMessage());
         }
     }
     
-    @PostMapping("/api/process/resolve")
-    public ResponseEntity<?> resolveConflict(@RequestBody PetriNetDTO petriNetDTO) {
+    @PostMapping("/api/process/resolve/page/{pageId}/resolve")
+    public ResponseEntity<?> resolveConflict(
+            @PathVariable String pageId,
+            @RequestBody PetriNetDTO petriNetInConflict) {
         try {
-            // Extract the selected transition ID from the request
-            String selectedTransitionId = petriNetDTO.getSelectedTransitionId();
+            String selectedTransitionId = petriNetInConflict.getSelectedTransitionId(); 
             if (selectedTransitionId == null || selectedTransitionId.isEmpty()) {
-                return ResponseEntity.badRequest().body("No transition selected for conflict resolution");
+                return ResponseEntity.badRequest().body("No transition selected for conflict resolution on page " + pageId);
             }
             
-            // Process the Petri net with the selected transition
-            PetriNetDTO updatedPetriNetDTO = petriNetService.resolveConflict(petriNetDTO, selectedTransitionId);
-            return ResponseEntity.ok(updatedPetriNetDTO);
+            PetriNetDTO resolvedPetriNetState = petriNetService.resolveConflict(petriNetInConflict, selectedTransitionId);
+            return ResponseEntity.ok(resolvedPetriNetState);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error resolving conflict: " + e.getMessage());
+            // Log exception
+            return ResponseEntity.badRequest().body("Error resolving conflict for page " + pageId + ": " + e.getMessage());
         }
     }
 }

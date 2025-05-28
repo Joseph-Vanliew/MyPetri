@@ -1,9 +1,9 @@
 import { PetriNetDTO } from '../types';
-import './styles/AnalysisTool.css'; // Import the CSS file
+import './styles/AnalysisTool.css';
 
 interface AnalysisToolProps {
   data: PetriNetDTO;
-  width?: string | number; // Keep width/height props if they need to be dynamic
+  width?: string | number;
   height?: string | number;
 }
 
@@ -18,7 +18,6 @@ export function AnalysisTool({
   const numTransitions = data?.transitions?.length ?? 0;
   const numArcs = data?.arcs?.length ?? 0;
 
-  // Note: Applying width/height directly might override CSS if needed for dynamic sizing
   const containerStyle = {
       width: width,
       height: height,
@@ -27,15 +26,14 @@ export function AnalysisTool({
   return (
     <div className="analysis-container" style={containerStyle}>
       
-      {/*--------------------- Remove when done --------------------- */}
+      {/*--------------------- TODO: Remove when done! --------------------- */}
       {/* Overlay Element */}
       <div className="analysis-overlay">
         <div className="analysis-overlay-text">Under Construction</div>
-        <div className="analysis-overlay-cross">✕</div> 
       </div>
-      {/*--------------------- Remove when done --------------------- */}
+      {/*--------------------- TODO: Remove when done! --------------------- */}
 
-      {/* Existing Content (will be covered by overlay) */}
+      {/* Existing Content (currently covered by overlay) */}
       <h3 className="analysis-title">Analysis Tool</h3>
       
       <div className="analysis-section">

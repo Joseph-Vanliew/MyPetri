@@ -44,8 +44,9 @@ export const Grid: React.FC<GridProps> = ({ viewBox }) => {
         y1={Math.max(viewBox.y - gridPadding, GRID_BOUNDS.minY)}
         x2={xVal}
         y2={Math.min(viewBox.y + viewBox.h + gridPadding, GRID_BOUNDS.maxY)}
-        stroke="#444444"
-        strokeWidth="0.5"
+        stroke="#222222"
+        strokeWidth="1"
+        vectorEffect="non-scaling-stroke"
       />
     );
   }
@@ -59,8 +60,9 @@ export const Grid: React.FC<GridProps> = ({ viewBox }) => {
         y1={yVal}
         x2={Math.min(viewBox.x + viewBox.w + gridPadding, GRID_BOUNDS.maxX)}
         y2={yVal}
-        stroke="#444444"
-        strokeWidth="0.5"
+        stroke="#222222"
+        strokeWidth="1"
+        vectorEffect="non-scaling-stroke"
       />
     );
   }

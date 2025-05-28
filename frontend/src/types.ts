@@ -1,12 +1,13 @@
 // src/types.ts
 
-// --------------------------
-// API Request/Response Types (Mirror Java DTOs)
-// --------------------------
 
 export const GRID_CELL_SIZE = 50; // Pixels per grid cell for aspect rations ranging from 16:9 to 21:9
 export type GridPosition = { gridX: number; gridY: number };
 
+
+// --------------------------
+// API Request/Response Types 
+// --------------------------
 export interface PetriNetDTO {
     places: {
         id: string;
@@ -37,30 +38,16 @@ export interface PetriNetDTO {
     deterministicMode?: boolean;
     selectedTransitionId?: string;
     title?: string;
+    zoomLevel?: number;
+    panOffset?: { x: number; y: number };
 }
 
-export interface PlaceDTO {
+// --------------------------
+// UI State Types 
+// --------------------------
+export interface UIPlace {
     id: string;
     tokens: number;
-}
-
-export interface TransitionDTO {
-    id: string;
-    enabled: boolean;
-    arcIds: string[];
-}
-
-export interface ArcDTO {
-    id: string;
-    type: "REGULAR" | "INHIBITOR" | "BIDIRECTIONAL";
-    incomingId: string;
-    outgoingId: string;
-}
-
-// --------------------------
-// UI State Types (Additional frontend-only fields)
-// --------------------------
-export interface UIPlace extends PlaceDTO {
     name: string,
     x: number;
     y: number;
@@ -69,7 +56,10 @@ export interface UIPlace extends PlaceDTO {
     capacity: number | null;
 }
 
-export interface UITransition extends TransitionDTO {
+export interface UITransition {
+    id: string;
+    enabled: boolean;
+    arcIds: string[];
     name: string,
     x: number;
     y: number;
@@ -77,8 +67,11 @@ export interface UITransition extends TransitionDTO {
     height: number;
 }
 
-export interface UIArc extends ArcDTO {
-
+export interface UIArc {
+    id: string;
+    type: 'REGULAR' | 'INHIBITOR' | 'BIDIRECTIONAL';
+    incomingId: string;
+    outgoingId: string;
 }
 
 // --------------------------
@@ -97,8 +90,49 @@ export interface PetriNetValidationRequest {
 
 export interface ValidationResult {
     valid: boolean;
-    message: string;
-    conflictingTransitions?: string[];
-    finalState?: PetriNetDTO;
+    message?: string;
+    errors?: string[];
     outputMatches?: Record<string, boolean>;
+    finalState?: PetriNetDTO;
+    conflictingTransitions?: string[];
+}
+
+export interface ValidatorPageConfig {
+    inputConfigs: PlaceConfig[];
+    outputConfigs: PlaceConfig[];
+    validationResult: ValidationResult | null;
+    emptyInputFields: {[index: number]: boolean};
+    emptyOutputFields: {[index: number]: boolean};
+}
+
+// --------------------------
+// Page and project data types
+// --------------------------
+export interface PetriNetPageData {
+    id: string;
+    title: string;
+    places: UIPlace[];
+    transitions: UITransition[];
+    arcs: UIArc[];
+    deterministicMode: boolean; 
+    conflictResolutionMode: boolean;
+    conflictingTransitions: string[];
+    selectedElements: string[];
+    history: {
+        places: UIPlace[][];
+        transitions: UITransition[][];
+        arcs: UIArc[][];
+        title: string[];
+    };
+    zoomLevel?: number;
+    panOffset?: { x: number; y: number };
+    validatorConfigs?: ValidatorPageConfig;
+}
+
+export interface ProjectDTO {
+    projectTitle: string;
+    pages: Record<string, PetriNetPageData>;
+    pageOrder: string[];
+    activePageId: string | null;
+    version?: string; // For future compatibility, e.g., "1.0.0"
 }

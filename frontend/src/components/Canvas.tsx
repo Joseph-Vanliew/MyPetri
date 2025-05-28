@@ -10,6 +10,9 @@ import { useMouseTracking } from './canvas/hooks/useMouseTracking';
 import { useSelectionBox } from './canvas/hooks/useSelectionBox';
 import { screenToSVGCoordinates, snapToGrid } from './canvas/utils/coordinateUtils';
 import { UIPlace, UITransition, UIArc } from '../types';
+import { TokenAnimations } from './elements/TokenAnimations';
+import { TokenAnimator } from '../animations/TokenAnimator';
+import { SpeedControl } from './controls/SpeedControl';
 
 
 declare global {
@@ -26,9 +29,9 @@ interface CanvasProps {
     onCanvasClick: (x: number, y: number) => void;
     onSelectElement: (id: string, event?: React.MouseEvent) => void;
     onMultiSelectElement: (ids: string[]) => void;
-    onUpdatePlaceSize: (id: string, newRadius: number) => void;
-    onUpdateTransitionSize: (id: string, width: number, height: number) => void;
-    onUpdateElementPosition: (id: string, newX: number, newY: number) => void;
+    onUpdatePlaceSize: (id: string, newRadius: number, resizeState: 'start' | 'resizing' | 'end') => void;
+    onUpdateTransitionSize: (id: string, width: number, height: number, resizeState: 'start' | 'resizing' | 'end') => void;
+    onUpdateElementPosition: (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end') => void;
     onArcPortClick:(id: string)=> void;
     selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';
     onSelectTool: (tool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC') => void;
@@ -42,6 +45,11 @@ interface CanvasProps {
     firedTransitions?: string[];
     onUpdatePlaceCapacity?: (id: string, capacity: number | null) => void;
     showCapacityEditorMode?: boolean;
+    zoomLevel: number;
+    panOffset: { x: number; y: number };
+    onViewChange: (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => void;
+    onCenterView: () => void;
+    tokenAnimator?: TokenAnimator;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -51,7 +59,9 @@ export const Canvas = (props: CanvasProps) => {
     const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
     
     const zoomAndPan = useZoomAndPan(svgRef, {
-        initialViewBox: { x: -750, y: -750, w: 1500, h: 1500 }
+        initialZoomLevel: props.zoomLevel, 
+        initialPanOffset: props.panOffset,
+        onViewChange: props.onViewChange,
     });
     
     const mouseTracking = useMouseTracking(svgRef, {
@@ -93,22 +103,6 @@ export const Canvas = (props: CanvasProps) => {
         updateDimensions();
         window.addEventListener('resize', updateDimensions);
         return () => window.removeEventListener('resize', updateDimensions);
-    }, []);
-    
-    // Handle non-passive wheel events
-    useEffect(() => {
-        const svgElement = document.querySelector('.petri-canvas');
-        if (!svgElement) return;
-        
-        const handleWheelNonPassive = (e: Event) => {
-            e.preventDefault();
-        };
-        
-        svgElement.addEventListener('wheel', handleWheelNonPassive, { passive: false });
-        
-        return () => {
-            svgElement.removeEventListener('wheel', handleWheelNonPassive);
-        };
     }, []);
     
     // Track the last mouse position globally
@@ -205,6 +199,10 @@ export const Canvas = (props: CanvasProps) => {
         props.onCanvasClick(snapped.x, snapped.y);
     }, [props.onSelectTool, props.onCanvasClick]);
 
+    const handleSpeedChange = (multiplier: number) => {
+        props.tokenAnimator?.setSpeedMultiplier(multiplier);
+    };
+
     return (
         <div className="canvas-container" style={{ 
             width: '100%', 
@@ -213,14 +211,55 @@ export const Canvas = (props: CanvasProps) => {
             margin: 0,
             padding: 0,
             display: 'flex',
+            position: 'relative'
         }}>
+            {/* Center View Button - Absolutely Positioned */}
+            <button
+                onClick={props.onCenterView}
+                style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '10px',
+                    zIndex: 10, 
+                    padding: '5px',
+                    backgroundColor: 'rgba(42, 42, 42, 0.85)', 
+                    border: '1px solid rgba(255, 255, 255, 0.2)', 
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    outline: 'none' 
+                }}
+                onMouseOver={(e) => { 
+                    e.currentTarget.style.backgroundColor = 'rgba(60, 60, 60, 0.9)'; 
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                }}
+                onMouseOut={(e) => { 
+                     e.currentTarget.style.backgroundColor = 'rgba(42, 42, 42, 0.85)'; 
+                     e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                }}
+                title="Center Canvas"
+            >
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="white"> 
+                    <circle cx="8" cy="8" r="2"/>
+                    <path d="M3.5 3.5 L 7.5 7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="7.5,6.0 7.5,7.5 6.0,7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <path d="M12.5 3.5 L 8.5 7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="8.5,6.0 8.5,7.5 10.0,7.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <path d="M3.5 12.5 L 7.5 8.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="6.0,8.5 7.5,8.5 7.5,10.0" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <path d="M12.5 12.5 L 8.5 8.5" stroke="white" strokeWidth="1.5" fill="none"/>
+                    <polyline points="10.0,8.5 8.5,8.5 8.5,10.0" stroke="white" strokeWidth="1.5" fill="none"/>
+                </svg>
+            </button>
+
             <svg
                 ref={svgRef}
                 className="petri-canvas"
                 width={dimensions.width}
                 height={dimensions.height}
                 viewBox={`${zoomAndPan.viewBox.x} ${zoomAndPan.viewBox.y} ${zoomAndPan.viewBox.w} ${zoomAndPan.viewBox.h}`}
-                onWheel={zoomAndPan.handleZoom}
                 onClick={handleSvgClick}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
@@ -373,7 +412,18 @@ export const Canvas = (props: CanvasProps) => {
                         );
                     })}
                 </g>
+
+                {/* Add token animations layer */}
+                {props.tokenAnimator && (
+                    <TokenAnimations
+                        places={props.places}
+                        transitions={props.transitions}
+                        arcs={props.arcs}
+                        tokenAnimator={props.tokenAnimator}
+                    />
+                )}
             </svg>
+            <SpeedControl onChange={handleSpeedChange} />
         </div>
     );
 };
