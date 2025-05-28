@@ -8,5 +8,5 @@
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :test
 
-BUILD SUCCESSFUL in 5s
+BUILD SUCCESSFUL in 4s
 5 actionable tasks: 5 executed
