@@ -55,7 +55,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #242424; 
   color: #e0e0e0; 
-  overflow: hidden;
+  overflow: hidden; 
   display: block;
   min-width: 320px;
   min-height: 100vh;

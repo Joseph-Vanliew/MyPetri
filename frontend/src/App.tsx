@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, {useState, useCallback, useEffect, useRef, useMemo} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
@@ -893,6 +892,9 @@ export default function App() {
                 const responseEnabledTransitions = responseData.transitions?.filter(t => t.enabled).map(t => t.id) || [];
                 let newConflictResolutionMode = false;
                 let newConflictingTransitions: string[] = [];
+                
+                // Track bidirectional places that need immediate token decrement
+                const bidirectionalPlacesToDecrement = new Set<string>();
 
                 // Check for conflicts first
                 if (pageToUpdate.deterministicMode && responseEnabledTransitions.length > 1) {
@@ -903,20 +905,23 @@ export default function App() {
                 } else {
                     // Only start animations if there's no conflict
                     firedTransitions.forEach(firedTransition => {
-                        // Find input and output arcs for this transition
-                        const inputArcs = pageToUpdate.arcs.filter(a => 
-                            a.outgoingId === firedTransition.id && a.type !== 'INHIBITOR'
-                        );
-                        const outputArcs = pageToUpdate.arcs.filter(a => 
-                            a.incomingId === firedTransition.id
-                        );
-
                         // Find the transition object from the page data
                         const transitionObj = pageToUpdate.transitions.find(t => t.id === firedTransition.id);
                         if (!transitionObj) return;
 
-                        // Handle input arcs (consumption)
-                        inputArcs.forEach(inputArc => {
+                        // Separate arcs by type for proper handling
+                        const regularInputArcs = pageToUpdate.arcs.filter(a => 
+                            a.outgoingId === firedTransition.id && a.type === 'REGULAR'
+                        );
+                        const regularOutputArcs = pageToUpdate.arcs.filter(a => 
+                            a.incomingId === firedTransition.id && a.type === 'REGULAR'
+                        );
+                        const bidirectionalArcs = pageToUpdate.arcs.filter(a =>
+                            (a.incomingId === firedTransition.id || a.outgoingId === firedTransition.id) && a.type === 'BIDIRECTIONAL'
+                        );
+
+                        // Handle regular input arcs (consumption only)
+                        regularInputArcs.forEach(inputArc => {
                             const sourcePlace = pageToUpdate.places.find(p => p.id === inputArc.incomingId);
                             if (sourcePlace) {
                                 tokenAnimator.startAnimation(
@@ -929,8 +934,8 @@ export default function App() {
                             }
                         });
 
-                        // Handle output arcs (production) separately
-                        outputArcs.forEach(outputArc => {
+                        // Handle regular output arcs (production only)
+                        regularOutputArcs.forEach(outputArc => {
                             const targetPlace = pageToUpdate.places.find(p => p.id === outputArc.outgoingId);
                             if (targetPlace) {
                                 // Capture the final token value from responseData
@@ -966,20 +971,69 @@ export default function App() {
                                 );
                             }
                         });
+
+                        // Handle bidirectional arcs (consumption THEN production)
+                        bidirectionalArcs.forEach(bidirectionalArc => {
+                            const place = pageToUpdate.places.find(p => 
+                                p.id === bidirectionalArc.incomingId || p.id === bidirectionalArc.outgoingId
+                            );
+                            if (place) {
+                                const finalTokens = responseData.places.find(rp => rp.id === place.id)?.tokens ?? place.tokens;
+                                
+                                // Track this place for immediate token decrement
+                                bidirectionalPlacesToDecrement.add(place.id);
+                                
+                                tokenAnimator.startBidirectionalAnimation(
+                                    place,
+                                    transitionObj,
+                                    pageToUpdate.arcs,
+                                    () => {},
+                                    () => {
+                                        // Complete: restore final count
+                                        setPages(prevPages => {
+                                            const currentPage = prevPages[activePageId!];
+                                            if (!currentPage) return prevPages;
+                                            const updatedPlaces = currentPage.places.map(p => {
+                                                if (p.id === place.id) {
+                                                    return { ...p, tokens: finalTokens };
+                                                }
+                                                return p;
+                                            });
+                                            return {
+                                                ...prevPages,
+                                                [activePageId!]: { ...currentPage, places: updatedPlaces }
+                                            };
+                                        });
+                                    }
+                                );
+                            }
+                        });
                     });
                 }
 
                 const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
                     const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
-                    // Only update tokens immediately for places being consumed from
-                    const isSourcePlace = pageToUpdate.arcs.some(arc => 
+                    
+                    // Only update tokens immediately for places being consumed from via REGULAR arcs
+                    const isRegularSourcePlace = pageToUpdate.arcs.some(arc => 
                         arc.incomingId === p_ui.id && 
-                        firedTransitions.some(t => t.id === arc.outgoingId)
+                        arc.type === 'REGULAR' && 
+                        responseEnabledTransitions.some(transitionId => transitionId === arc.outgoingId)
                     );
-                    return updatedPlaceData && isSourcePlace ? { 
-                        ...p_ui,
-                        tokens: updatedPlaceData.tokens 
-                    } : p_ui;
+                    
+                    // Check if this place should be decremented for bidirectional arc consumption
+                    const shouldDecrementForBidirectional = bidirectionalPlacesToDecrement.has(p_ui.id);
+                    
+                    if (updatedPlaceData && isRegularSourcePlace) {
+                        // Regular consumption - use backend result
+                        return { ...p_ui, tokens: updatedPlaceData.tokens };
+                    } else if (shouldDecrementForBidirectional) {
+                        // Bidirectional consumption - decrement immediately, animation will restore final count
+                        return { ...p_ui, tokens: Math.max(0, p_ui.tokens - 1) };
+                    }
+                    
+                    // No changes for this place
+                    return p_ui;
                 });
 
                 // Map response DTO transitions to UITransition
@@ -1094,6 +1148,9 @@ export default function App() {
                 const outputArcs = activePageData.arcs.filter(a => 
                     a.incomingId === selectedTransitionId
                 );
+                const bidirectionalArcs = activePageData.arcs.filter(a =>
+                    (a.incomingId === selectedTransitionId || a.outgoingId === selectedTransitionId) && a.type === 'BIDIRECTIONAL'
+                );
 
                 // Handle input arcs (consumption)
                 inputArcs.forEach(inputArc => {
@@ -1168,6 +1225,40 @@ export default function App() {
                     }
                 });
                 
+                // Handle bidirectional arcs (consumption THEN production)
+                bidirectionalArcs.forEach(bidirectionalArc => {
+                    const place = activePageData.places.find(p => 
+                        p.id === bidirectionalArc.incomingId || p.id === bidirectionalArc.outgoingId
+                    );
+                    if (place) {
+                        const finalTokens = responseData.places.find(rp => rp.id === place.id)?.tokens ?? place.tokens;
+                        
+                        tokenAnimator.startBidirectionalAnimation(
+                            place,
+                            transitionObj,
+                            activePageData.arcs,
+                            () => {},
+                            () => {
+                                // Complete: restore final count
+                                setPages(prevPages => {
+                                    const currentPage = prevPages[activePageId!];
+                                    if (!currentPage) return prevPages;
+                                    const updatedPlaces = currentPage.places.map(p => {
+                                        if (p.id === place.id) {
+                                            return { ...p, tokens: finalTokens };
+                                        }
+                                        return p;
+                                    });
+                                    return {
+                                        ...prevPages,
+                                        [activePageId!]: { ...currentPage, places: updatedPlaces }
+                                    };
+                                });
+                            }
+                        );
+                    }
+                });
+                
                 // If there are no output arcs, clear fired transitions immediately
                 if (outputArcCount === 0) {
                     setCurrentFiredTransitions([]);
@@ -1181,15 +1272,27 @@ export default function App() {
 
                 const updatedPagePlaces = pageToUpdate.places.map(p_ui => {
                     const updatedPlaceData = responseData.places.find(rp => rp.id === p_ui.id);
-                    // Only update tokens immediately for places being consumed from
-                    const isSourcePlace = activePageData.arcs.some(arc => 
+                    
+                    const isRegularSourcePlace = pageToUpdate.arcs.some(arc => 
                         arc.incomingId === p_ui.id && 
+                        arc.type === 'REGULAR' && 
                         arc.outgoingId === selectedTransitionId
                     );
-                    return updatedPlaceData && isSourcePlace ? { 
-                        ...p_ui,
-                        tokens: updatedPlaceData.tokens 
-                    } : p_ui;
+                    
+                    const isBidirectionalPlace = pageToUpdate.arcs.some(arc => 
+                        (arc.incomingId === p_ui.id || arc.outgoingId === p_ui.id) &&
+                        arc.type === 'BIDIRECTIONAL' && 
+                        (arc.incomingId === selectedTransitionId || arc.outgoingId === selectedTransitionId)
+                    );
+                    
+                    if (updatedPlaceData && isRegularSourcePlace) {
+                        return { ...p_ui, tokens: updatedPlaceData.tokens };
+                    } else if (isBidirectionalPlace) {
+                        // Decrement for bidirectional - this is the ONLY place it happens
+                        return { ...p_ui, tokens: Math.max(0, p_ui.tokens - 1) };
+                    }
+                    
+                    return p_ui;
                 });
 
                 const updatedPageTransitions = pageToUpdate.transitions.map(t_ui => {
@@ -2198,10 +2301,10 @@ export default function App() {
                         <div className="control-item">
                             <span className="control-label">Deterministic Mode</span>
                             <label className="switch-container" htmlFor="deterministic-mode">
-                                <input
-                                    type="checkbox"
-                                    id="deterministic-mode"
-                                    checked={activePageData?.deterministicMode ?? false}
+                            <input
+                                type="checkbox"
+                                id="deterministic-mode"
+                                checked={activePageData?.deterministicMode ?? false}
                                     onChange={(e) => handleSetDeterministicMode(e.target.checked)}
                                     style={{ opacity: 0, width: 0, height: 0 }}
                                 />
@@ -2337,3 +2440,4 @@ export default function App() {
         </div>
     );
 }
+// src/App.tsx

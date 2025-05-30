@@ -282,4 +282,61 @@ export class TokenAnimator {
             this.animationFrameId = null;
         }
     }
+
+    public startBidirectionalAnimation(
+        place: UIPlace,
+        transition: UITransition,
+        arcs: UIArc[],
+        onMidpointCallback: () => void,  // Called after consumption, before production
+        onCompleteCallback: () => void   // Called after production
+    ) {
+        // Create two separate animations with proper timing
+        const now = performance.now();
+        const BASE_DURATION = 800 * this.speedMultiplier;
+        
+        // Find the bidirectional arc
+        const bidirectionalArc = arcs.find(a => 
+            ((a.incomingId === place.id && a.outgoingId === transition.id) ||
+             (a.outgoingId === place.id && a.incomingId === transition.id)) && 
+            a.type === 'BIDIRECTIONAL'
+        );
+        
+        if (bidirectionalArc) {
+            const consumePath = this.calculateArcPath(place, transition, bidirectionalArc, arcs);
+            const producePath = this.calculateArcPath(transition, place, bidirectionalArc, arcs);
+            
+            // Add consumption animation
+            this.consumptionAnimations.push({
+                sourceId: place.id,
+                targetId: transition.id,
+                arcPath: consumePath,
+                progress: 0,
+                startTime: now,
+                duration: BASE_DURATION,
+                type: 'consume'
+            });
+            
+            // Add production animation (starts after consumption + delay)
+            this.productionAnimations.push({
+                sourceId: transition.id,
+                targetId: place.id,
+                arcPath: producePath,
+                progress: 0,
+                startTime: now + BASE_DURATION + 50, // Start after consumption + small delay
+                duration: BASE_DURATION,
+                type: 'produce',
+                onComplete: onCompleteCallback
+            });
+            
+            this.animations = [...this.consumptionAnimations, ...this.productionAnimations];
+            
+            if (!this.animationFrameId) {
+                this.allConsumptionsComplete = false;
+                this.animationFrameId = requestAnimationFrame(this.animate);
+            }
+            
+            // Call midpoint callback after consumption duration
+            setTimeout(onMidpointCallback, BASE_DURATION);
+        }
+    }
 } 

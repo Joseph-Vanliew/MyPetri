@@ -168,29 +168,35 @@ public class PetriNetService {
 
         // 4. Check Output Place Capacity
         if (evaluationPassed) {
-            Map<String, Integer> tokensToAddPerPlace = new HashMap<>();
-            // Calculate tokens to add for T->P arcs (Regular & BiDi) and P->T (BiDi only)
+            Map<String, Integer> netTokenChangePerPlace = new HashMap<>();
+            // Calculate net token changes for each place after firing this transition
              for (String arcId : transition.getArcIds()) {
                 Arc arc = arcsMap.get(arcId);
                 if (arc == null) continue;
-                if (arc.getIncomingId().equals(transition.getId())) { // T -> P direction
-                     if (arc instanceof Arc.RegularArc || arc instanceof Arc.BidirectionalArc) {
-                          tokensToAddPerPlace.merge(arc.getOutgoingId(), 1, Integer::sum);
-                     }
-                } else if (arc.getOutgoingId().equals(transition.getId()) && arc instanceof Arc.BidirectionalArc) { // P -> T direction (BiDi adds back)
-                     tokensToAddPerPlace.merge(arc.getIncomingId(), 1, Integer::sum);
+                
+                if (arc instanceof Arc.RegularArc) {
+                    if (arc.getIncomingId().equals(transition.getId())) { // T -> P direction (production)
+                        netTokenChangePerPlace.merge(arc.getOutgoingId(), 1, Integer::sum);
+                    } else if (arc.getOutgoingId().equals(transition.getId())) { // P -> T direction (consumption)
+                        netTokenChangePerPlace.merge(arc.getIncomingId(), -1, Integer::sum);
+                    }
+                } else if (arc instanceof Arc.BidirectionalArc) {
+                    // For bidirectional arcs, net change is 0 (consume 1, produce 1)
+                    // So we don't need to add anything to netTokenChangePerPlace
+                    // The place will be at the same token count after firing
                 }
              }
 
-            // Check actual capacity
-            for (Map.Entry<String, Integer> entry : tokensToAddPerPlace.entrySet()) {
+            // Check actual capacity constraints
+            for (Map.Entry<String, Integer> entry : netTokenChangePerPlace.entrySet()) {
                 String placeId = entry.getKey();
-                int tokensToAdd = entry.getValue();
+                int netTokenChange = entry.getValue();
                 Place targetPlace = placesMap.get(placeId);
 
-                if (targetPlace != null && targetPlace.isBounded()) {
+                // Only check capacity if there's a net increase in tokens
+                if (targetPlace != null && targetPlace.isBounded() && netTokenChange > 0) {
                     Integer placeCapacity = targetPlace.getCapacity();
-                    if (placeCapacity != null && (targetPlace.getTokens() + tokensToAdd > placeCapacity)) {
+                    if (placeCapacity != null && (targetPlace.getTokens() + netTokenChange > placeCapacity)) {
                         evaluationPassed = false;
                         break;
                     }
