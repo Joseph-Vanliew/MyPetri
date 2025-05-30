@@ -10,8 +10,8 @@ import { useClipboard } from './hooks/useClipboard';
 import { PagesComponent } from './components/PagesComponent';
 import { loadAppState, saveAppState, PersistedAppState } from './hooks/appPersistence';
 import { TokenAnimator } from './animations/TokenAnimator';
-import './App.css';  // ← ADD THIS LINE
-import './components/styles/LeftSidebar.css'; // Add this import
+import './App.css';
+import './components/styles/LeftSidebar.css';
 
 const defaultValidatorConfigs: ValidatorPageConfig = {
     inputConfigs: [],
