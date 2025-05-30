@@ -1,0 +1,268 @@
+{
+  "id": "rl_basic_cycle_page",
+  "title": "Reinforcement Learning Basic Cycle",
+  "places": [
+    {
+      "id": "current_state",
+      "tokens": 1,
+      "name": "Current State",
+      "x": 200,
+      "y": 150,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "action_space",
+      "tokens": 0,
+      "name": "Action Space",
+      "x": 400,
+      "y": 150,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "selected_action",
+      "tokens": 0,
+      "name": "Selected Action",
+      "x": 600,
+      "y": 150,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "environment_response",
+      "tokens": 0,
+      "name": "Environment Response",
+      "x": 600,
+      "y": 350,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "reward_signal",
+      "tokens": 0,
+      "name": "Reward Signal",
+      "x": 400,
+      "y": 450,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "next_state",
+      "tokens": 0,
+      "name": "Next State",
+      "x": 200,
+      "y": 350,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "policy_memory",
+      "tokens": 1,
+      "name": "Policy/Memory",
+      "x": 100,
+      "y": 250,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "learning_buffer",
+      "tokens": 0,
+      "name": "Learning Buffer",
+      "x": 300,
+      "y": 350,
+      "radius": 25,
+      "bounded": false,
+      "capacity": null
+    }
+  ],
+  "transitions": [
+    {
+      "id": "policy_decision",
+      "enabled": true,
+      "arcIds": ["arc1", "arc2", "arc3"],
+      "name": "Policy Decision",
+      "x": 300,
+      "y": 150,
+      "width": 60,
+      "height": 20
+    },
+    {
+      "id": "action_execution",
+      "enabled": false,
+      "arcIds": ["arc4", "arc5"],
+      "name": "Action Execution",
+      "x": 500,
+      "y": 150,
+      "width": 60,
+      "height": 20
+    },
+    {
+      "id": "environment_step",
+      "enabled": false,
+      "arcIds": ["arc6", "arc7", "arc8"],
+      "name": "Environment Step",
+      "x": 600,
+      "y": 250,
+      "width": 60,
+      "height": 20
+    },
+    {
+      "id": "experience_collection",
+      "enabled": false,
+      "arcIds": ["arc9", "arc10", "arc11"],
+      "name": "Experience Collection",
+      "x": 400,
+      "y": 350,
+      "width": 60,
+      "height": 20
+    },
+    {
+      "id": "policy_update",
+      "enabled": false,
+      "arcIds": ["arc12", "arc13", "arc14"],
+      "name": "Policy Update",
+      "x": 200,
+      "y": 250,
+      "width": 60,
+      "height": 20
+    },
+    {
+      "id": "state_transition",
+      "enabled": false,
+      "arcIds": ["arc15", "arc16"],
+      "name": "State Transition",
+      "x": 100,
+      "y": 150,
+      "width": 60,
+      "height": 20
+    }
+  ],
+  "arcs": [
+    {
+      "id": "arc1",
+      "type": "REGULAR",
+      "incomingId": "current_state",
+      "outgoingId": "policy_decision"
+    },
+    {
+      "id": "arc2",
+      "type": "REGULAR",
+      "incomingId": "policy_memory",
+      "outgoingId": "policy_decision"
+    },
+    {
+      "id": "arc3",
+      "type": "REGULAR",
+      "incomingId": "policy_decision",
+      "outgoingId": "action_space"
+    },
+    {
+      "id": "arc4",
+      "type": "REGULAR",
+      "incomingId": "action_space",
+      "outgoingId": "action_execution"
+    },
+    {
+      "id": "arc5",
+      "type": "REGULAR",
+      "incomingId": "action_execution",
+      "outgoingId": "selected_action"
+    },
+    {
+      "id": "arc6",
+      "type": "REGULAR",
+      "incomingId": "selected_action",
+      "outgoingId": "environment_step"
+    },
+    {
+      "id": "arc7",
+      "type": "REGULAR",
+      "incomingId": "environment_step",
+      "outgoingId": "environment_response"
+    },
+    {
+      "id": "arc8",
+      "type": "REGULAR",
+      "incomingId": "environment_step",
+      "outgoingId": "reward_signal"
+    },
+    {
+      "id": "arc9",
+      "type": "REGULAR",
+      "incomingId": "environment_response",
+      "outgoingId": "experience_collection"
+    },
+    {
+      "id": "arc10",
+      "type": "REGULAR",
+      "incomingId": "reward_signal",
+      "outgoingId": "experience_collection"
+    },
+    {
+      "id": "arc11",
+      "type": "REGULAR",
+      "incomingId": "experience_collection",
+      "outgoingId": "learning_buffer"
+    },
+    {
+      "id": "arc12",
+      "type": "REGULAR",
+      "incomingId": "learning_buffer",
+      "outgoingId": "policy_update"
+    },
+    {
+      "id": "arc13",
+      "type": "REGULAR",
+      "incomingId": "policy_update",
+      "outgoingId": "policy_memory"
+    },
+    {
+      "id": "arc14",
+      "type": "REGULAR",
+      "incomingId": "environment_response",
+      "outgoingId": "policy_update"
+    },
+    {
+      "id": "arc15",
+      "type": "REGULAR",
+      "incomingId": "environment_response",
+      "outgoingId": "state_transition"
+    },
+    {
+      "id": "arc16",
+      "type": "REGULAR",
+      "incomingId": "state_transition",
+      "outgoingId": "current_state"
+    }
+  ],
+  "deterministicMode": false,
+  "conflictResolutionMode": false,
+  "conflictingTransitions": [],
+  "selectedElements": [],
+  "history": {
+    "places": [],
+    "transitions": [],
+    "arcs": [],
+    "title": []
+  },
+  "zoomLevel": 1,
+  "panOffset": {
+    "x": -750,
+    "y": -421.875
+  },
+  "validatorConfigs": {
+    "inputConfigs": [],
+    "outputConfigs": [],
+    "validationResult": null,
+    "emptyInputFields": {},
+    "emptyOutputFields": {}
+  }
+} 

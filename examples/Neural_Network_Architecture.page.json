@@ -1,0 +1,362 @@
+{
+  "id": "neural_network_arch_page",
+  "title": "Neural Network Architecture",
+  "places": [
+    {
+      "id": "input_1",
+      "tokens": 1,
+      "name": "Input 1",
+      "x": 100,
+      "y": 100,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "input_2",
+      "tokens": 1,
+      "name": "Input 2",
+      "x": 100,
+      "y": 200,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "input_3",
+      "tokens": 1,
+      "name": "Input 3",
+      "x": 100,
+      "y": 300,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "hidden1_1",
+      "tokens": 0,
+      "name": "Hidden 1.1",
+      "x": 300,
+      "y": 80,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "hidden1_2",
+      "tokens": 0,
+      "name": "Hidden 1.2",
+      "x": 300,
+      "y": 160,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "hidden1_3",
+      "tokens": 0,
+      "name": "Hidden 1.3",
+      "x": 300,
+      "y": 240,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "hidden1_4",
+      "tokens": 0,
+      "name": "Hidden 1.4",
+      "x": 300,
+      "y": 320,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "hidden2_1",
+      "tokens": 0,
+      "name": "Hidden 2.1",
+      "x": 500,
+      "y": 120,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "hidden2_2",
+      "tokens": 0,
+      "name": "Hidden 2.2",
+      "x": 500,
+      "y": 200,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "hidden2_3",
+      "tokens": 0,
+      "name": "Hidden 2.3",
+      "x": 500,
+      "y": 280,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "output_1",
+      "tokens": 0,
+      "name": "Output 1",
+      "x": 700,
+      "y": 150,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    },
+    {
+      "id": "output_2",
+      "tokens": 0,
+      "name": "Output 2",
+      "x": 700,
+      "y": 250,
+      "radius": 20,
+      "bounded": false,
+      "capacity": null
+    }
+  ],
+  "transitions": [
+    {
+      "id": "layer1_forward",
+      "enabled": true,
+      "arcIds": ["arc1", "arc2", "arc3", "arc4", "arc5", "arc6", "arc7", "arc8", "arc9", "arc10", "arc11", "arc12"],
+      "name": "Layer 1 Forward",
+      "x": 200,
+      "y": 200,
+      "width": 60,
+      "height": 20
+    },
+    {
+      "id": "layer2_forward",
+      "enabled": false,
+      "arcIds": ["arc13", "arc14", "arc15", "arc16", "arc17", "arc18", "arc19", "arc20", "arc21", "arc22", "arc23", "arc24"],
+      "name": "Layer 2 Forward",
+      "x": 400,
+      "y": 200,
+      "width": 60,
+      "height": 20
+    },
+    {
+      "id": "output_layer",
+      "enabled": false,
+      "arcIds": ["arc25", "arc26", "arc27", "arc28", "arc29", "arc30"],
+      "name": "Output Layer",
+      "x": 600,
+      "y": 200,
+      "width": 60,
+      "height": 20
+    }
+  ],
+  "arcs": [
+    {
+      "id": "arc1",
+      "type": "REGULAR",
+      "incomingId": "input_1",
+      "outgoingId": "layer1_forward"
+    },
+    {
+      "id": "arc2",
+      "type": "REGULAR",
+      "incomingId": "input_2",
+      "outgoingId": "layer1_forward"
+    },
+    {
+      "id": "arc3",
+      "type": "REGULAR",
+      "incomingId": "input_3",
+      "outgoingId": "layer1_forward"
+    },
+    {
+      "id": "arc4",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_1"
+    },
+    {
+      "id": "arc5",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_2"
+    },
+    {
+      "id": "arc6",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_3"
+    },
+    {
+      "id": "arc7",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_4"
+    },
+    {
+      "id": "arc8",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_1"
+    },
+    {
+      "id": "arc9",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_2"
+    },
+    {
+      "id": "arc10",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_3"
+    },
+    {
+      "id": "arc11",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_4"
+    },
+    {
+      "id": "arc12",
+      "type": "REGULAR",
+      "incomingId": "layer1_forward",
+      "outgoingId": "hidden1_1"
+    },
+    {
+      "id": "arc13",
+      "type": "REGULAR",
+      "incomingId": "hidden1_1",
+      "outgoingId": "layer2_forward"
+    },
+    {
+      "id": "arc14",
+      "type": "REGULAR",
+      "incomingId": "hidden1_2",
+      "outgoingId": "layer2_forward"
+    },
+    {
+      "id": "arc15",
+      "type": "REGULAR",
+      "incomingId": "hidden1_3",
+      "outgoingId": "layer2_forward"
+    },
+    {
+      "id": "arc16",
+      "type": "REGULAR",
+      "incomingId": "hidden1_4",
+      "outgoingId": "layer2_forward"
+    },
+    {
+      "id": "arc17",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_1"
+    },
+    {
+      "id": "arc18",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_2"
+    },
+    {
+      "id": "arc19",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_3"
+    },
+    {
+      "id": "arc20",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_1"
+    },
+    {
+      "id": "arc21",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_2"
+    },
+    {
+      "id": "arc22",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_3"
+    },
+    {
+      "id": "arc23",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_1"
+    },
+    {
+      "id": "arc24",
+      "type": "REGULAR",
+      "incomingId": "layer2_forward",
+      "outgoingId": "hidden2_2"
+    },
+    {
+      "id": "arc25",
+      "type": "REGULAR",
+      "incomingId": "hidden2_1",
+      "outgoingId": "output_layer"
+    },
+    {
+      "id": "arc26",
+      "type": "REGULAR",
+      "incomingId": "hidden2_2",
+      "outgoingId": "output_layer"
+    },
+    {
+      "id": "arc27",
+      "type": "REGULAR",
+      "incomingId": "hidden2_3",
+      "outgoingId": "output_layer"
+    },
+    {
+      "id": "arc28",
+      "type": "REGULAR",
+      "incomingId": "output_layer",
+      "outgoingId": "output_1"
+    },
+    {
+      "id": "arc29",
+      "type": "REGULAR",
+      "incomingId": "output_layer",
+      "outgoingId": "output_2"
+    },
+    {
+      "id": "arc30",
+      "type": "REGULAR",
+      "incomingId": "output_layer",
+      "outgoingId": "output_1"
+    }
+  ],
+  "deterministicMode": false,
+  "conflictResolutionMode": false,
+  "conflictingTransitions": [],
+  "selectedElements": [],
+  "history": {
+    "places": [],
+    "transitions": [],
+    "arcs": [],
+    "title": []
+  },
+  "zoomLevel": 1,
+  "panOffset": {
+    "x": -750,
+    "y": -421.875
+  },
+  "validatorConfigs": {
+    "inputConfigs": [],
+    "outputConfigs": [],
+    "validationResult": null,
+    "emptyInputFields": {},
+    "emptyOutputFields": {}
+  }
+} 

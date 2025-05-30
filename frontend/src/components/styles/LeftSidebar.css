@@ -1,0 +1,128 @@
+/* Left Sidebar Controls Styling */
+.controls-section {
+          margin-top: 2rem;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          padding: 10px;
+          border-top: 1px solid #4a4a4a;
+          overflow: hidden;
+          width: 100%;
+          box-sizing: border-box;
+}
+
+.deterministic-mode-container {
+          display: flex;
+          align-items: center;
+          margin-bottom: 10px;
+          padding: 5px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+}
+
+.deterministic-mode-container:hover {
+          background-color: #2a2a2a;
+}
+
+.deterministic-checkbox {
+          margin-right: 5px;
+          cursor: pointer;
+}
+
+.deterministic-label {
+          cursor: pointer;
+}
+
+.next-state-button {
+          padding: 8px 12px;
+          background-color: #2c5282;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+}
+
+.next-state-button:hover {
+          background-color: #3a69a4;
+}
+
+.animation-message {
+          margin-top: 4px;
+          color: #ffcc00;
+          font-size: 0.9rem;
+          text-align: center;
+}
+
+.animation-skip-button {
+          margin-left: 10px;
+          padding: 2px 8px;
+          background: #444;
+          border: none;
+          border-radius: 3px;
+          color: #fff;
+          font-size: 0.8rem;
+          cursor: pointer;
+}
+
+.conflict-resolution-message {
+          margin-top: 10px;
+          color: #ff4d4d;
+}
+
+.sidebar-spacer {
+          flex: 1;
+          min-height: 0;
+}
+
+.reset-section {
+          margin-top: 10px;
+          border-top: 1px solid #4a4a4a;
+          padding-top: 10px;
+          width: 100%;
+          box-sizing: border-box;
+}
+
+.reset-canvas-button {
+          width: 100%;
+          padding: 8px 12px;
+          background-color: #822c2c;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          font-weight: bold;
+}
+
+.reset-canvas-button:hover {
+          background-color: #a43a3a;
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Push switch to the right */
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.control-item:hover {
+  background-color: #2a2a2a;
+}
+
+.control-label {
+  font-size: 14px;
+  color: #e0e0e0;
+  cursor: pointer;
+  flex: 1; /* Take up available space */
+}
+
+.switch-container {
+  flex-shrink: 0; /* Prevent switch from shrinking */
+  width: 28px; /* Fixed width to ensure vertical alignment */
+}

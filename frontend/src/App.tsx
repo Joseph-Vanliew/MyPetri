@@ -11,6 +11,8 @@ import { useClipboard } from './hooks/useClipboard';
 import { PagesComponent } from './components/PagesComponent';
 import { loadAppState, saveAppState, PersistedAppState } from './hooks/appPersistence';
 import { TokenAnimator } from './animations/TokenAnimator';
+import './App.css';  // ← ADD THIS LINE
+import './components/styles/LeftSidebar.css'; // Add this import
 
 const defaultValidatorConfigs: ValidatorPageConfig = {
     inputConfigs: [],
@@ -2129,19 +2131,14 @@ export default function App() {
     // XVIII. RENDER
     // =========================================================================================
     return (
-        <div className="app" style={{ 
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100vh',
-            overflow: 'hidden'
-        }}>
+        <div className="app">
             <EditableTitle 
                 ref={titleRef}
                 title={projectTitle} 
                 onTitleChange={(newTitle) => {
                     if (newTitle !== projectTitle) {
                         setProjectTitle(newTitle);
-                        setProjectHasUnsavedChanges(true); // Project title change is an unsaved change
+                        setProjectHasUnsavedChanges(true);
                     }
                 }}
             />
@@ -2169,8 +2166,8 @@ export default function App() {
                 onZoomChange={handleZoomLevelChange} 
                 onCreatePage={handleCreatePage}
                 projectFileHandle={projectFileHandle}
-                projectHasUnsavedChanges={projectHasUnsavedChanges} // Pass the new state
-                onRenameProjectTitle={(newTitle: string) => { // For MenuBar to trigger project title change
+                projectHasUnsavedChanges={projectHasUnsavedChanges}
+                onRenameProjectTitle={(newTitle: string) => {
                     if (newTitle !== projectTitle) {
                         setProjectTitle(newTitle);
                         setProjectHasUnsavedChanges(true);
@@ -2178,22 +2175,9 @@ export default function App() {
                 }}
             />
 
-            <div style={{ 
-                display: 'flex', 
-                flexGrow: 1,
-                height: 'calc(100vh - 80px)',
-                overflow: 'hidden'
-            }}>
-                <div style={{ 
-                    width: '200px', 
-                    borderRight: '1px solid #4a4a4a',
-                    padding: '10px',
-                    flexShrink: 0, 
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden'
-                }}>
-                    <div style={{ flex: 'none', overflow: 'hidden' }}>
+            <div className="main-content">
+                <div className="left-sidebar">
+                    <div className="toolbar-container">
                         <Toolbar
                             selectedTool={selectedTool}
                             setSelectedTool={(tool) => {
@@ -2209,79 +2193,51 @@ export default function App() {
                         />
                     </div>
 
-                    <div className="controls" style={{ 
-                        marginTop: '2rem', 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: '10px',
-                        padding: '10px',
-                        borderTop: '1px solid #4a4a4a',
-                        overflow: 'hidden'
-                    }}>
-                        <div 
-                            style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                marginBottom: '10px',
-                                padding: '5px',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                transition: 'background-color 0.2s ease'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#2a2a2a'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                            onClick={() => {
-                                handleSetDeterministicMode(!(activePageData?.deterministicMode ?? false));
-                            }}
-                            title="When enabled, you can choose which transition to fire when multiple are enabled"
-                        >
-                            <input
-                                type="checkbox"
-                                id="deterministic-mode"
-                                checked={activePageData?.deterministicMode ?? false}
-                                onChange={(e) => { e.stopPropagation(); handleSetDeterministicMode(e.target.checked); }}
-                                style={{ marginRight: '5px', cursor: 'pointer' }}
-                            />
-                            <label 
-                                htmlFor="deterministic-mode" 
-                                style={{ cursor: 'pointer' }}
-                                onClick={(e) => { e.preventDefault(); }}
-                            >
-                                Deterministic Mode
+                    <div className="controls-section">
+                        {/* Deterministic Mode Switch */}
+                        <div className="control-item">
+                            <span className="control-label">Deterministic Mode</span>
+                            <label className="switch-container" htmlFor="deterministic-mode">
+                                <input
+                                    type="checkbox"
+                                    id="deterministic-mode"
+                                    checked={activePageData?.deterministicMode ?? false}
+                                    onChange={(e) => handleSetDeterministicMode(e.target.checked)}
+                                    style={{ opacity: 0, width: 0, height: 0 }}
+                                />
+                                <span className="switch-slider round"></span>
+                            </label>
+                        </div>
+
+                        {/* Show Capacity Switch */}
+                        <div className="control-item">
+                            <span className="control-label">Show Capacity</span>
+                            <label className="switch-container" htmlFor="capacity-mode-toggle">
+                                <input
+                                    type="checkbox"
+                                    id="capacity-mode-toggle"
+                                    checked={showCapacityEditorMode}
+                                    onChange={(e) => setShowCapacityEditorMode(e.target.checked)}
+                                    style={{ opacity: 0, width: 0, height: 0 }}
+                                />
+                                <span className="switch-slider round"></span>
                             </label>
                         </div>
                         
                         <button 
                             onClick={handleSimulate} 
-                            className="simulate-button"
-                            style={{ 
-                                padding: '8px 12px', backgroundColor: '#2c5282', color: 'white',
-                                border: 'none', borderRadius: '4px', cursor: 'pointer',
-                                transition: 'background-color 0.2s ease'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#3a69a4'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#2c5282'; }}
+                            className="next-state-button"
                             title="Advance the Petri net to the next state"
                         >
                             Next State
                         </button>
                         
-                        {/* Animation status message */}
                         {animationMessage && (
-                            <div style={{ marginTop: '4px', color: '#ffcc00', fontSize: '0.9rem', textAlign: 'center' }}>
+                            <div className="animation-message">
                                 {animationMessage}
                                 <button 
                                     onClick={handleCompleteAnimations}
-                                    style={{ 
-                                        marginLeft: '10px',
-                                        padding: '2px 8px',
-                                        background: '#444',
-                                        border: 'none',
-                                        borderRadius: '3px',
-                                        color: '#fff',
-                                        fontSize: '0.8rem',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="animation-skip-button"
                                 >
                                     Skip
                                 </button>
@@ -2289,29 +2245,18 @@ export default function App() {
                         )}
                         
                         {activePageData?.conflictResolutionMode && (
-                            <div style={{ marginTop: '10px', color: '#ff4d4d' }}>
+                            <div className="conflict-resolution-message">
                                 Select one transition to fire
                             </div>
                         )}
                     </div>
                     
-                    <div style={{ flex: '1' }}></div>
+                    <div className="sidebar-spacer"></div>
                     
-                    <div style={{ 
-                        marginTop: '10px', 
-                        borderTop: '1px solid #4a4a4a',
-                        paddingTop: '10px'
-                    }}>
+                    <div className="reset-section">
                         <button 
                             onClick={handleReset} 
-                            className="reset-button"
-                            style={{ 
-                                width: '100%', padding: '8px 12px', backgroundColor: '#822c2c',
-                                color: 'white', border: 'none', borderRadius: '4px', 
-                                cursor: 'pointer', transition: 'background-color 0.2s ease', fontWeight: 'bold'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#a43a3a'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#822c2c'; }}
+                            className="reset-canvas-button"
                             title="Clear all elements from the canvas"
                         >
                             Reset Canvas
@@ -2319,20 +2264,8 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* Center area (Restored from user input, with Canvas added) */}
-                <div style={{ 
-                    flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden'
-                }}>
-                    {/* Canvas container */}
-                    <div style={{ 
-                        flex: 1,
-                        overflow: 'hidden',
-                        minHeight: 0,
-                        position: 'relative' // Added for positioning context if needed
-                    }}>
+                <div className="center-area">
+                    <div className="canvas-container-main">
                         <Canvas
                             places={activePageData?.places || []}
                             transitions={activePageData?.transitions || []}
@@ -2360,12 +2293,11 @@ export default function App() {
                             zoomLevel={activePageData?.zoomLevel ?? 1}
                             panOffset={activePageData?.panOffset ?? {x: 0, y: 0}}
                             onViewChange={handleViewChange}
-                            onCenterView={handleCenterView} // Pass the handler
+                            onCenterView={handleCenterView}
                             tokenAnimator={tokenAnimator}
                         />
                     </div>
                     
-                    {/* Replace Placeholder with PagesComponent */}
                     <PagesComponent 
                         pages={pages}
                         pageOrder={pageOrder}
@@ -2379,19 +2311,11 @@ export default function App() {
                     />
                 </div>
 
-                {/* Right Panel for TabbedPanel */}
-                <div style={{ 
-                     width: '390px', // Width from previous layout assumption
-                     borderLeft: '1px solid #4a4a4a',
-                     overflow: 'auto',
-                     flexShrink: 0,
-                     height: '100%'
-                }}>
-                    {/* Render TabbedPanel */}
-                    {petriNetDTO && activePageData && ( // Ensure activePageData exists
+                <div className="right-panel">
+                    {petriNetDTO && activePageData && (
                     <TabbedPanel
                         data={petriNetDTO}
-                        onValidationResult={handleValidationResult} // This can likely be removed if ValidatorTool handles it via onValidatorConfigsChange
+                        onValidationResult={handleValidationResult}
                         selectedElements={activePageData?.selectedElements || []}
                         autoScrollEnabled={autoScrollEnabled}
                         onAutoScrollToggle={setAutoScrollEnabled}
@@ -2399,13 +2323,12 @@ export default function App() {
                         width="100%"
                         height="100%"
                         activePageId={activePageId}
-                        validatorConfigs={activePageData.validatorConfigs || defaultValidatorConfigs} // Pass current page's config
+                        validatorConfigs={activePageData.validatorConfigs || defaultValidatorConfigs}
                         onValidatorConfigsChange={onValidatorConfigsChangeCallback}
                     />
                     )}
-                    {/* placeholder when no page is active */}
                     {!petriNetDTO && (
-                        <div style={{ padding: '20px', color: '#888', textAlign: 'center' }}>
+                        <div className="no-active-page">
                             No active Petri net selected.
                         </div>
                     )}

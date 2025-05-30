@@ -1,0 +1,214 @@
+/* Toolbar component styles - using toolbar-elements as root class */
+.toolbar-elements {
+  display: flex;
+  flex-direction: column;
+  padding: 5px; /* Reduce from 15px */
+  background-color: #242424; /* Match sidebar background */
+  gap: 20px;
+  overflow: hidden;
+  border-radius: 0;
+  color: #e0e0e0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+          
+.toolbar-elements .tools-container {
+  background-color: #1a1a1a; /* The background you specified */
+  border-radius: 6px;
+  padding: 5px;
+}
+
+.toolbar-elements .elements-label {
+  margin-bottom: 15px;
+  margin-left: 8px; /* Add left margin to move text right */
+  font-weight: bold;
+  color: #e0e0e0;
+  font-size: 18px;
+}
+
+/* Remove individual section containers - place items directly in tools-container */
+.toolbar-elements .toolbar-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+  color: #e0e0e0;
+  background-color: transparent;
+  margin: 0; /* Remove all margin between items */
+  gap: 15px;
+  border-radius: 4px;
+}
+
+.toolbar-elements .toolbar-item:hover {
+  background-color: #2a2a2a;
+}
+
+.toolbar-elements .toolbar-item.active {
+  background-color: #333;
+}
+
+/* Icon container for larger icons */
+.toolbar-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 85px; /* Increase from 70px */
+  height: 85px; /* Increase from 70px */
+  flex-shrink: 0;
+}
+
+.toolbar-icon-container svg {
+  width: 80px; /* Increase from 65px */
+  height: 80px; /* Increase from 65px */
+}
+
+/* Item labels */
+.toolbar-item-label {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Arcs section - no container, just the label and buttons */
+.toolbar-elements .arcs-label {
+  margin: 20px 0 15px 8px; /* Add left margin to move text right */
+  font-weight: bold;
+  color: #e0e0e0;
+  font-size: 18px;
+}
+
+/* Arc buttons laid out horizontally - no gap for continuous hover */
+.toolbar-elements .arcs-row {
+  display: flex;
+  flex-direction: row;
+  gap: 0; /* Remove gap so hover areas touch */
+  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.toolbar-elements .arc-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px 8px 8px; /* More padding on top: top right bottom left */
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #e0e0e0;
+  min-width: 60px;
+  text-align: center;
+  outline: none;
+}
+
+.toolbar-elements .arc-button:hover {
+  background-color: #2a2a2a;
+}
+
+.toolbar-elements .arc-button.active {
+  background-color: #333;
+}
+
+.toolbar-elements .arc-button svg {
+  width: 35px; /* Reduce arc icon size */
+  height: 20px; /* Reduce arc icon height */
+  flex-shrink: 0;
+}
+
+.toolbar-elements .arc-button-label {
+  font-size: 12px; /* Slightly smaller text */
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+  margin-top: 2px; /* Reduce top margin */
+}
+
+/* Capacity toggle section - outside the tools container */
+.toolbar-elements .capacity-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background-color: #1a1a1a;
+  border-radius: 6px;
+  border: 1px solid #444;
+}
+
+.toolbar-elements .capacity-label {
+  font-size: 16px;
+  color: #e0e0e0;
+  flex: 1;
+}
+
+.capacity-toggle-switch {
+  display: flex;
+  align-items: left;
+}
+
+/* Arc description text */
+.toolbar-elements .arc-description {
+  text-align: center;
+  color: #b0b0b0;
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+.toolbar-elements .arc-pattern {
+  font-family: monospace;
+  font-size: 14px; /* Smaller base size for text */
+  font-weight: bold;
+  color: #e0e0e0;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.toolbar-elements .arc-pattern.bidirectional {
+  font-size: 12px; /* Even smaller text for bidirectional */
+}
+
+/* Make just the arrow symbols larger */
+.toolbar-elements .arc-pattern::before {
+  font-size: 20px; /* Large arrows */
+}
+
+.toolbar-elements .arc-pattern.bidirectional::before {
+  font-size: 24px; /* Extra large bidirectional arrow */
+}
+
+.toolbar-elements .arc-text {
+  font-size: 12px;
+  font-style: italic;
+  color: #b0b0b0;
+}
+
+.toolbar-elements .arc-arrow-svg {
+  width: 33px; /* Reduce from 40px */
+  height: 17px; /* Reduce from 20px */
+  flex-shrink: 0;
+}
+
+.toolbar-elements .arc-text-small {
+  font-size: 12px;
+  color: #e0e0e0;
+  font-family: monospace;
+}
+
+.toolbar-elements .arc-type-label {
+  font-size: 14px;
+  font-weight: bold;
+  color: #f0f0f0;
+  margin-bottom: 6px;
+  text-align: center;
+}

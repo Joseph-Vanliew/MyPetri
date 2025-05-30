@@ -14,17 +14,1128 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.4)
 
-2025-05-28T13:21:09.305-04:00  INFO 76194 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 76194 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
-2025-05-28T13:21:09.306-04:00  INFO 76194 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
-2025-05-28T13:21:09.615-04:00  INFO 76194 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-05-28T13:21:09.623-04:00  INFO 76194 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-05-28T13:21:09.623-04:00  INFO 76194 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
-2025-05-28T13:21:09.642-04:00  INFO 76194 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-05-28T13:21:09.643-04:00  INFO 76194 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 321 ms
-2025-05-28T13:21:09.680-04:00  INFO 76194 --- [PATS] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
-2025-05-28T13:21:09.862-04:00  INFO 76194 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
-2025-05-28T13:21:09.867-04:00  INFO 76194 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.689 seconds (process running for 0.806)
+2025-05-29T16:02:43.556-04:00  INFO 93371 --- [PATS] [           main] org.petrinet.PatsApplication             : Starting PatsApplication using Java 21.0.2 with PID 93371 (/Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS/build/classes/java/main started by josephvanliew in /Users/josephvanliew/Documents/GVSU/2024 Spring/Software_Testing/Assignments/PATS)
+2025-05-29T16:02:43.557-04:00  INFO 93371 --- [PATS] [           main] org.petrinet.PatsApplication             : No active profile set, falling back to 1 default profile: "default"
+2025-05-29T16:02:43.847-04:00  INFO 93371 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-05-29T16:02:43.853-04:00  INFO 93371 --- [PATS] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-05-29T16:02:43.853-04:00  INFO 93371 --- [PATS] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.19]
+2025-05-29T16:02:43.873-04:00  INFO 93371 --- [PATS] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-05-29T16:02:43.874-04:00  INFO 93371 --- [PATS] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 302 ms
+2025-05-29T16:02:43.909-04:00  INFO 93371 --- [PATS] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-05-29T16:02:43.995-04:00  INFO 93371 --- [PATS] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-05-29T16:02:43.999-04:00  INFO 93371 --- [PATS] [           main] org.petrinet.PatsApplication             : Started PatsApplication in 0.562 seconds (process running for 0.671)
 PatsApplication started
+2025-05-29T21:28:09.370-04:00  INFO 93371 --- [PATS] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-29T21:28:09.376-04:00  INFO 93371 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-05-29T21:28:09.392-04:00  INFO 93371 --- [PATS] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 16 ms
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 99
+    -> Decremented tokens. New tokens: 98
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 5
+    -> Decremented tokens. New tokens: 4
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 64
+    -> Decremented tokens. New tokens: 63
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629797214: removeTokens() called. Current tokens: 90
+    -> Decremented tokens. New tokens: 89
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 63
+    -> Decremented tokens. New tokens: 62
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 100
+    -> Decremented tokens. New tokens: 99
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 4
+    -> Decremented tokens. New tokens: 3
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 99
+    -> Decremented tokens. New tokens: 98
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629797214: removeTokens() called. Current tokens: 89
+    -> Decremented tokens. New tokens: 88
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 98
+    -> Decremented tokens. New tokens: 97
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 100
+    -> Decremented tokens. New tokens: 99
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 12
+    -> Decremented tokens. New tokens: 11
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 97
+    -> Decremented tokens. New tokens: 96
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 62
+    -> Decremented tokens. New tokens: 61
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 4
+    -> Decremented tokens. New tokens: 3
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 61
+    -> Decremented tokens. New tokens: 60
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629797214: removeTokens() called. Current tokens: 89
+    -> Decremented tokens. New tokens: 88
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 98
+    -> Decremented tokens. New tokens: 97
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 101
+    -> Decremented tokens. New tokens: 100
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 12
+    -> Decremented tokens. New tokens: 11
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 100
+    -> Decremented tokens. New tokens: 99
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 11
+    -> Decremented tokens. New tokens: 10
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 60
+    -> Decremented tokens. New tokens: 59
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 59
+    -> Decremented tokens. New tokens: 58
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 99
+    -> Decremented tokens. New tokens: 98
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 10
+    -> Decremented tokens. New tokens: 9
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629797214: removeTokens() called. Current tokens: 91
+    -> Decremented tokens. New tokens: 90
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 98
+    -> Decremented tokens. New tokens: 97
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 10
+    -> Decremented tokens. New tokens: 9
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 99
+    -> Decremented tokens. New tokens: 98
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 4
+    -> Decremented tokens. New tokens: 3
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 98
+    -> Decremented tokens. New tokens: 97
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 97
+    -> Decremented tokens. New tokens: 96
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 58
+    -> Decremented tokens. New tokens: 57
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 4
+    -> Decremented tokens. New tokens: 3
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 97
+    -> Decremented tokens. New tokens: 96
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 57
+    -> Decremented tokens. New tokens: 56
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 4
+    -> Decremented tokens. New tokens: 3
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 56
+    -> Decremented tokens. New tokens: 55
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 101
+    -> Decremented tokens. New tokens: 100
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 9
+    -> Decremented tokens. New tokens: 8
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 98
+    -> Decremented tokens. New tokens: 97
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 1
+    -> Decremented tokens. New tokens: 0
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 55
+    -> Decremented tokens. New tokens: 54
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 101
+    -> Decremented tokens. New tokens: 100
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 8
+    -> Decremented tokens. New tokens: 7
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 100
+    -> Decremented tokens. New tokens: 99
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 7
+    -> Decremented tokens. New tokens: 6
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 98
+    -> Decremented tokens. New tokens: 97
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 100
+    -> Decremented tokens. New tokens: 99
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 6
+    -> Decremented tokens. New tokens: 5
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 54
+    -> Decremented tokens. New tokens: 53
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 99
+    -> Decremented tokens. New tokens: 98
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 5
+    -> Decremented tokens. New tokens: 4
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629791048: removeTokens() called. Current tokens: 53
+    -> Decremented tokens. New tokens: 52
+DEBUG Place place_1743629801098: removeTokens() called. Current tokens: 2
+    -> Decremented tokens. New tokens: 1
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629793413: removeTokens() called. Current tokens: 99
+    -> Decremented tokens. New tokens: 98
+DEBUG Place place_1743629802865: removeTokens() called. Current tokens: 3
+    -> Decremented tokens. New tokens: 2
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629797214: removeTokens() called. Current tokens: 96
+    -> Decremented tokens. New tokens: 95
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629797214: removeTokens() called. Current tokens: 95
+    -> Decremented tokens. New tokens: 94
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629794930: removeTokens() called. Current tokens: 99
+    -> Decremented tokens. New tokens: 98
+DEBUG Place place_1743629804531: removeTokens() called. Current tokens: 6
+    -> Decremented tokens. New tokens: 5
+DEBUG Place place_1743629801098: isBounded() called, returning false
+DEBUG Place place_1743629801098: getCapacity() called, returning null
+DEBUG Place place_1743629799481: isBounded() called, returning false
+DEBUG Place place_1743629799481: getCapacity() called, returning null
+DEBUG Place place_1743629791048: isBounded() called, returning false
+DEBUG Place place_1743629791048: getCapacity() called, returning null
+DEBUG Place place_1743629797214: isBounded() called, returning false
+DEBUG Place place_1743629797214: getCapacity() called, returning null
+DEBUG Place place_1743629802865: isBounded() called, returning false
+DEBUG Place place_1743629802865: getCapacity() called, returning null
+DEBUG Place place_1743629793413: isBounded() called, returning false
+DEBUG Place place_1743629793413: getCapacity() called, returning null
+DEBUG Place place_1743629794930: isBounded() called, returning false
+DEBUG Place place_1743629794930: getCapacity() called, returning null
+DEBUG Place place_1743629804531: isBounded() called, returning false
+DEBUG Place place_1743629804531: getCapacity() called, returning null
 
 > Task :bootRun FAILED
 
@@ -40,5 +1151,5 @@ Execution failed for task ':bootRun'.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
 
-BUILD FAILED in 12s
+BUILD FAILED in 5h 31m 54s
 5 actionable tasks: 1 executed, 4 up-to-date

@@ -22,8 +22,8 @@ html, body {
 }
 
 /* Prevent text selection on double click */
-.toolbar, .file-menu, .title-container, .place, 
-.transition, .toolbar-item, button, [class*="element"],
+.toolbar-elements, .file-menu, .title-container, 
+.toolbar-item, button, [class*="element"],
 .canvas, .canvas-container {
   user-select: none;
   -webkit-user-select: none; /* Safari */
@@ -35,6 +35,9 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 a {
@@ -44,10 +47,6 @@ a {
 }
 
 body {
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -56,7 +55,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #242424; 
   color: #e0e0e0; 
-  overflow: hidden; 
+  overflow: hidden;
+  display: block;
+  min-width: 320px;
+  min-height: 100vh;
 }
 
 h1 {
@@ -87,16 +89,10 @@ button:focus-visible {
     background-color: #242424;
   }
   
-  .toolbar {
-    background-color: #1a1a1a !important;
-    color: rgba(255, 255, 255, 0.87) !important;
-    border-color: #333 !important;
-  }
-  
   .file-menu {
-    background-color: #242424 !important;
-    color: rgba(255, 255, 255, 0.87) !important;
-    border-color: #333 !important;
+    background-color: #242424;
+    color: rgba(255, 255, 255, 0.87);
+    border-color: #333;
   }
   
   a:hover {
@@ -151,6 +147,7 @@ input:checked + .switch-slider {
 
 input:checked + .switch-slider:before {
   transform: translateX(12px); 
+  background-color: #4CAF50;
 }
 
 /* Rounded sliders */

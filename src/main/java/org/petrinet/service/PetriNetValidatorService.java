@@ -113,9 +113,7 @@ public class PetriNetValidatorService {
             }
 
             // Add logging inside the validator loop
-            System.out.println("Validator: Calling processPetriNet. Deterministic mode: " + currentState.getDeterministicMode());
             PetriNetDTO processedState = petriNetService.processPetriNet(currentState);
-            System.out.println("Validator: Received processedState.");
             
             // Check if there are enabled transitions (conflict in deterministic mode)
             List<TransitionDTO> enabledTransitions = processedState.getTransitions().stream()

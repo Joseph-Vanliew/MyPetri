@@ -5,91 +5,77 @@
   height: 1000px;
   margin: 20px;
 }
-.canvas-svg {
-  position: absolute;
-  background-color: #f8f8f8;
-  pointer-events: none;
-}
 
-
-.grid-line {
-  stroke: #e0e0e0;
-  stroke-width: 1;
-}
-
-.place {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #87CEEB;
+/* App Layout Styles */
+.app {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: move;
-  border: 2px solid transparent;
-  ;
-  transition: all 0.1s ease;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.place.selected {
-  border-color: #000;
+.main-content {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
+  width: 100%;
+  min-height: 0;
 }
 
-.tokens {
-  font-weight: bold;
-}
-
-.transition {
-  position: absolute;
-  width: 60px;
-  height: 30px;
-  background: #FFA07A;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.1s ease;
-}
-
-.transition.enabled {
-  background: #90EE90;
-}
-
-.transition.selected {
-  border-color: #000;
-}
-
-.toolbar {
+.left-sidebar {
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  border-right: 1px solid #4a4a4a;
   padding: 10px;
-  background: #f0f0f0;
+  flex-shrink: 0;
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  background-color: #242424;
 }
 
-.toolbar button {
-  padding: 8px 16px;
-  cursor: pointer;
-  border: 1px solid #999;
-  background: white;
-}
-
-.toolbar button.active {
-  background: #ddd;
-}
-
-.arc-tools {
+.center-area {
+  flex: 1;
   display: flex;
-  gap: 5px;
-  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
 }
 
-.controls {
-  margin: 20px;
+.canvas-container-main {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  position: relative;
 }
 
-.simulate-button {
-  padding: 12px 24px;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
+.right-panel {
+  width: 390px;
+  min-width: 390px;
+  max-width: 390px;
+  border-left: 1px solid #4a4a4a;
+  overflow: hidden;
+  flex-shrink: 0;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: #242424;
+}
+
+.no-active-page {
+  padding: 20px;
+  color: #888;
+  text-align: center;
+}
+
+/* Left Sidebar Controls Styling */
+.toolbar-container {
+  flex: none;
+  overflow: hidden;
+  width: 100%;
 }

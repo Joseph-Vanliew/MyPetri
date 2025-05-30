@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service for processing UNBOUNDED Petri nets.
+ * Service for processing BOUNDED and UNBOUNDED Petri nets.
  * This service evaluates which transitions are enabled based on the current token distribution.
  * It also handles conflict resolution when multiple transitions are enabled in deterministic mode.
  */
@@ -54,15 +54,12 @@ public class PetriNetService {
         List<Transition> enabledTransitions = evaluatedTransitions.stream()
             .filter(Transition::getEnabled)
             .collect(Collectors.toList());
-
-        System.out.println("Number of enabled transitions: " + enabledTransitions.size());
         
         // Check if we're in deterministic mode
         Boolean isDeterministicMode = petriNetDTO.getDeterministicMode();
         
         // If in deterministic mode and multiple transitions are enabled, return early
         if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
-            System.out.println("Deterministic mode: returning all enabled transitions for user selection");
             // Pass original DTO to preserve mode
             PetriNetDTO resultDTO = convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
             return resultDTO;
@@ -73,12 +70,10 @@ public class PetriNetService {
             
             if (enabledTransitions.size() == 1) {
                 selectedTransition = enabledTransitions.get(0);
-                System.out.println("Only one transition enabled: " + selectedTransition.getId());
             } else {
                 // Multiple transitions are enabled, select randomly
                 Random random = new Random();
                 selectedTransition = enabledTransitions.get(random.nextInt(enabledTransitions.size()));
-                System.out.println("Randomly selected transition: " + selectedTransition.getId());
             }
             
             // Disable all transitions except the selected one
@@ -163,10 +158,7 @@ public class PetriNetService {
                  String placeId = entry.getKey();
                  int requiredTokens = entry.getValue();
                  Place place = placesMap.get(placeId);
-                 int currentTokens = (place != null) ? place.getTokens() : -1; // Handle null place
-                 boolean conditionMet = (place == null || currentTokens < requiredTokens);
-                 System.out.println("    - Place " + placeId + ": Has=" + currentTokens + ", Needs=" + requiredTokens + ". Condition (tokens < required): " + conditionMet);
-
+                 
                  if (place == null || place.getTokens() < requiredTokens) {
                      evaluationPassed = false;
                      break;
@@ -359,36 +351,14 @@ public class PetriNetService {
         
         Boolean isDeterministicMode = petriNetDTO.getDeterministicMode();
         if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
-            System.out.println("Multiple transitions enabled after firing, user will select again");
             // Set the enabled flag for the enabled transitions
             for (Transition t : enabledTransitions) {
                 t.setEnabled(true);
             }
         }
         
-        else if (!enabledTransitions.isEmpty()) {
-            Transition nextTransition = getTransition(enabledTransitions);
-            System.out.println("Selected transition for next state: " + nextTransition.getId());
-        }
-        
         // Pass original DTO to preserve mode
         return convertDomainModelsToDTO(placesMap, transitions, arcsMap, petriNetDTO);
-    }
-
-    private static Transition getTransition(List<Transition> enabledTransitions) {
-        Transition nextTransition;
-
-        if (enabledTransitions.size() == 1) {
-            nextTransition = enabledTransitions.get(0);
-        } else {
-            // Random selection for non-deterministic mode
-            Random random = new Random();
-            nextTransition = enabledTransitions.get(random.nextInt(enabledTransitions.size()));
-        }
-
-        // Only enable the selected/random transition
-        nextTransition.setEnabled(true);
-        return nextTransition;
     }
 }
 
