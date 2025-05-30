@@ -108,6 +108,15 @@ export interface ValidatorPageConfig {
 // --------------------------
 // Page and project data types
 // --------------------------
+
+export interface PageSnapshot {
+    places: UIPlace[];
+    transitions: UITransition[];
+    arcs: UIArc[];
+    timestamp: number; 
+    description?: string;  
+}
+
 export interface PetriNetPageData {
     id: string;
     title: string;
@@ -127,6 +136,7 @@ export interface PetriNetPageData {
     zoomLevel?: number;
     panOffset?: { x: number; y: number };
     validatorConfigs?: ValidatorPageConfig;
+    snapshot?: PageSnapshot; // Snapshot of simulation state
 }
 
 export interface ProjectDTO {

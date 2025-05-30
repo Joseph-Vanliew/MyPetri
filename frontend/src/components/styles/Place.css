@@ -9,9 +9,8 @@
   stroke-width: 2;
 }
 
-/* ADDED: Style for bounded places */
 .place-circle.bounded {
-  stroke: #FF8C00; /* Deep Orange */
+  stroke: #FF8C00; 
 }
 
 .place-token-count {
@@ -27,12 +26,11 @@
   text-anchor: start;
   dominant-baseline: hanging;
   font-weight: bold;
-  fill: white; /* Light grey for visibility */
+  fill: white; 
   font-size: 20px;
   font-family: sans-serif;
-  user-select: none; /* Prevent text selection */
+  user-select: none; 
   text-anchor: start; /* Align text starting from the x coordinate */
-  /* Add drop shadow matching grid background */
   text-shadow: 1px 1px 2px #141414;
 }
 
@@ -102,7 +100,6 @@
 }
 
 .place-capacity-label {
-  /* Styles for the span inside foreignObject */
   fill: #fff;
   font-size: 20px;
   font-weight: bold;
@@ -111,7 +108,6 @@
   user-select: none;
 }
 
-/* Add styles for the new elements */
 .place-capacity-input {
   text-align: center;
   background-color: #333; 
@@ -125,7 +121,7 @@
 
   -webkit-appearance: none;
   appearance: none;
-  margin: 0; /* Reset default margin */
+  margin: 0; 
 }
 
 .place-capacity-input::-webkit-outer-spin-button,
@@ -134,19 +130,14 @@
   margin: 0;
 }
 
-/* Hide spinner arrows for Firefox */
 .place-capacity-input[type=number] {
   appearance: textfield;
 }
 
-/* Remove default blue focus outline */
 .place-capacity-input:focus {
   outline: none;
-  /* Optional: Add a subtle border or background change for focus indication if needed */
-  /* border-color: #777; */ 
 }
 
-/* Basic Toggle Switch CSS */
 .switch {
   position: relative;
   display: inline-block;
@@ -184,7 +175,7 @@
 }
 
 input:checked + .slider {
-  background-color: #2196F3; /* Blue when checked */
+  background-color: #2196F3; 
 }
 
 input:focus + .slider {
@@ -192,19 +183,17 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(14px); /* Adjust translation distance */
+  transform: translateX(14px); 
 }
 
-/* Rounded sliders */
 .slider.round {
-  border-radius: 20px; /* Adjust for height */
+  border-radius: 20px; 
 }
 
 .slider.round:before {
   border-radius: 50%;
 }
 
-/* Hide spinner arrows for token input */
 .place-token-input::-webkit-outer-spin-button,
 .place-token-input::-webkit-inner-spin-button {
   -webkit-appearance: none;

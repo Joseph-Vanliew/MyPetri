@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PetriNetDTO, ProjectDTO } from '../types';
+import './styles/MenuBar.css';
 
 interface MenuBarProps {
   projectData: ProjectDTO | null;
@@ -17,6 +18,11 @@ interface MenuBarProps {
   projectHasUnsavedChanges: boolean;
   onRenameProjectTitle: (newTitle: string) => void;
   onNewProject: () => void;
+  onSaveSnapshot: () => void;
+  onRestoreSnapshot: () => void;
+  hasSnapshot: boolean;
+  activePageTitle: string;
+  showSavedIndicator: boolean;
 }
 
 export function MenuBar({
@@ -31,6 +37,11 @@ export function MenuBar({
   onCreatePage,
   projectHasUnsavedChanges,
   onNewProject,
+  onSaveSnapshot,
+  onRestoreSnapshot,
+  hasSnapshot,
+  activePageTitle,
+  showSavedIndicator,
 }: MenuBarProps) {
   const [showFileMenu, setShowFileMenu] = useState(false);
   const [showExportSubMenu, setShowExportSubMenu] = useState(false);
@@ -145,6 +156,32 @@ export function MenuBar({
             <input type="file" ref={legacyImportInputRef} style={{ display: 'none' }} accept=".json,.pats" onChange={handleLegacyFileOpen} />
 
           </div>
+        )}
+      </div>
+      
+      {/* Snapshot Controls */}
+      <div className="controls">
+        <button 
+          className="menu-button save-button"
+          onClick={onSaveSnapshot}
+          title={`Save snapshot of ${activePageTitle}`}
+        >
+          <span className="icon">⧇</span>
+        </button>
+        
+        <button 
+          className="menu-button"
+          onClick={onRestoreSnapshot}
+          disabled={!hasSnapshot}
+          title={hasSnapshot ? `Restore snapshot of ${activePageTitle}` : `No snapshot available for ${activePageTitle}`}
+        >
+          ↺
+        </button>
+        
+        {showSavedIndicator && (
+          <span className="saved-indicator">
+            ✅ Saved
+          </span>
         )}
       </div>
       

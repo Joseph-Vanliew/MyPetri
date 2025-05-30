@@ -1,7 +1,7 @@
 import React, {useState, useCallback, useEffect, useRef, useMemo} from 'react';
 import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
-import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult, PetriNetPageData, ProjectDTO, ValidatorPageConfig} from './types';
+import {PetriNetDTO, UIPlace, UITransition, UIArc, GRID_CELL_SIZE, ValidationResult, PetriNetPageData, ProjectDTO, ValidatorPageConfig, PageSnapshot} from './types';
 import { MenuBar } from './components/MenuBar';
 import { EditableTitle, EditableTitleRef } from './components/Title.tsx';
 import { API_ENDPOINTS } from './utils/api';
@@ -60,6 +60,7 @@ export default function App() {
     const [currentMode, setCurrentMode] = useState('select'); // Represents the current interaction mode of the canvas (e.g., select, place, arc).
     const [showCapacityEditorMode, setShowCapacityEditorMode] = useState(false); // Toggles the visibility of the place capacity editor.
     const [animationMessage, setAnimationMessage] = useState<string | null>(null); // Message about animation status
+    const [showSavedIndicator, setShowSavedIndicator] = useState(false); // Temporary indicator showing snapshot was saved
     
     // ----- Refs for Direct DOM Access or Persistent Mutable Values -----
     const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map()); // Stores the initial {x, y} positions of elements at the beginning of a drag operation.
@@ -1581,7 +1582,82 @@ export default function App() {
     };
 
     // =========================================================================================
-    // XI. MENU HANDLERS
+    // XI. SNAPSHOT HANDLERS
+    // =========================================================================================
+    const handleSaveSnapshot = () => {
+        if (!activePageId || !activePageData) {
+            console.log("No active page to snapshot.");
+            return;
+        }
+
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage) return prevPages;
+
+            // Create snapshot of current simulation state
+            const snapshot: PageSnapshot = {
+                places: JSON.parse(JSON.stringify(currentPage.places)),
+                transitions: JSON.parse(JSON.stringify(currentPage.transitions)),
+                arcs: JSON.parse(JSON.stringify(currentPage.arcs)),
+                timestamp: Date.now(),
+                description: `Snapshot taken at ${new Date().toLocaleString()}`
+            };
+
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...currentPage,
+                    snapshot
+                }
+            };
+        });
+        
+        // Show the saved indicator temporarily
+        setShowSavedIndicator(true);
+        setTimeout(() => {
+            setShowSavedIndicator(false);
+        }, 5000); // Hide after 5 seconds
+        
+        console.log("Snapshot saved for page:", activePageData.title);
+    };
+
+    const handleRestoreSnapshot = () => {
+        if (!activePageId || !activePageData || !activePageData.snapshot) {
+            console.log("No snapshot available to restore.");
+            return;
+        }
+
+        // Save current state to history before restoring snapshot
+        saveToHistory(activePageData);
+
+        setPages(prevPages => {
+            const currentPage = prevPages[activePageId!];
+            if (!currentPage || !currentPage.snapshot) return prevPages;
+
+            return {
+                ...prevPages,
+                [activePageId!]: {
+                    ...currentPage,
+                    places: JSON.parse(JSON.stringify(currentPage.snapshot.places)),
+                    transitions: JSON.parse(JSON.stringify(currentPage.snapshot.transitions)),
+                    arcs: JSON.parse(JSON.stringify(currentPage.snapshot.arcs)),
+                    selectedElements: [], // Clear selection when restoring
+                    conflictResolutionMode: false,
+                    conflictingTransitions: []
+                }
+            };
+        });
+
+        // Clear any ongoing animations and fired transitions
+        setCurrentFiredTransitions([]);
+        tokenAnimator.clear();
+        setProjectHasUnsavedChanges(true);
+        
+        console.log("Snapshot restored for page:", activePageData.title);
+    };
+
+    // =========================================================================================
+    // XII. MENU HANDLERS
     // =========================================================================================
     const processLoadedData = (pageToLoad: Partial<PetriNetPageData>, sourceTitle?: string) => {
         const newPageId = pageToLoad.id || `page_${Date.now()}`;
@@ -1794,7 +1870,7 @@ export default function App() {
     };
 
     // =========================================================================================
-    // XII. VALIDATION HANDLERS
+    // XIII. VALIDATION HANDLERS
     // =========================================================================================
     const handleValidationResult = (result: ValidationResult) => {
         console.log('Validation result:', result);
@@ -1898,7 +1974,7 @@ export default function App() {
     }, [activePageId, handleUpdateValidatorConfigs]);
 
     // =========================================================================================
-    // XIII. PAGE HANDLERS
+    // XIV. PAGE HANDLERS
     // =========================================================================================
     const handleCreatePage = () => {
         const newPageId = `page_${Date.now()}`;
@@ -2276,6 +2352,11 @@ export default function App() {
                         setProjectHasUnsavedChanges(true);
                     }
                 }}
+                onSaveSnapshot={handleSaveSnapshot}
+                onRestoreSnapshot={handleRestoreSnapshot}
+                hasSnapshot={!!activePageData?.snapshot}
+                activePageTitle={activePageData?.title || 'No Page'}
+                showSavedIndicator={showSavedIndicator}
             />
 
             <div className="main-content">

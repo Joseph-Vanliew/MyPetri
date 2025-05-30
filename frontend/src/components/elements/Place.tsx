@@ -29,9 +29,6 @@ export const Place = (props : PlaceProps) => {
     const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
     const [isHovered, setIsHovered] = useState(false);
     
-    // Add local position state to track position during dragging
-    const [localPosition, setLocalPosition] = useState({ x: props.x, y: props.y });
-    
     // Token states
     const [tokenCount, setTokenCount] = useState<number>(props.tokens);
     const [tempTokenCount, setTempTokenCount] = useState<string>(props.tokens.toString());
@@ -47,8 +44,8 @@ export const Place = (props : PlaceProps) => {
         props.capacity !== null ? String(props.capacity) : ''
     );
 
-    // Compute the current visual position (either from local state during dragging or from props)
-    const visualPosition = isDragging ? localPosition : { x: props.x, y: props.y };
+    // Always use the position from props (which includes alignment guide snapping)
+    const visualPosition = { x: props.x, y: props.y };
     
     // ===== EFFECTS =====
     // Sync token count with props
@@ -62,11 +59,6 @@ export const Place = (props : PlaceProps) => {
         setTempName(props.name || '');
     }, [props.name]);
     
-    // Sync local position with props
-    useEffect(() => {
-        setLocalPosition({ x: props.x, y: props.y });
-    }, [props.x, props.y]);
-
     // Make visualPosition available as a property on the component instance
     useEffect(() => {
         if (groupRef.current) {
@@ -167,9 +159,6 @@ export const Place = (props : PlaceProps) => {
         // Store this offset for use during dragging
         setDragOffset({ dx: offsetX, dy: offsetY });
         
-        // Initialize local position to current props position
-        setLocalPosition({ x: props.x, y: props.y });
-        
         setIsDragging(true);
         
         // Notify parent that dragging has started
@@ -194,16 +183,13 @@ export const Place = (props : PlaceProps) => {
             const newX = svgP.x - dragOffset.dx;
             const newY = svgP.y - dragOffset.dy;
             
-            // Update local position
-            setLocalPosition({ x: newX, y: newY });
-            
             // Update parent component in real-time to make arcs follow
             props.onUpdatePosition(props.id, newX, newY, 'dragging');
         };
 
         const handleMouseUp = () => {
-            // Notify parent that dragging has ended
-            props.onUpdatePosition(props.id, localPosition.x, localPosition.y, 'end');
+            // Notify parent that dragging has ended - use current props position (includes snapping)
+            props.onUpdatePosition(props.id, props.x, props.y, 'end');
             
             setIsDragging(false);
         };
@@ -215,7 +201,7 @@ export const Place = (props : PlaceProps) => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isDragging, dragOffset, localPosition, props]);
+    }, [isDragging, dragOffset, props]);
 
     // Effect to turn off token editing when deselected
     useEffect(() => {

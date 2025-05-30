@@ -222,3 +222,24 @@ input:checked + .switch-slider:before {
   min-width: 160px;
   border-radius: 4px;
 }
+
+/* Hide drag cursor during toolbar drag operations */
+.hide-drag-cursor,
+.hide-drag-cursor * {
+  cursor: none !important;
+}
+
+/* Hide drag cursor specifically when dragging over canvas */
+.petri-canvas:drag-over {
+  cursor: none !important;
+}
+
+.canvas-container:drag-over {
+  cursor: none !important;
+}
+
+/* Hide drag feedback when over canvas during drag operations */
+.canvas-container.drag-active,
+.canvas-container.drag-active * {
+  cursor: none !important;
+}

@@ -74,7 +74,7 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
             finishEditing();
         } else if (e.key === 'Escape') {
             setIsEditing(false);
-            setTempTitle(title); // Reset to original title
+            setTempTitle(title); 
             setShowNotification(false);
         }
     };
@@ -101,7 +101,7 @@ export const EditableTitle = forwardRef<EditableTitleRef, EditableTitleProps>(({
                         placeholder={DEFAULT_TITLE}
                     />
                 ) : (
-                    // View mode - Use title-text class
+                    // View mode 
                     <h2 className="title-text">
                         {title}
                     </h2>

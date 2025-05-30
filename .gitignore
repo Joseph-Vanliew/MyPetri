@@ -19,6 +19,9 @@ bin/
 !**/src/test/**/bin/
 frontend/node_modules/
 
+### Frontend Build Artifacts ###
+src/main/resources/static/
+
 ### IntelliJ IDEA ###
 .idea
 *.iws

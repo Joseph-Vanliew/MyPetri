@@ -103,7 +103,7 @@
 .control-item {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* Push switch to the right */
+  justify-content: space-between; 
   padding: 8px 12px;
   border-radius: 4px;
   transition: background-color 0.2s ease;
@@ -119,10 +119,10 @@
   font-size: 14px;
   color: #e0e0e0;
   cursor: pointer;
-  flex: 1; /* Take up available space */
+  flex: 1; 
 }
 
 .switch-container {
-  flex-shrink: 0; /* Prevent switch from shrinking */
-  width: 28px; /* Fixed width to ensure vertical alignment */
+  flex-shrink: 0; 
+  width: 28px; 
 }

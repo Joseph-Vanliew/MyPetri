@@ -8,6 +8,8 @@ import { MarkerDefinitions } from './elements/arcs/MarkerDefinitions';
 import { useZoomAndPan } from './canvas/hooks/useZoomAndPan';
 import { useMouseTracking } from './canvas/hooks/useMouseTracking';
 import { useSelectionBox } from './canvas/hooks/useSelectionBox';
+import { useAlignmentGuides } from './canvas/hooks/useAlignmentGuides';
+import { AlignmentGuides } from './canvas/AlignmentGuides';
 import { screenToSVGCoordinates, snapToGrid } from './canvas/utils/coordinateUtils';
 import { UIPlace, UITransition, UIArc } from '../types';
 import { TokenAnimations } from './elements/TokenAnimations';
@@ -18,6 +20,7 @@ import { SpeedControl } from './controls/SpeedControl';
 declare global {
   interface Window {
     lastMousePosition?: { clientX: number; clientY: number };
+    currentToolbarDragType?: string;
   }
 }
 
@@ -58,6 +61,16 @@ export const Canvas = (props: CanvasProps) => {
     
     const [dimensions, setDimensions] = useState({ width: 1100, height: 900 });
     
+    // Toolbar drag preview state
+    const [toolbarDragPreview, setToolbarDragPreview] = useState<{
+        type: 'PLACE' | 'TRANSITION';
+        position: { x: number; y: number };
+        snappedPosition: { x: number; y: number };
+    } | null>(null);
+    
+    // Track the current drag type from toolbar
+    const [currentDragType, setCurrentDragType] = useState<'PLACE' | 'TRANSITION' | null>(null);
+    
     const zoomAndPan = useZoomAndPan(svgRef, {
         initialZoomLevel: props.zoomLevel, 
         initialPanOffset: props.panOffset,
@@ -77,7 +90,12 @@ export const Canvas = (props: CanvasProps) => {
         onSelectionChange: props.onMultiSelectElement,
     });
 
-    // Create lookup maps for efficient element finding
+    // Alignment guides hook
+    const alignmentGuides = useAlignmentGuides({
+        snapDistance: 24,  // We can tune this if its too snappy
+        enabled: true
+    });
+
     const placesMap = useMemo(() => {
         const map = new Map<string, UIPlace>();
         props.places.forEach(p => map.set(p.id, p));
@@ -178,17 +196,104 @@ export const Canvas = (props: CanvasProps) => {
     // Handle drag and drop
     const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {
         e.preventDefault();
+        e.dataTransfer.dropEffect = "move"; // Remove plus sign cursor
+        
+        // Try to get type from dataTransfer first (might be null during dragover)
+        let type = e.dataTransfer.getData("application/petri-item");
+        
+        // If no type from dataTransfer, use our tracked drag type or global variable
+        if (!type && currentDragType) {
+            type = currentDragType;
+        } else if (!type && window.currentToolbarDragType) {
+            type = window.currentToolbarDragType;
+        }
+        
+        if (!type || (type !== 'PLACE' && type !== 'TRANSITION')) {
+            return;
+        }
+        
+        if (!svgRef.current) {
+            return;
+        }
+        
+        const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
+        
+        // Create a temporary element for alignment checking
+        const tempElement: UIPlace | UITransition = type === 'PLACE' 
+            ? {
+                id: 'temp-preview',
+                x: coords.x,
+                y: coords.y,
+                radius: 46,  // Match default place radius from App.tsx
+                tokens: 0,
+                name: '',
+                capacity: null,
+                type: 'place',
+                bounded: false
+            } as UIPlace
+            : {
+                id: 'temp-preview',
+                x: coords.x,
+                y: coords.y,
+                width: 120,  // Match default transition width from App.tsx
+                height: 54,  // Match default transition height from App.tsx
+                name: '',
+                type: 'transition',
+                enabled: true,
+                arcIds: []
+            } as UITransition;
+        
+        // Get alignment guides and snap position
+        const allElements = [...props.places, ...props.transitions];
+        
+        const alignmentResult = alignmentGuides.updateAlignments(
+            tempElement,
+            allElements,
+            { x: coords.x, y: coords.y }
+        );
+        
+        const snappedPosition = alignmentResult.snapPosition || { x: coords.x, y: coords.y };
+        
+        setToolbarDragPreview({
+            type: type as 'PLACE' | 'TRANSITION',
+            position: coords,
+            snappedPosition
+        });
     };
+    
+    // Handle drag enter to detect when drag starts over canvas
+    const handleDragEnter = useCallback((e: React.DragEvent<SVGSVGElement>) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move"; // this removes the default plus sign
+        
+        // Try to get the drag type and store it
+        const type = e.dataTransfer.getData("application/petri-item") || window.currentToolbarDragType;
+        if (type === 'PLACE' || type === 'TRANSITION') {
+            setCurrentDragType(type);
+        }
+    }, []);
     
     const handleDrop = useCallback((e: React.DragEvent<SVGSVGElement>) => {
         e.preventDefault();
         
-        const type = e.dataTransfer.getData("application/petri-item");
+        const type = e.dataTransfer.getData("application/petri-item") || currentDragType || window.currentToolbarDragType;
         if(!type) return;
         
         if (!svgRef.current) return;
-        const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
-        const snapped = snapToGrid(coords.x, coords.y);
+        
+        // Use the snapped position if we have a preview, otherwise fall back to original logic
+        let coords;
+        if (toolbarDragPreview) {
+            coords = toolbarDragPreview.snappedPosition;
+        } else {
+            coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
+            coords = snapToGrid(coords.x, coords.y);
+        }
+        
+        // Clear the preview and drag type
+        setToolbarDragPreview(null);
+        setCurrentDragType(null);
+        alignmentGuides.clearGuides();
         
         if (type === 'PLACE') {
             props.onSelectTool('PLACE');
@@ -196,12 +301,57 @@ export const Canvas = (props: CanvasProps) => {
             props.onSelectTool('TRANSITION');
         }
         
-        props.onCanvasClick(snapped.x, snapped.y);
-    }, [props.onSelectTool, props.onCanvasClick]);
+        props.onCanvasClick(coords.x, coords.y);
+    }, [props.onSelectTool, props.onCanvasClick, toolbarDragPreview, currentDragType, alignmentGuides]);
+
+    // Clear preview when drag leaves the canvas
+    const handleDragLeave = useCallback((e: React.DragEvent<SVGSVGElement>) => {
+        // Only clear if we're actually leaving the canvas (not entering a child element)
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setToolbarDragPreview(null);
+            setCurrentDragType(null);
+            alignmentGuides.clearGuides();
+        }
+    }, [alignmentGuides]);
 
     const handleSpeedChange = (multiplier: number) => {
         props.tokenAnimator?.setSpeedMultiplier(multiplier);
     };
+
+    // Wrapper for element position updates with alignment guides
+    const handleElementPositionUpdate = useCallback((
+        id: string, 
+        newX: number, 
+        newY: number, 
+        dragState: 'start' | 'dragging' | 'end'
+    ) => {
+        const allElements = [...props.places, ...props.transitions];
+        const currentElement = allElements.find(el => el.id === id);
+        
+        // Disable alignment guides when multiple elements are selected
+        const isMultiSelect = props.selectedElements.length > 1;
+        
+        if (dragState === 'start') {
+            alignmentGuides.clearGuides();
+            // Call the original function for 'start' so App.tsx can set up dragStartPositionsRef
+            props.onUpdateElementPosition(id, newX, newY, dragState);
+        } else if (dragState === 'dragging' && currentElement && !isMultiSelect) {
+            // Update alignment guides and get snap position - only for single element drags
+            const alignmentResult = alignmentGuides.updateAlignments(
+                currentElement,
+                allElements,
+                { x: newX, y: newY }
+            );
+            
+            // Use snap position immediately if available, otherwise use original position
+            const finalPosition = alignmentResult.snapPosition || { x: newX, y: newY };
+            props.onUpdateElementPosition(id, finalPosition.x, finalPosition.y, dragState);
+        } else {
+            // For multi-select or drag end, just pass through without snapping
+            alignmentGuides.clearGuides();
+            props.onUpdateElementPosition(id, newX, newY, dragState);
+        }
+    }, [props.places, props.transitions, props.selectedElements.length, props.onUpdateElementPosition, alignmentGuides]);
 
     return (
         <div className="canvas-container" style={{ 
@@ -213,7 +363,7 @@ export const Canvas = (props: CanvasProps) => {
             display: 'flex',
             position: 'relative'
         }}>
-            {/* Center View Button - Absolutely Positioned */}
+            {/* Center View Button */}
             <button
                 onClick={props.onCenterView}
                 style={{
@@ -261,7 +411,9 @@ export const Canvas = (props: CanvasProps) => {
                 height={dimensions.height}
                 viewBox={`${zoomAndPan.viewBox.x} ${zoomAndPan.viewBox.y} ${zoomAndPan.viewBox.w} ${zoomAndPan.viewBox.h}`}
                 onClick={handleSvgClick}
+                onDragEnter={handleDragEnter}
                 onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onMouseDown={(e) => {
                     if (!isShiftPressed) {
@@ -300,6 +452,12 @@ export const Canvas = (props: CanvasProps) => {
                 />
                 
                 <Grid viewBox={zoomAndPan.viewBox} />
+
+                {/* Alignment guides layer */}
+                <AlignmentGuides 
+                    guides={alignmentGuides.activeGuides} 
+                    viewBox={zoomAndPan.viewBox} 
+                />
 
                 {selectionRect && (
                     <rect
@@ -346,6 +504,52 @@ export const Canvas = (props: CanvasProps) => {
                     mousePosition={mouseTracking.mousePosition}
                 />
 
+                {/* Toolbar drag preview element */}
+                {toolbarDragPreview && (
+                    <g className="toolbar-drag-preview" style={{ opacity: 0.7 }}>
+                        {toolbarDragPreview.type === 'PLACE' ? (
+                            <g transform={`translate(${toolbarDragPreview.snappedPosition.x},${toolbarDragPreview.snappedPosition.y})`}>
+                                {/* Place circle with actual styling */}
+                                <circle
+                                    r={46}
+                                    fill="#0f0f0f"
+                                    stroke="#ffffff"
+                                    strokeWidth="2"
+                                    pointerEvents="none"
+                                />
+                                {/* Token count (default 0 for new places) */}
+                                <text
+                                    x="0"
+                                    y="0"
+                                    textAnchor="middle"
+                                    dominantBaseline="central"
+                                    fill="white"
+                                    fontSize="24"
+                                    fontWeight="bold"
+                                    pointerEvents="none"
+                                >
+                                    0
+                                </text>
+                            </g>
+                        ) : (
+                            <g transform={`translate(${toolbarDragPreview.snappedPosition.x},${toolbarDragPreview.snappedPosition.y})`}>
+                                {/* Transition rectangle with actual styling */}
+                                <rect
+                                    x={-60}
+                                    y={-27}
+                                    width={120}
+                                    height={54}
+                                    rx={8}
+                                    fill="#0f0f0f"
+                                    stroke="#ffffff"
+                                    strokeWidth="2"
+                                    pointerEvents="none"
+                                />
+                            </g>
+                        )}
+                    </g>
+                )}
+
                 <g className="elements-layer">
                     {props.places.map(place => {
                         if (!elementRefs[place.id]) {
@@ -366,7 +570,7 @@ export const Canvas = (props: CanvasProps) => {
                                 isSelected={props.selectedElements.includes(place.id)}
                                 onSelect={(id: string) => props.onSelectElement(id)}
                                 onUpdateSize={props.onUpdatePlaceSize}
-                                onUpdatePosition={props.onUpdateElementPosition}
+                                onUpdatePosition={handleElementPositionUpdate}
                                 arcMode={props.selectedTool === 'ARC'}
                                 arcType={props.arcType}
                                 onArcPortClick={props.onArcPortClick}
@@ -398,7 +602,7 @@ export const Canvas = (props: CanvasProps) => {
                                 isSelected={props.selectedElements.includes(transition.id)}
                                 onSelect={(id: string) => props.onSelectElement(id)}
                                 onUpdateSize={props.onUpdateTransitionSize}
-                                onUpdatePosition={props.onUpdateElementPosition}
+                                onUpdatePosition={handleElementPositionUpdate}
                                 arcMode={props.selectedTool === 'ARC'}
                                 arcType={props.arcType}
                                 onArcPortClick={props.onArcPortClick}

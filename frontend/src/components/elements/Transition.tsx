@@ -29,9 +29,6 @@ export const Transition = (props: TransitionProps) => {
     const [dragOffset, setDragOffset] = useState({ dx: 0, dy: 0 });
     const [isHovered, setIsHovered] = useState(false);
     
-    // Add local position state to track position during dragging
-    const [localPosition, setLocalPosition] = useState({ x: props.x, y: props.y });
-    
     // Size states
     const [originalWidth, setOriginalWidth] = useState(props.width);
     const [originalHeight, setOriginalHeight] = useState(props.height);
@@ -41,8 +38,8 @@ export const Transition = (props: TransitionProps) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(props.name || '');
 
-    // Compute the current visual position (either from local state during dragging or from props)
-    const visualPosition = isDragging ? localPosition : { x: props.x, y: props.y };
+    // Always use the position from props (which includes alignment guide snapping)
+    const visualPosition = { x: props.x, y: props.y };
 
     // ===== EVENT HANDLERS =====
     // Name editing handlers
@@ -109,9 +106,6 @@ export const Transition = (props: TransitionProps) => {
         // Store this offset for use during dragging
         setDragOffset({ dx: offsetX, dy: offsetY });
         
-        // Initialize local position to current props position
-        setLocalPosition({ x: props.x, y: props.y });
-        
         setIsDragging(true);
         
         // Notify parent that dragging has started
@@ -143,11 +137,6 @@ export const Transition = (props: TransitionProps) => {
         setTempName(props.name || '');
     }, [props.name]);
     
-    // Sync local position with props
-    useEffect(() => {
-        setLocalPosition({ x: props.x, y: props.y });
-    }, [props.x, props.y]);
-
     // Handle dragging
     useEffect(() => {
         if (!isDragging) return;
@@ -167,16 +156,13 @@ export const Transition = (props: TransitionProps) => {
             const newX = svgP.x - dragOffset.dx;
             const newY = svgP.y - dragOffset.dy;
             
-            // Update local position
-            setLocalPosition({ x: newX, y: newY });
-            
             // Update parent component in real-time to make arcs follow
             props.onUpdatePosition(props.id, newX, newY, 'dragging');
         };
 
         const handleMouseUp = () => {
-            // Notify parent that dragging has ended
-            props.onUpdatePosition(props.id, localPosition.x, localPosition.y, 'end');
+            // Notify parent that dragging has ended - use current props position (includes snapping)
+            props.onUpdatePosition(props.id, props.x, props.y, 'end');
             
             setIsDragging(false);
         };
@@ -188,7 +174,7 @@ export const Transition = (props: TransitionProps) => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isDragging, dragOffset, localPosition, props]);
+    }, [isDragging, dragOffset, props]);
 
     // Handle resizing
     useEffect(() => {

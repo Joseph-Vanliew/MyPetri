@@ -53,7 +53,7 @@ export const TokenAnimations: React.FC<TokenAnimationsProps> = ({
                         <circle
                             cx={place.x}
                             cy={place.y}
-                            r={place.radius + 2} // Slightly larger to ensure clean masking
+                            r={place.radius + 2} 
                             fill="black"
                         />
                     </mask>
