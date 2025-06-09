@@ -13,6 +13,10 @@ Disallow: /
 User-agent: SemrushBot
 Disallow: /
 
+# Allow LinkedIn Bot
+User-agent: LinkedInBot
+Allow: /
+
 # Block common crawlers
 User-agent: Googlebot
 Disallow: /
