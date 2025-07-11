@@ -105,10 +105,50 @@ export function JSONViewer({
     const arcsRef = useRef<HTMLPreElement>(null);
     const lastScrolledIdRef = useRef<string | null>(null);
 
+    const customSmoothScrollTo = (element: HTMLElement, block: 'start' | 'center' = 'center') => {
+        if (!containerRef.current) return;
+        const container = containerRef.current;
+
+        let targetY: number;
+        if (block === 'center') {
+            targetY = element.offsetTop - container.offsetTop - (container.offsetHeight / 2) + (element.offsetHeight / 2);
+        } else { // 'start'
+            targetY = element.offsetTop - container.offsetTop;
+        }
+
+        const startY = container.scrollTop;
+        const distance = targetY - startY;
+        const duration = 300; // Snappy scroll duration in ms
+        let startTime: number | null = null;
+
+        const easeInOutQuad = (t: number, b: number, c: number, d: number) => {
+            t /= d / 2;
+            if (t < 1) return c / 2 * t * t + b;
+            t--;
+            return -c / 2 * (t * (t - 2) - 1) + b;
+        };
+
+        const animation = (currentTime: number) => {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const nextScrollTop = easeInOutQuad(timeElapsed, startY, distance, duration);
+            
+            container.scrollTop = nextScrollTop;
+
+            if (timeElapsed < duration) {
+                requestAnimationFrame(animation);
+            } else {
+                container.scrollTop = targetY; // Ensure it ends precisely
+            }
+        };
+
+        requestAnimationFrame(animation);
+    };
+
     // Helper function to scroll to a specific section
     const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
         if (ref.current) {
-            ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            customSmoothScrollTo(ref.current, 'start');
         }
     };
 
@@ -138,7 +178,7 @@ export function JSONViewer({
             // find and scroll to the specific element
             for (const element of Array.from(highlightedElements)) {
                 if (element.innerHTML.includes(`"<strong>id</strong>": "${selectedId}"`)) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    customSmoothScrollTo(element as HTMLElement, 'center');
                     foundElement = true;
                     break;
                 }

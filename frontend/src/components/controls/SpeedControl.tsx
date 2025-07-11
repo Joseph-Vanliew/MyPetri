@@ -24,10 +24,10 @@ export const SpeedControl: React.FC<SpeedControlProps> = ({ onChange }) => {
                 min="0.2"
                 max="3"
                 step="0.01"
-                defaultValue="1"
+                defaultValue="1.5"
                 onChange={(e) => {
                     const sliderValue = parseFloat(e.target.value);
-                    const speedMultiplier = 3.2 - sliderValue;
+                    const speedMultiplier = 3 - sliderValue;
                     onChange(speedMultiplier);
                 }}
                 className="speed-slider"
