@@ -71,6 +71,21 @@ export const Canvas = (props: CanvasProps) => {
     // Track the current drag type from toolbar
     const [currentDragType, setCurrentDragType] = useState<'PLACE' | 'TRANSITION' | null>(null);
     
+    // Calculate viewBox directly from props for synchronous updates
+    const baseWidth = 1500;
+    const aspectRatio = 16 / 9;
+    const currentViewBox = useMemo(() => {
+        const safeZoom = Math.max(props.zoomLevel, 0.0001);
+        const newW = baseWidth / safeZoom;
+        const newH = aspectRatio > 0 ? newW / aspectRatio : newW;
+        return {
+            x: props.panOffset.x,
+            y: props.panOffset.y,
+            w: newW,
+            h: newH
+        };
+    }, [props.zoomLevel, props.panOffset.x, props.panOffset.y]);
+
     const zoomAndPan = useZoomAndPan(svgRef, {
         initialZoomLevel: props.zoomLevel, 
         initialPanOffset: props.panOffset,
@@ -409,7 +424,7 @@ export const Canvas = (props: CanvasProps) => {
                 className="petri-canvas"
                 width={dimensions.width}
                 height={dimensions.height}
-                viewBox={`${zoomAndPan.viewBox.x} ${zoomAndPan.viewBox.y} ${zoomAndPan.viewBox.w} ${zoomAndPan.viewBox.h}`}
+                viewBox={`${currentViewBox.x} ${currentViewBox.y} ${currentViewBox.w} ${currentViewBox.h}`}
                 onClick={handleSvgClick}
                 onDragEnter={handleDragEnter}
                 onDragOver={handleDragOver}
@@ -443,20 +458,20 @@ export const Canvas = (props: CanvasProps) => {
                 }}
             >
                 <rect
-                    x={zoomAndPan.viewBox.x - 2000}
-                    y={zoomAndPan.viewBox.y - 2000}
-                    width={zoomAndPan.viewBox.w + 4000}
-                    height={zoomAndPan.viewBox.h + 4000}
+                    x={currentViewBox.x - 2000}
+                    y={currentViewBox.y - 2000}
+                    width={currentViewBox.w + 4000}
+                    height={currentViewBox.h + 4000}
                     fill="#1A1A1A"
                     pointerEvents="none"
                 />
                 
-                <Grid viewBox={zoomAndPan.viewBox} />
+                <Grid viewBox={currentViewBox} />
 
                 {/* Alignment guides layer */}
                 <AlignmentGuides 
                     guides={alignmentGuides.activeGuides} 
-                    viewBox={zoomAndPan.viewBox} 
+                    viewBox={currentViewBox} 
                 />
 
                 {selectionRect && (

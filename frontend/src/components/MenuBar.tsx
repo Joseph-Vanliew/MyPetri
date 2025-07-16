@@ -22,7 +22,7 @@ interface MenuBarProps {
   onRestoreSnapshot: () => void;
   hasSnapshot: boolean;
   activePageTitle: string;
-  showSavedIndicator: boolean;
+  showSavedIndicator?: boolean;
 }
 
 export function MenuBar({
