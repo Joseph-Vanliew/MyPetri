@@ -13,6 +13,26 @@ MyPetri is intended to be an open source web-application and educational tool me
 - Docker - For packaging the backend with the frontend for deployment
 - GCP (Google Cloud Platform) Cloud Run Instance for deployment
 
+# Project Structure
+```
+PATS/
+├── source/
+│   ├── client/          # React frontend application
+│   │   ├── src/         # Source code
+│   │   ├── public/      # Static assets
+│   │   └── package.json # Frontend dependencies
+│   └── server/          # Spring Boot backend application
+│       ├── src/         # Java source code
+│       ├── build.gradle # Backend dependencies
+│       └── gradlew      # Gradle wrapper
+├── examples/            # Example Petri net files
+├── screenshots/         # Application screenshots
+├── logs/               # Application logs
+├── Dockerfile          # Container configuration
+├── .dockerignore       # Docker ignore rules
+└── start_pats.sh       # Development startup script
+```
+
 
 ## The App
 <img src="screenshots/Dining%20Philosophers%20Whole%20View.png" alt="Dining Philosophers Whole View" width="500"/> <br>
@@ -80,24 +100,28 @@ This script will:
 
 1. Install frontend dependencies:
 ```bash
-cd frontend
+cd source/client
 npm install
-cd ..
+cd ../..
 ```
 
 2. Build and run the application:
 ```bash
+cd source/server
 ./gradlew build -x test
+cd ../..
 ```
 
 3. Start the backend:
 ```bash
+cd source/server
 ./gradlew bootRun
+cd ../..
 ```
 
 4. In a separate terminal, start the frontend development server:
 ```bash
-cd frontend
+cd source/client
 npm run dev
 ```
 
@@ -108,6 +132,23 @@ npm run dev
 ### Stopping the Application
 - If using the start script: Press `Ctrl+C` in the terminal where the script is running
 - If running manually: Press `Ctrl+C` in each terminal window
+
+## Docker Deployment
+
+### Building the Docker Image
+```bash
+docker build -t pats-app .
+```
+
+### Running the Docker Container
+```bash
+docker run -p 8080:8080 pats-app
+```
+
+The application will be available at http://localhost:8080
+
+### Cloud Deployment
+The project includes Google Cloud Build configuration for automated deployment to Cloud Run.
 
 ## Development
 

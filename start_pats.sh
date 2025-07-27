@@ -126,10 +126,12 @@ if ! check_port 5173; then
 fi
 
 # Ensure Gradle wrapper exists
-if [ ! -f "./gradlew" ]; then
+if [ ! -f "source/server/gradlew" ]; then
     info "Gradle wrapper not found. Creating it..."
     if command -v gradle &> /dev/null; then
+        cd source/server
         gradle wrapper
+        cd ../..
     else
         warn "Cannot create Gradle wrapper as Gradle is not installed."
         warn "This might cause issues if you don't have Gradle installed globally."
@@ -138,26 +140,27 @@ fi
 
 # Set up Gradle command
 GRADLE_CMD="./gradlew"
-if [ ! -f "./gradlew" ] && command -v gradle &> /dev/null; then
+if [ ! -f "source/server/gradlew" ] && command -v gradle &> /dev/null; then
     GRADLE_CMD="gradle"
 fi
 
 # Install frontend dependencies if node_modules doesn't exist
-if [ ! -d "frontend/node_modules" ]; then
+if [ ! -d "source/client/node_modules" ]; then
     log "Installing frontend dependencies"
-    cd frontend
+    cd source/client
     npm install
     if [ $? -ne 0 ]; then
         error "Failed to install frontend dependencies"
         exit 1
     fi
-    cd ..
+    cd ../..
 else
     info "Frontend dependencies already installed. Skipping npm install."
 fi
 
 # Build the backend first (without tests)
 log "Building the application"
+cd source/server
 $GRADLE_CMD build -x test
 if [ $? -ne 0 ]; then
     error "Failed to build the application"
@@ -166,9 +169,12 @@ fi
 
 # Run backend tests after successful build
 log "Running backend tests"
+cd ../..
 mkdir -p logs
 # Run tests, show output on console, log to file, and force rerun
-$GRADLE_CMD test --rerun-tasks 2>&1 | tee logs/tests.log 
+cd source/server
+$GRADLE_CMD test --rerun-tasks 2>&1 | tee ../../logs/tests.log
+cd ../.. 
 # Capture the exit status of the gradle command (first command in the pipe)
 TEST_RESULT=${PIPESTATUS[0]}
 
@@ -216,8 +222,8 @@ BACKEND_PID=$!
 
 (
     info "Starting React frontend dev server (default port 5173)..."
-    cd frontend
-    npm run dev > ../logs/frontend.log 2>&1
+    cd source/client
+    npm run dev > ../../logs/frontend.log 2>&1
 ) &
 
 FRONTEND_PID=$!
