@@ -1,12 +1,12 @@
 # MyPetri (Petri Net Place and Transition Simulator) 
 
 # A Brief Description
-MyPetri is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems. 
+MyPetri is intended to be an open source web-application and educational tool meant for students and educators to teach and learn about the basic concepts of distributed systems.
 
 # Technologies
-- Java 21 - backend API for next state and conflict detection/resolution and validation.
-- Typescript 5.6 - core logic for elements and structuring of the web app.
-- CSS 
+- Java 21 - backend API for next state and conflict detection/resolution and validation, analysis.
+- Typescript 5.6 - core logic for elements and structuring of the client.
+- CSS
 - Vite/REACT - Frontend Build
 - Springboot - Backend API Framework and testing and build tool
 - Gradle - Backend build tool
@@ -153,16 +153,16 @@ The project includes Google Cloud Build configuration for automated deployment t
 ## Development
 
 ### Project Structure
-- `/src/main/java` - Backend Java code
-- `/frontend` - React TypeScript frontend
-- `/src/main/resources/static` - Build output for frontend (generated)
+- `source/server/src/main/java` - Backend Java code
+- `source/client` - React TypeScript frontend
+- `source/server/src/main/resources/static` - Build output for frontend (generated)
 
 ### Command-Line Development Workflow for Interested Devs
 - Use your preferred text editor for code changes
-- Run tests with `./gradlew test`
+- Run tests with `source/server/./gradlew test`
 - Check test coverage with `./gradlew jacocoTestReport`
 - Run mutation testing with `./gradlew pitest`
-- Please feel free to incorporate playwright or Cucumber or Selenium for testing the frontend.
+- Please feel free to incorporate playwright or Cucumber or Selenium for end to end testing.
 
 ### Building for Production
 To build the complete application for production:
@@ -181,10 +181,10 @@ We are continuously working to improve MyPetri. Planned future developments incl
 
 | Feature Area                    | Description                                                                                                                                                             |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Project Management**          | Refine existing save/import mechanisms and implement robust project export functionality.                                                                               |
+| **Project Management✅**          | ~~Refine existing save/import mechanisms and implement robust project export functionality.~~                                                                               |
 | **Analysis & Simulation**       | Develop and connect backend services for comprehensive Petri net analysis capabilities (e.g., reachability graphs, boundedness checks, liveness properties).                |
-| **Petri Net Core**              | Implement variable arc weights to allow for the consumption and production of multiple tokens per transition firing without the need to add multiple arcs of the same type, providing greater modeling flexibility.            |
-| **User Interface / User Experience** | Explore options for multi-document or tabbed views to improve the management of multiple Petri nets or complex models.                                                |
+| **Petri Net Core**              | Implement variable arc weights to allow for the consumption and production of multiple tokens per transition firing without the need to add multiple arcs of the same type.            |
+| **User Interface / User Experience✅** | ~~Explore options for multi-document or tabbed views to improve the management of multiple Petri nets or complex models.~~                                                |
 | **SVG Icons** | Creation of additional SVG Icons that can be used as place and transition nodes to represent common industry components.                                                |
 
 
