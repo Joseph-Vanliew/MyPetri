@@ -22,8 +22,8 @@ jobs:
         cache: 'gradle' # Speeds up builds by caching dependencies
 
     - name: Grant execute permission for gradlew # Needed on Linux/Mac runners
-      run: chmod +x ./gradlew
+      run: chmod +x ./source/server/gradlew
 
     - name: Build and Test with Gradle
       # Runs the tests using the Gradle wrapper
-      run: ./gradlew test
+      run: ./source/server/gradlew test
