@@ -26,4 +26,5 @@ jobs:
 
     - name: Build and Test with Gradle
       # Runs the tests using the Gradle wrapper
-      run: ./source/server/gradlew test
+      working-directory: ./source/server
+      run: ./gradlew test
