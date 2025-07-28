@@ -27,17 +27,7 @@ dependencies {
 
 
 
-tasks.register('buildFrontend', Exec) {
-    workingDir = file('frontend')
-    commandLine '/opt/homebrew/bin/yarn', 'build'
-}
 
-tasks.register('copyFrontendBuild', Copy) {
-    from 'frontend/dist'
-    into 'src/main/resources/static'
-}
-
-processResources.dependsOn 'copyFrontendBuild'
 
 test {
     useJUnitPlatform()
@@ -71,7 +61,7 @@ jacocoTestCoverageVerification {
     }
 }
 clean {
-    delete 'frontend/build'
+    delete '../client/dist'
     delete fileTree(dir: 'src/main/resources/static', exclude: '.gitkeep')
 }
 

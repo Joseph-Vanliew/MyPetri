@@ -189,15 +189,7 @@ else
     info "Frontend dependencies already installed. Skipping npm install."
 fi
 
-# Build the backend first (without tests)
-log "Building the application"
-cd source/server
-$GRADLE_CMD build -x test
-if [ $? -ne 0 ]; then
-    error "Failed to build the application"
-    exit 1
-fi
-cd ../..
+
 
 # Function to run tests with comprehensive reporting
 run_tests() {
@@ -245,16 +237,9 @@ check_test_results() {
 log "Running comprehensive test suite"
 mkdir -p logs
 
-# Run all tests and generate coverage
-run_tests "full" "test"
+# Run all tests and generate coverage in one build
+run_tests "full" "test jacocoTestReport"
 FULL_TEST_RESULT=$?
-
-# Generate coverage report
-coverage_info "Generating coverage report..."
-
-cd source/server
-$GRADLE_CMD jacocoTestReport 2>&1 | tee ../../logs/coverage.log
-cd ../..
 
 # Check the overall result and provide detailed summary
 if [ $FULL_TEST_RESULT -eq 0 ]; then
@@ -279,7 +264,7 @@ if [ $FULL_TEST_RESULT -eq 0 ]; then
     
     # Check coverage thresholds
     if grep -q "BUILD SUCCESSFUL" logs/coverage.log; then
-        success "   - ✅ Coverage thresholds met (80% line, 60% branch)"
+        success "   - ✅ Coverage thresholds met (>80% line, >60% branch)"
         info "      - 📊 View detailed coverage report: open source/server/build/reports/jacoco/test/html/index.html"
         info "      - 📊 Or run: open source/server/build/reports/jacoco/test/html/index.html"
     else
