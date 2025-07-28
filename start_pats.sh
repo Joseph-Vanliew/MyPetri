@@ -5,6 +5,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # colored messages
@@ -22,6 +24,18 @@ error() {
 
 info() {
   echo -e "${BLUE}INFO: $1${NC}"
+}
+
+success() {
+  echo -e "${GREEN}SUCCESS: $1${NC}"
+}
+
+test_info() {
+  echo -e "${PURPLE}TEST: $1${NC}"
+}
+
+coverage_info() {
+  echo -e "${CYAN}COVERAGE: $1${NC}"
 }
 
 log "Starting PATS Full-Stack Development Environment"
@@ -69,7 +83,7 @@ cleanup() {
     fi
     CLEANUP_DONE=1
     
-    log "Shutting down PATS services"
+    log "Shutting down PATS development environment"
     
     # Kill the main processes we started
     if [ ! -z "$BACKEND_PID" ]; then
@@ -98,9 +112,26 @@ cleanup() {
     fi
     
     info "Services stopped successfully"
+    
+    # Prompt for environment cleanup
+    read -p "Clean build artifacts? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        log "Cleaning build artifacts"
+        
+        # Clean backend build artifacts
+        cd source/server && ./gradlew clean && cd ../..
+        
+        # Clean frontend build artifacts
+        cd source/client && rm -rf dist && cd ../..
+        
+        success "All clean"
+    else
+        info "Skipping cleanup"
+    fi
 }
 
-# leanup for specific signals
+# Cleanup for specific signals
 trap 'cleanup; exit 0' INT TERM
 
 # A simplified cleanup for EXIT to avoid duplicate messages
@@ -166,43 +197,118 @@ if [ $? -ne 0 ]; then
     error "Failed to build the application"
     exit 1
 fi
-
-# Run backend tests after successful build
-log "Running backend tests"
 cd ../..
-mkdir -p logs
-# Run tests, show output on console, log to file, and force rerun
-cd source/server
-$GRADLE_CMD test --rerun-tasks 2>&1 | tee ../../logs/tests.log
-cd ../.. 
-# Capture the exit status of the gradle command (first command in the pipe)
-TEST_RESULT=${PIPESTATUS[0]}
 
-# Check the overall result and provide summary
-if [ $TEST_RESULT -eq 0 ]; then
-    info "✅ Overall tests passed! Summary:"
-    # Assuming these are your test files. Add/remove as needed.
-    info "   - ✅ ServiceTest passed."
-    info "   - ✅ ValidatorServiceTest passed."
-    info "   - ✅ MapperTest passed."
-    # Add ControllerTest - it might be empty now but good to include
-    info "   - ✅ ControllerTest passed."
+# Function to run tests with comprehensive reporting
+run_tests() {
+    local test_type=$1
+    local test_command=$2
+    
+    test_info "Running $test_type tests..."
+    
+    # Check if we're in the right directory structure
+    if [ ! -d "source/server" ]; then
+        error "Server directory not found. Please run this script from the PATS root directory."
+        return 1
+    fi
+    
+    cd source/server
+    $GRADLE_CMD $test_command 2>&1 | tee ../../logs/${test_type}_tests.log
+    cd ../..
+    
+    local test_result=${PIPESTATUS[0]}
+    
+    if [ $test_result -eq 0 ]; then
+        success "$test_type tests passed!"
+        return 0
+    else
+        error "$test_type tests failed! Check logs/${test_type}_tests.log for details."
+        return 1
+    fi
+}
+
+# Function to check specific test results
+check_test_results() {
+    local log_file=$1
+    local test_name=$2
+    
+    if grep -q "$test_name.*FAILED" $log_file; then
+        error "   - ❌ $test_name failed."
+        return 1
+    else
+        success "   - ✅ $test_name passed."
+        return 0
+    fi
+}
+
+# Run comprehensive test suite
+log "Running comprehensive test suite"
+mkdir -p logs
+
+# Run all tests and generate coverage
+run_tests "full" "test"
+FULL_TEST_RESULT=$?
+
+# Generate coverage report
+coverage_info "Generating coverage report..."
+
+cd source/server
+$GRADLE_CMD jacocoTestReport 2>&1 | tee ../../logs/coverage.log
+cd ../..
+
+# Check the overall result and provide detailed summary
+if [ $FULL_TEST_RESULT -eq 0 ]; then
+    
+    echo
+    test_info "Individual Test Results:"
+    
+    # Check specific test files and report their status
+    check_test_results "logs/full_tests.log" "org\.petrinet\.ServiceTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.ValidatorServiceTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.MapperTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.ControllerTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.IntegrationTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.PatsApplicationTests"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.AnalysisServiceTest"
+
+    echo
+    test_info "Test Results:"
+    success "   - ✅ All tests passed successfully"
+    echo
+    coverage_info "Coverage Report:"
+    
+    # Check coverage thresholds
+    if grep -q "BUILD SUCCESSFUL" logs/coverage.log; then
+        success "   - ✅ Coverage thresholds met (80% line, 60% branch)"
+        info "      - 📊 View detailed coverage report: open source/server/build/reports/jacoco/test/html/index.html"
+        info "      - 📊 Or run: open source/server/build/reports/jacoco/test/html/index.html"
+    else
+        warn "   - ⚠️  Coverage thresholds not met - check report for details"
+        info "   - 📊 View detailed coverage report: open source/server/build/reports/jacoco/test/html/index.html"
+        info "   - 📊 Or run: - open source/server/build/reports/jacoco/test/html/index.html"
+    fi
+    
 else
-    error "❌ Tests failed! Check logs/tests.log for details."
-    # Add specific checks by grepping the log file
-    info "Attempting to identify failing test files..."
-    if grep -q "org\.petrinet\.ServiceTest.*FAILED" logs/tests.log; then
-        error "   - ❌ ServiceTest likely failed."
-    fi
-    if grep -q "org\.petrinet\.ValidatorServiceTest.*FAILED" logs/tests.log; then
-        error "   - ❌ ValidatorServiceTest likely failed."
-    fi
-    if grep -q "org\.petrinet\.MapperTest.*FAILED" logs/tests.log; then
-        error "   - ❌ MapperTest likely failed."
-    fi
-    if grep -q "org\.petrinet\.ControllerTest.*FAILED" logs/tests.log; then
-        error "   - ❌ ControllerTest likely failed."
-    fi
+    echo
+    error "❌ Some tests failed!"
+    echo
+    test_info "Individual Test Results:"
+    
+    # Check specific test files
+    check_test_results "logs/full_tests.log" "org\.petrinet\.ServiceTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.ValidatorServiceTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.MapperTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.ControllerTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.IntegrationTest"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.PatsApplicationTests"
+    check_test_results "logs/full_tests.log" "org\.petrinet\.AnalysisServiceTest"
+    
+    echo
+    info "Available test commands:"
+    info "   - ./gradlew test                    # Run all tests"
+    info "   - ./gradlew jacocoTestReport       # Generate coverage report"
+    info "   - ./gradlew jacocoTestCoverageVerification  # Verify coverage thresholds"
+    
     # Original prompt to continue
     read -p "Continue anyway? (y/n) " -n 1 -r
     echo
@@ -211,15 +317,9 @@ else
     fi
 fi
 
-# Start the backend and frontend in parallel
+# Start the frontend first, then backend
+echo
 log "Starting services"
-(
-    info "Starting Spring Boot backend on port 8080..."
-    $GRADLE_CMD bootRun > logs/backend.log 2>&1
-) &
-
-BACKEND_PID=$!
-
 (
     info "Starting React frontend dev server (default port 5173)..."
     cd source/client
@@ -228,10 +328,19 @@ BACKEND_PID=$!
 
 FRONTEND_PID=$!
 
-info "Services are starting. Check logs/backend.log and logs/frontend.log for details."
-info "Your application will be available at:"
+sleep 2
+
+(
+    info "Starting Spring Boot backend on port 8080..."
+    $GRADLE_CMD bootRun > logs/backend.log 2>&1
+) &
+
+BACKEND_PID=$!
+
+sleep 2
+
 info "  - Backend: http://localhost:8080"
-# Use YELLOW color specifically for the frontend URL
+info "Your application is available at:"
 echo -e "${YELLOW}  - Frontend Dev Server: http://localhost:5173${NC}"
 info "Press Ctrl+C to stop all services."
 

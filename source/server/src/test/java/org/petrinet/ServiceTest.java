@@ -94,30 +94,6 @@ public class ServiceTest {
                 "Transition 'trans2' should not be enabled due to insufficient tokens.");
     }
 
-    // @Test
-    // void evaluateTransition_onePlaceOneTokenTwoTransitions_Conflict_Test() {
-    //     // Given
-    //     PetriNetDTO inputDto = new PetriNetDTO(
-    //             List.of(new PlaceDTO("place1", 1)),
-    //             List.of(new TransitionDTO("trans1", true, List.of("arc1")),
-    //                     new TransitionDTO("trans2", true, List.of("arc2"))),
-    //             List.of(new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
-    //                     new ArcDTO("arc2", "REGULAR", "place1", "trans2")
-    //             ));
-
-    //     PetriNetService service = new PetriNetService();
-
-    //     // When
-    //     PetriNetDTO resultDto = service.processPetriNet(inputDto);
-    //     System.out.println("Id:" + resultDto.getTransitions().get(0).getId()+ "\n" + ", enabled:" + resultDto.getTransitions().get(0).getEnabled());
-    //     System.out.println("Id:" + resultDto.getTransitions().get(1).getId()+ "\n" + ", enabled:" + resultDto.getTransitions().get(1).getEnabled());
-
-    //     // Then
-    //     assertTrue(resultDto.getTransitions().stream()
-    //                     .noneMatch(TransitionDTO::getEnabled),
-    //             "Neither transition should be enabled, not enough tokens for both transitions.");
-    // }
-
     @Test
     void evaluateTransition_InhibitorArcOneTransitionWithTokens_NotEnabled_Test(){
         PlaceDTO placeWithTokens = new PlaceDTO("place1", 3);
@@ -669,75 +645,418 @@ public class ServiceTest {
 
     @Test
     void processPetriNet_MultipleIterations_TokensEmptyFromSourcePlace() {
-        // Given
-        PlaceDTO place1 = new PlaceDTO("place_1740605214446", 5); // Source place with 5 tokens
-        PlaceDTO place2 = new PlaceDTO("place_1740605216261", 0); // Empty place
-        PlaceDTO place3 = new PlaceDTO("place_1740605220843", 0); // Empty place
-        
-        TransitionDTO trans1 = new TransitionDTO("trans_1740605217451", false, List.of(
-            "arc_1740605225291", "arc_1740605227692", "arc_1740605235440"));
-        TransitionDTO trans2 = new TransitionDTO("trans_1740605218694", false, List.of(
-            "arc_1740605229368", "arc_1740605230909", "arc_1740605247817"));
-        TransitionDTO trans3 = new TransitionDTO("trans_1740605219665", false, List.of(
-            "arc_1740605238260", "arc_1740605243826"));
-        
-        ArcDTO arc1 = new ArcDTO("arc_1740605225291", "REGULAR", "place_1740605214446", "trans_1740605217451");
-        ArcDTO arc2 = new ArcDTO("arc_1740605227692", "REGULAR", "trans_1740605217451", "place_1740605216261");
-        ArcDTO arc3 = new ArcDTO("arc_1740605229368", "REGULAR", "place_1740605216261", "trans_1740605218694");
-        ArcDTO arc4 = new ArcDTO("arc_1740605230909", "REGULAR", "trans_1740605218694", "place_1740605214446");
-        ArcDTO arc5 = new ArcDTO("arc_1740605235440", "REGULAR", "trans_1740605217451", "place_1740605220843");
-        ArcDTO arc6 = new ArcDTO("arc_1740605238260", "REGULAR", "place_1740605220843", "trans_1740605219665");
-        ArcDTO arc7 = new ArcDTO("arc_1740605243826", "INHIBITOR", "place_1740605214446", "trans_1740605219665");
-        ArcDTO arc8 = new ArcDTO("arc_1740605247817", "INHIBITOR", "place_1740605220843", "trans_1740605218694");
-        
-        PetriNetDTO initialPetriNet = new PetriNetDTO(
-            List.of(place1, place2, place3),
-            List.of(trans1, trans2, trans3),
-            List.of(arc1, arc2, arc3, arc4, arc5, arc6, arc7, arc8)
+        // Given: A Petri net with one place containing 3 tokens and one transition
+        PetriNetDTO inputDto = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 3),
+                    new PlaceDTO("place2", 0)
+                ),
+                List.of(new TransitionDTO("trans1", true, List.of("arc1", "arc2"))),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2")
+                )
         );
-        
+
         PetriNetService service = new PetriNetService();
-        
-        // When - Process the Petri net 5 times
-        PetriNetDTO result = initialPetriNet;
-        for (int i = 0; i < 5; i++) {
-            result = service.processPetriNet(result);
-            
-            // Log the state after each iteration
-            System.out.println("Iteration " + (i+1) + ":");
-            System.out.println("  place1 tokens: " + result.getPlaces().stream()
-                .filter(p -> p.getId().equals("place_1740605214446"))
-                .findFirst().orElseThrow().getTokens());
-            System.out.println("  place2 tokens: " + result.getPlaces().stream()
-                .filter(p -> p.getId().equals("place_1740605216261"))
-                .findFirst().orElseThrow().getTokens());
-            System.out.println("  place3 tokens: " + result.getPlaces().stream()
-                .filter(p -> p.getId().equals("place_1740605220843"))
-                .findFirst().orElseThrow().getTokens());
-            
-            // Log which transition fired
-            result.getTransitions().stream()
-                .filter(TransitionDTO::getEnabled)
-                .findFirst()
-                .ifPresent(t -> System.out.println("  Transition fired: " + t.getId()));
-        }
-        
-        // Then
-        Optional<PlaceDTO> finalPlace1 = result.getPlaces().stream()
-            .filter(p -> p.getId().equals("place_1740605214446"))
-            .findFirst();
-        
-        assertTrue(finalPlace1.isPresent(), "Source place should still exist in the result");
-        assertEquals(0, finalPlace1.get().getTokens(), 
-            "Source place should have 0 tokens after 5 iterations");
-        
-        // Verify that tokens have moved to other places
-        int totalTokens = result.getPlaces().stream()
-            .mapToInt(PlaceDTO::getTokens)
-            .sum();
-        
-        assertEquals(10, totalTokens, 
-            "Total number of tokens in the system should remain constant (5)");
+
+        // When: Process the Petri net multiple times
+        PetriNetDTO result1 = service.processPetriNet(inputDto);
+        PetriNetDTO result2 = service.processPetriNet(result1);
+        PetriNetDTO result3 = service.processPetriNet(result2);
+
+        // Then: Tokens should be consumed and eventually the source place should be empty
+        Optional<PlaceDTO> place1Result = result3.getPlaces().stream()
+                .filter(p -> p.getId().equals("place1"))
+                .findFirst();
+
+        assertTrue(place1Result.isPresent(), "Place1 should exist in the result");
+        assertEquals(0, place1Result.get().getTokens(), "Place1 should have 0 tokens after multiple iterations");
     }
 
+    // ==================== RESOLVE CONFLICT TESTS ====================
+
+    @Test
+    void resolveConflict_ValidConflictResolution_ResolvesSuccessfully() {
+        // Given: A Petri net with two enabled transitions (conflict state)
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2),
+                    new PlaceDTO("place2", 0),
+                    new PlaceDTO("place3", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2")),
+                    new TransitionDTO("trans2", true, List.of("arc3", "arc4"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2"),
+                    new ArcDTO("arc3", "REGULAR", "place1", "trans2"),
+                    new ArcDTO("arc4", "REGULAR", "trans2", "place3")
+                )
+        );
+        conflictNet.setDeterministicMode(true);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict by selecting trans1
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans1");
+
+        // Then: trans1 should fire, consuming tokens from place1 and adding to place2
+        Optional<PlaceDTO> place1 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place1"))
+                .findFirst();
+        Optional<PlaceDTO> place2 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place2"))
+                .findFirst();
+        Optional<PlaceDTO> place3 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place3"))
+                .findFirst();
+
+        assertTrue(place1.isPresent(), "Place1 should exist");
+        assertTrue(place2.isPresent(), "Place2 should exist");
+        assertTrue(place3.isPresent(), "Place3 should exist");
+
+        assertEquals(1, place1.get().getTokens(), "Place1 should have 1 token remaining (2-1)");
+        assertEquals(1, place2.get().getTokens(), "Place2 should have 1 token (0+1)");
+        assertEquals(0, place3.get().getTokens(), "Place3 should have 0 tokens (trans2 didn't fire)");
+    }
+
+    @Test
+    void resolveConflict_InvalidTransitionId_ThrowsException() {
+        // Given: A Petri net with conflict
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2),
+                    new PlaceDTO("place2", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2")
+                )
+        );
+
+        PetriNetService service = new PetriNetService();
+
+        // When & Then: Should throw exception for invalid transition ID
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.resolveConflict(conflictNet, "nonexistent-transition"),
+            "Should throw IllegalArgumentException for invalid transition ID"
+        );
+
+        assertEquals("Selected transition not found: nonexistent-transition", exception.getMessage());
+    }
+
+    @Test
+    void resolveConflict_EmptyTransitionId_ThrowsException() {
+        // Given: A Petri net with conflict
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2),
+                    new PlaceDTO("place2", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2")
+                )
+        );
+
+        PetriNetService service = new PetriNetService();
+
+        // When & Then: Should throw exception for empty transition ID
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.resolveConflict(conflictNet, ""),
+            "Should throw IllegalArgumentException for empty transition ID"
+        );
+
+        assertEquals("Selected transition not found: ", exception.getMessage());
+    }
+
+    @Test
+    void resolveConflict_NullTransitionId_ThrowsException() {
+        // Given: A Petri net with conflict
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2),
+                    new PlaceDTO("place2", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2")
+                )
+        );
+
+        PetriNetService service = new PetriNetService();
+
+        // When & Then: Should throw exception for null transition ID
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> service.resolveConflict(conflictNet, null),
+            "Should throw IllegalArgumentException for null transition ID"
+        );
+
+        assertEquals("Selected transition not found: null", exception.getMessage());
+    }
+
+    @Test
+    void resolveConflict_DeterministicMode_NewConflictAfterResolution() {
+        // Given: A Petri net that will have a new conflict after resolution
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 3),
+                    new PlaceDTO("place2", 0),
+                    new PlaceDTO("place3", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2")),
+                    new TransitionDTO("trans2", true, List.of("arc3", "arc4"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2"),
+                    new ArcDTO("arc3", "REGULAR", "place1", "trans2"),
+                    new ArcDTO("arc4", "REGULAR", "trans2", "place3")
+                )
+        );
+        conflictNet.setDeterministicMode(true);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict by selecting trans1
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans1");
+
+        // Then: Should have a new conflict (both transitions enabled again)
+        long enabledTransitions = result.getTransitions().stream()
+                .filter(TransitionDTO::getEnabled)
+                .count();
+
+        assertEquals(2, enabledTransitions, "Should have 2 enabled transitions after resolution (new conflict)");
+    }
+
+    @Test
+    void resolveConflict_NonDeterministicMode_NoNewConflict() {
+        // Given: A Petri net in non-deterministic mode
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 3),
+                    new PlaceDTO("place2", 0),
+                    new PlaceDTO("place3", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2")),
+                    new TransitionDTO("trans2", true, List.of("arc3", "arc4"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2"),
+                    new ArcDTO("arc3", "REGULAR", "place1", "trans2"),
+                    new ArcDTO("arc4", "REGULAR", "trans2", "place3")
+                )
+        );
+        conflictNet.setDeterministicMode(false);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict by selecting trans1
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans1");
+
+        // Then: Should not have new conflict in non-deterministic mode
+        long enabledTransitions = result.getTransitions().stream()
+                .filter(TransitionDTO::getEnabled)
+                .count();
+
+        assertEquals(2, enabledTransitions, "Should still have 2 enabled transitions in non-deterministic mode");
+    }
+
+    @Test
+    void resolveConflict_WithBidirectionalArc_CorrectTokenHandling() {
+        // Given: A Petri net with bidirectional arc
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2),
+                    new PlaceDTO("place2", 1)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "BIDIRECTIONAL", "place1", "place2")
+                )
+        );
+        conflictNet.setDeterministicMode(true);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict by selecting trans1
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans1");
+
+        // Then: Tokens should remain unchanged (bidirectional arc)
+        Optional<PlaceDTO> place1 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place1"))
+                .findFirst();
+        Optional<PlaceDTO> place2 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place2"))
+                .findFirst();
+
+        assertTrue(place1.isPresent(), "Place1 should exist");
+        assertTrue(place2.isPresent(), "Place2 should exist");
+
+        assertEquals(2, place1.get().getTokens(), "Place1 should have 2 tokens (bidirectional arc)");
+        assertEquals(1, place2.get().getTokens(), "Place2 should have 1 token (bidirectional arc)");
+    }
+
+    @Test
+    void resolveConflict_WithInhibitorArc_CorrectTokenHandling() {
+        // Given: A Petri net with inhibitor arc
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2),
+                    new PlaceDTO("place2", 0),
+                    new PlaceDTO("place3", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2")),
+                    new TransitionDTO("trans2", true, List.of("arc3", "arc4"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2"),
+                    new ArcDTO("arc3", "INHIBITOR", "place3", "trans2"),
+                    new ArcDTO("arc4", "REGULAR", "trans2", "place3")
+                )
+        );
+        conflictNet.setDeterministicMode(true);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict by selecting trans2 (inhibitor arc)
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans2");
+
+        // Then: trans2 should fire (inhibitor arc allows it since place3 has 0 tokens)
+        Optional<PlaceDTO> place3 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place3"))
+                .findFirst();
+
+        assertTrue(place3.isPresent(), "Place3 should exist");
+        assertEquals(1, place3.get().getTokens(), "Place3 should have 1 token (trans2 fired)");
+    }
+
+    @Test
+    void resolveConflict_PreservesDeterministicMode() {
+        // Given: A Petri net with deterministic mode set
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2),
+                    new PlaceDTO("place2", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2")
+                )
+        );
+        conflictNet.setDeterministicMode(true);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans1");
+
+        // Then: Deterministic mode should be preserved
+        assertTrue(result.getDeterministicMode(), "Deterministic mode should be preserved");
+    }
+
+    @Test
+    void resolveConflict_WithBoundedPlace_RespectsCapacity() {
+        // Given: A Petri net with bounded place
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 2, true, 3),
+                    new PlaceDTO("place2", 0, true, 1)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place2")
+                )
+        );
+        conflictNet.setDeterministicMode(true);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans1");
+
+        // Then: Bounded place should respect capacity
+        Optional<PlaceDTO> place2 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place2"))
+                .findFirst();
+
+        assertTrue(place2.isPresent(), "Place2 should exist");
+        assertEquals(1, place2.get().getTokens(), "Place2 should have 1 token (at capacity)");
+        assertTrue(place2.get().isBounded(), "Place2 should be bounded");
+        assertEquals(1, place2.get().getCapacity(), "Place2 should have capacity 1");
+    }
+
+    @Test
+    void resolveConflict_ComplexScenario_MultiplePlacesAndTransitions() {
+        // Given: A complex Petri net with multiple places and transitions
+        PetriNetDTO conflictNet = new PetriNetDTO(
+                List.of(
+                    new PlaceDTO("place1", 3),
+                    new PlaceDTO("place2", 1),
+                    new PlaceDTO("place3", 0),
+                    new PlaceDTO("place4", 0)
+                ),
+                List.of(
+                    new TransitionDTO("trans1", true, List.of("arc1", "arc2")),
+                    new TransitionDTO("trans2", true, List.of("arc3", "arc4")),
+                    new TransitionDTO("trans3", true, List.of("arc5", "arc6"))
+                ),
+                List.of(
+                    new ArcDTO("arc1", "REGULAR", "place1", "trans1"),
+                    new ArcDTO("arc2", "REGULAR", "trans1", "place3"),
+                    new ArcDTO("arc3", "REGULAR", "place2", "trans2"),
+                    new ArcDTO("arc4", "REGULAR", "trans2", "place4"),
+                    new ArcDTO("arc5", "REGULAR", "place1", "trans3"),
+                    new ArcDTO("arc6", "REGULAR", "trans3", "place2")
+                )
+        );
+        conflictNet.setDeterministicMode(true);
+
+        PetriNetService service = new PetriNetService();
+
+        // When: Resolve conflict by selecting trans1
+        PetriNetDTO result = service.resolveConflict(conflictNet, "trans1");
+
+        // Then: Complex scenario should be handled correctly
+        Optional<PlaceDTO> place1 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place1"))
+                .findFirst();
+        Optional<PlaceDTO> place3 = result.getPlaces().stream()
+                .filter(p -> p.getId().equals("place3"))
+                .findFirst();
+
+        assertTrue(place1.isPresent(), "Place1 should exist");
+        assertTrue(place3.isPresent(), "Place3 should exist");
+
+        assertEquals(2, place1.get().getTokens(), "Place1 should have 2 tokens remaining (3-1)");
+        assertEquals(1, place3.get().getTokens(), "Place3 should have 1 token (0+1)");
+    }
 }

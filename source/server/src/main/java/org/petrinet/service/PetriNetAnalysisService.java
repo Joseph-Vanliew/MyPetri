@@ -106,7 +106,7 @@ public class PetriNetAnalysisService {
             .filter(t -> petriNetService.evaluateTransition(t, arcsMap, placesMap))
             .collect(Collectors.toList());
         
-        if (currentlyEnabled.isEmpty()) {
+        if (currentlyEnabled.isEmpty() && !transitions.isEmpty()) {
             result.setDetails("DEADLOCK DETECTED: No transitions are currently enabled.");
             result.setHasDeadlock(true);
             return result;
@@ -173,27 +173,50 @@ public class PetriNetAnalysisService {
         
         // Fill matrix based on arcs
         for (ArcDTO arc : arcs) {
-            int placeIndex = findPlaceIndex(places, arc.getIncomingId());
-            int transitionIndex = findTransitionIndex(transitions, arc.getOutgoingId());
-            
-            if (placeIndex >= 0 && transitionIndex >= 0) {
-                // Place -> Transition (consumption)
-                if (arc.getType().equals("REGULAR")) {
+            if (arc.getType().equals("BIDIRECTIONAL")) {
+                // For bidirectional arcs, we need to determine which is place and which is transition
+                int placeIndex = findPlaceIndex(places, arc.getIncomingId());
+                int transitionIndex = findTransitionIndex(transitions, arc.getOutgoingId());
+                
+                if (placeIndex >= 0 && transitionIndex >= 0) {
+                    // Place -> Transition (consumption)
                     matrix[placeIndex][transitionIndex] -= 1;
-                } else if (arc.getType().equals("BIDIRECTIONAL")) {
-                    matrix[placeIndex][transitionIndex] -= 1;
+                    // Transition -> Place (production)
+                    matrix[placeIndex][transitionIndex] += 1;
+                    // Net result: 0
+                } else {
+                    // Try the other direction
+                    placeIndex = findPlaceIndex(places, arc.getOutgoingId());
+                    transitionIndex = findTransitionIndex(transitions, arc.getIncomingId());
+                    
+                    if (placeIndex >= 0 && transitionIndex >= 0) {
+                        // Place -> Transition (consumption)
+                        matrix[placeIndex][transitionIndex] -= 1;
+                        // Transition -> Place (production)
+                        matrix[placeIndex][transitionIndex] += 1;
+                        // Net result: 0
+                    }
                 }
-            }
-            
-            placeIndex = findPlaceIndex(places, arc.getOutgoingId());
-            transitionIndex = findTransitionIndex(transitions, arc.getIncomingId());
-            
-            if (placeIndex >= 0 && transitionIndex >= 0) {
-                // Transition -> Place (production)
-                if (arc.getType().equals("REGULAR")) {
-                    matrix[placeIndex][transitionIndex] += 1;
-                } else if (arc.getType().equals("BIDIRECTIONAL")) {
-                    matrix[placeIndex][transitionIndex] += 1;
+            } else {
+                // Handle regular and inhibitor arcs
+                int placeIndex = findPlaceIndex(places, arc.getIncomingId());
+                int transitionIndex = findTransitionIndex(transitions, arc.getOutgoingId());
+                
+                if (placeIndex >= 0 && transitionIndex >= 0) {
+                    // Place -> Transition (consumption)
+                    if (arc.getType().equals("REGULAR")) {
+                        matrix[placeIndex][transitionIndex] -= 1;
+                    }
+                }
+                
+                placeIndex = findPlaceIndex(places, arc.getOutgoingId());
+                transitionIndex = findTransitionIndex(transitions, arc.getIncomingId());
+                
+                if (placeIndex >= 0 && transitionIndex >= 0) {
+                    // Transition -> Place (production)
+                    if (arc.getType().equals("REGULAR")) {
+                        matrix[placeIndex][transitionIndex] += 1;
+                    }
                 }
             }
         }
@@ -229,9 +252,21 @@ public class PetriNetAnalysisService {
         Set<String> connectedTransitions = new HashSet<>();
         
         for (ArcDTO arc : arcs) {
-            connectedPlaces.add(arc.getIncomingId());
-            connectedPlaces.add(arc.getOutgoingId());
-            // Note: This is simplified - we'd need to check if IDs are places or transitions
+            // Check if incoming ID is a place or transition
+            boolean incomingIsPlace = places.stream().anyMatch(p -> p.getId().equals(arc.getIncomingId()));
+            boolean outgoingIsPlace = places.stream().anyMatch(p -> p.getId().equals(arc.getOutgoingId()));
+            
+            if (incomingIsPlace) {
+                connectedPlaces.add(arc.getIncomingId());
+            } else {
+                connectedTransitions.add(arc.getIncomingId());
+            }
+            
+            if (outgoingIsPlace) {
+                connectedPlaces.add(arc.getOutgoingId());
+            } else {
+                connectedTransitions.add(arc.getOutgoingId());
+            }
         }
         
         long isolatedPlaces = places.stream()
