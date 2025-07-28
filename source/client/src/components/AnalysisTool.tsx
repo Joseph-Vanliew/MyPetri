@@ -1,4 +1,6 @@
-import { PetriNetDTO } from '../types';
+import { useState } from 'react';
+import { PetriNetDTO, AnalysisResultDTO } from '../types';
+import { analysisAPI } from '../utils/api';
 import './styles/AnalysisTool.css';
 
 interface AnalysisToolProps {
@@ -8,10 +10,13 @@ interface AnalysisToolProps {
 }
 
 export function AnalysisTool({
-          data,
-          width = 'auto',
-          height = 'auto'
-         }: AnalysisToolProps) {
+  data,
+  width = 'auto',
+  height = 'auto'
+}: AnalysisToolProps) {
+  const [results, setResults] = useState<AnalysisResultDTO | null>(null);
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Basic checks for data structure
   const numPlaces = data?.places?.length ?? 0;
@@ -19,21 +24,105 @@ export function AnalysisTool({
   const numArcs = data?.arcs?.length ?? 0;
 
   const containerStyle = {
-      width: width,
-      height: height,
+    width: width,
+    height: height,
+  };
+
+  const handleAnalysis = async (analysisType: string, analysisFunction: () => Promise<AnalysisResultDTO>) => {
+    setLoading(analysisType);
+    setError(null);
+    setResults(null);
+
+    try {
+      const result = await analysisFunction();
+      setResults(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Analysis failed');
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const renderResults = () => {
+    if (loading) {
+      return <div className="analysis-loading">Running {loading} analysis...</div>;
+    }
+
+    if (error) {
+      return <div className="analysis-error">Error: {error}</div>;
+    }
+
+    if (!results) {
+      return <div className="analysis-results-placeholder">Analysis results will be displayed here.</div>;
+    }
+
+    return (
+      <div className="analysis-results">
+        <h4 className="analysis-results-title">{results.analysisType}</h4>
+        <div className="analysis-results-content">
+          <p className="analysis-details">{results.details}</p>
+          
+          {results.hasDeadlock !== undefined && (
+            <p><strong>Deadlock:</strong> {results.hasDeadlock ? 'Yes' : 'No'}</p>
+          )}
+          
+          {results.reachableStatesCount !== undefined && (
+            <p><strong>Reachable States:</strong> {results.reachableStatesCount}</p>
+          )}
+          
+          {results.exploredStatesCount !== undefined && (
+            <p><strong>Explored States:</strong> {results.exploredStatesCount}</p>
+          )}
+          
+          {results.enabledTransitionsCount !== undefined && (
+            <p><strong>Enabled Transitions:</strong> {results.enabledTransitionsCount}</p>
+          )}
+          
+          {results.boundedPlacesCount !== undefined && (
+            <p><strong>Bounded Places:</strong> {results.boundedPlacesCount}</p>
+          )}
+          
+          {results.unboundedPlacesCount !== undefined && (
+            <p><strong>Unbounded Places:</strong> {results.unboundedPlacesCount}</p>
+          )}
+          
+          {results.incidenceMatrix && (
+            <div className="incidence-matrix">
+              <h5>Incidence Matrix:</h5>
+              <table>
+                <tbody>
+                  {results.incidenceMatrix.map((row, i) => (
+                    <tr key={i}>
+                      {row.map((cell, j) => (
+                        <td key={j}>{cell}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          
+          {results.reachableStates && results.reachableStates.length > 0 && (
+            <div className="reachable-states">
+              <h5>Reachable States:</h5>
+              <ul>
+                {results.reachableStates.slice(0, 10).map((state, index) => (
+                  <li key={index}>{state}</li>
+                ))}
+                {results.reachableStates.length > 10 && (
+                  <li>... and {results.reachableStates.length - 10} more</li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="analysis-container" style={containerStyle}>
-      
-      {/*--------------------- TODO: Remove when done! --------------------- */}
-      {/* Overlay Element */}
-      <div className="analysis-overlay">
-        <div className="analysis-overlay-text">Under Construction</div>
-      </div>
-      {/*--------------------- TODO: Remove when done! --------------------- */}
-
-      {/* Existing Content (currently covered by overlay) */}
       <h3 className="analysis-title">Analysis Tool</h3>
       
       <div className="analysis-section">
@@ -50,60 +139,48 @@ export function AnalysisTool({
         
         <div className="analysis-button-group">
           <button 
-            disabled 
+            onClick={() => handleAnalysis('Reachable States', () => analysisAPI.analyzeReachableStates(data))}
+            disabled={loading !== null}
             title="Compute all possible states (markings) the net can reach from the current state."
           >
-            Reachable States
+            {loading === 'Reachable States' ? 'Running...' : 'Reachable States'}
           </button>
+          
           <button 
-            disabled 
+            onClick={() => handleAnalysis('Liveness', () => analysisAPI.analyzeLiveness(data))}
+            disabled={loading !== null}
             title="Check for deadlocks or livelocks; ensure transitions can eventually fire again."
           >
-            Liveness
+            {loading === 'Liveness' ? 'Running...' : 'Liveness'}
           </button>
+          
           <button 
-            disabled 
+            onClick={() => handleAnalysis('Boundedness', () => analysisAPI.analyzeBoundedness(data))}
+            disabled={loading !== null}
             title="Determine if the number of tokens in any place can grow indefinitely or stays bounded."
           >
-            Boundedness
+            {loading === 'Boundedness' ? 'Running...' : 'Boundedness'}
           </button>
+          
           <button 
-            disabled 
-            title="Find token conservation laws; relationships between place markings that always hold true."
-          >
-            P-Invariants
-          </button>
-          <button 
-            disabled 
-            title="Find sequences of transition firings that return the net to a previous state (cyclic behavior)."
-          >
-            T-Invariants
-          </button>
-          <button 
-            disabled 
+            onClick={() => handleAnalysis('Incidence Matrix', () => analysisAPI.computeIncidenceMatrix(data))}
+            disabled={loading !== null}
             title="Show the matrix representing the relationships between transitions and places."
           >
-            Incidence Matrix
+            {loading === 'Incidence Matrix' ? 'Running...' : 'Incidence Matrix'}
           </button>
+          
           <button 
-            disabled 
-            title="Analyze potentially unbounded nets by representing infinite tokens symbolically."
-          >
-            Coverability Graph
-          </button>
-          <button 
-            disabled 
+            onClick={() => handleAnalysis('Structural Analysis', () => analysisAPI.performStructuralAnalysis(data))}
+            disabled={loading !== null}
             title="Analyze properties derived directly from the net structure, ignoring the initial marking."
           >
-            Structural Analysis
+            {loading === 'Structural Analysis' ? 'Running...' : 'Structural Analysis'}
           </button>
         </div>
         
-        <div className="analysis-results-placeholder">
-          Analysis results will be displayed here.
-        </div>
+        {renderResults()}
       </div>
-
     </div>
   );
 }

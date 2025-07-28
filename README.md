@@ -30,7 +30,7 @@ PATS/
 ├── logs/               # Application logs
 ├── Dockerfile          # Container configuration
 ├── .dockerignore       # Docker ignore rules
-└── start_pats.sh       # Development startup script
+└── start_mypetri.sh    # Development startup script
 ```
 
 
@@ -77,15 +77,15 @@ There are two options to start the application:
 
 #### Make the script executable (one-time setup)
 ```bash
-chmod +x start_pats.sh
+chmod +x start_mypetri.sh
 ```
 #### You will then be able to run the command below on subsequent executions without 'chmod +x' command.
 ```bash
-./start_pats.sh
+./start_mypetri.sh
 ```
 #### OR run with bash directly (no chmod needed)
 ```bash
-bash start_pats.sh
+bash start_mypetri.sh
 ```
 
 This script will:

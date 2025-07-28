@@ -1,11 +1,11 @@
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA', '../..']
+    args: ['build', '-t', '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/mypetri-app:$COMMIT_SHA', '../..']
   
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA']
+    args: ['push', '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/mypetri-app:$COMMIT_SHA']
   
   # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -13,9 +13,9 @@ steps:
     args:
     - 'run'
     - 'deploy'
-    - 'pats-app'
+    - 'mypetri-app'
     - '--image'
-    - '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA'
+    - '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/mypetri-app:$COMMIT_SHA'
     - '--region'
     - '$REGION'
     - '--platform'
@@ -24,7 +24,7 @@ steps:
     
 substitutions:
   _REGION: us-central1
-  _REPO_NAME: pats-repo
+  _REPO_NAME: mypetri-repo
 
 images:
-  - '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/pats-app:$COMMIT_SHA' 
+  - '$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/mypetri-app:$COMMIT_SHA' 

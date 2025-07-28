@@ -55,8 +55,6 @@ public class ServiceTest {
         // When
         PetriNetDTO resultDto = service.processPetriNet(inputDto);
 
-        System.out.println(resultDto.getTransitions().getFirst().getEnabled());
-
         // Then
         assertTrue(resultDto.getTransitions().stream()
                         .noneMatch(TransitionDTO::getEnabled),

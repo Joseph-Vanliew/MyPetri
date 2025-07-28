@@ -1,4 +1,4 @@
-# PATS Google Cloud Run Deployment Checklist
+# MyPetri Google Cloud Run Deployment Checklist
 Use this check mark ✅ if doing for the first time!
 ## Prerequisites
 - [ ] Install Google Cloud SDK (use brew or winget)
@@ -20,7 +20,7 @@ Use this check mark ✅ if doing for the first time!
 - [ ] Create/select Google Cloud project
   ```bash
   # Create new project (if needed)
-  gcloud projects create YOUR_PROJECT_ID --name="PATS Project"
+  gcloud projects create YOUR_PROJECT_ID --name="MyPetri Project"
   
   # Set existing project
   gcloud config set project YOUR_PROJECT_ID
@@ -37,27 +37,27 @@ Use this check mark ✅ if doing for the first time!
   ```bash
   export PROJECT_ID=$(gcloud config get-value project)
   export REGION=us-central1
-  export REPO_NAME=pats-repo
+  export REPO_NAME=mypetri-repo
   
   gcloud artifacts repositories create ${REPO_NAME} \
     --repository-format=docker \
     --location=${REGION} \
-    --description="PATS Docker repository"
+    --description="MyPetri Docker repository"
   ```
 - [ ] Build Docker image 
   ```bash
-  gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v26
+  gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/mypetri-app:v26
   ```
 - [ ] Push image to Artifact Registry
   ```bash
   # This is done automatically with the build command above
   # If you need to push an existing image:
-  docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v26
+  docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/mypetri-app:v26
   ```
 - [ ] Deploy to Cloud Run
   ```bash
-  gcloud run deploy pats-app \
-    --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v26 \
+  gcloud run deploy mypetri-app \
+    --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/mypetri-app:v26 \
     --platform managed \
     --region ${REGION} \
     --allow-unauthenticated \
@@ -65,7 +65,7 @@ Use this check mark ✅ if doing for the first time!
   ```
 - [ ] Verify application is running
   ```bash
-  gcloud run services describe pats-app --region=${REGION}
+  gcloud run services describe mypetri-app --region=${REGION}
   ```
 
 ## Post-Deployment
@@ -79,18 +79,18 @@ Use this check mark ✅ if doing for the first time!
 # Set these for the build
 export PROJECT_ID=$(gcloud config get-value project)
 export REGION=us-central1
-export REPO_NAME=pats-repo
+export REPO_NAME=mypetri-repo
 
 #Build docker image and submit to artifact registry
-gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v26
+gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/mypetri-app:v26
 
-#Depoy image to Cloud Run Instance
-gcloud run deploy pats-app \
-  --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v26 \
+#Deploy image to Cloud Run Instance
+gcloud run deploy mypetri-app \
+  --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/mypetri-app:v26 \
   --platform managed \
   --region ${REGION} \
   --allow-unauthenticated
 
 # View logs
-gcloud run logs tail --service pats-app
+gcloud run logs tail --service mypetri-app
 ``` 

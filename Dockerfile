@@ -23,6 +23,6 @@ RUN cd source/server && ./gradlew build -x test
 # Runtime image
 FROM openjdk:21-slim
 WORKDIR /app
-COPY --from=build /app/source/server/build/libs/PATS-0.0.1-SNAPSHOT.jar ./app.jar
+COPY --from=build /app/source/server/build/libs/MyPetri-0.0.1-SNAPSHOT.jar ./app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"] 

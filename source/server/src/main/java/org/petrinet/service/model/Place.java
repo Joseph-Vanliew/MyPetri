@@ -44,7 +44,6 @@ public class Place {
     }
 
     public boolean isBounded() {
-        System.out.println("DEBUG Place " + this.id + ": isBounded() called, returning " + this.bounded);
         return bounded;
     }
 
@@ -56,7 +55,6 @@ public class Place {
     }
 
     public Integer getCapacity() {
-        System.out.println("DEBUG Place " + this.id + ": getCapacity() called, returning " + this.capacity);
         return capacity;
     }
 
@@ -78,12 +76,8 @@ public class Place {
     }
 
     public void removeTokens() {
-        System.out.println("DEBUG Place " + this.id + ": removeTokens() called. Current tokens: " + this.tokens);
         if (this.tokens > 0) {
             this.tokens--;
-            System.out.println("    -> Decremented tokens. New tokens: " + this.tokens);
-        } else {
-            System.out.println("    -> Tokens already 0. No change.");
         }
     }
 }

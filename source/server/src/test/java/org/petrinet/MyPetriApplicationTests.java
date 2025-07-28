@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
     "spring.main.web-application-type=servlet",
     "server.port=0"
 })
-class PatsApplicationTests {
+class MyPetriApplicationTests {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -40,9 +40,9 @@ class PatsApplicationTests {
     @DisplayName("Main application class should be present in context")
     void mainApplicationClassShouldBePresent() {
         // Given: Spring Boot application context
-        // When: Looking for PatsApplication bean
-        // Then: PatsApplication should be present in context
-        assertTrue(applicationContext.containsBean("patsApplication"));
+        // When: Looking for MyPetriApplication bean
+        // Then: MyPetriApplication should be present in context
+        assertTrue(applicationContext.containsBean("myPetriApplication"));
     }
 
     @Test
@@ -151,7 +151,7 @@ class PatsApplicationTests {
         // Then: Should find beans from all expected packages
         
         // Check for beans from different packages
-        assertTrue(applicationContext.getBeanNamesForType(PatsApplication.class).length > 0);
+        assertTrue(applicationContext.getBeanNamesForType(MyPetriApplication.class).length > 0);
         assertTrue(applicationContext.getBeanNamesForType(WebConfig.class).length > 0);
         assertTrue(applicationContext.getBeanNamesForType(PetriNetService.class).length > 0);
         assertTrue(applicationContext.getBeanNamesForType(PetriNetController.class).length > 0);

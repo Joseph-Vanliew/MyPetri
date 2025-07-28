@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.petrinet.client.*;
 import org.petrinet.controller.*;
 import org.petrinet.service.*;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({PetriNetController.class, PetriNetValidatorController.class, PetriNetAnalysisController.class})
+@ContextConfiguration(classes = org.petrinet.MyPetriApplication.class)
 class ControllerTest {
 
     @Autowired

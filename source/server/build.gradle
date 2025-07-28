@@ -7,7 +7,7 @@ plugins {
     id "com.dorongold.task-tree" version "1.5"
 }
 
-group = 'org.petrinet'
+group = 'org.mypetri'
 version = '0.0.1-SNAPSHOT'
 
 java {
@@ -32,6 +32,38 @@ dependencies {
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+    
+    testLogging {
+        events "passed", "skipped", "failed"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        
+        // Don't show standardOut/standardError in console
+        // events "passed", "skipped", "failed", "standardOut", "standardError"
+        
+        info {
+            events "started", "passed", "skipped", "failed"
+            displayGranularity 2
+            showExceptions true
+            showCauses true
+            showStackTraces true
+        }
+        
+        exceptionFormat = 'full'
+    }
+    
+    // Enable colored output
+    systemProperty 'spring.output.ansi.enabled', 'always'
+    
+    // Redirect Spring logs to files
+    systemProperty 'logging.file.name', 'build/test-spring.log'
+    systemProperty 'logging.level.org.springframework.web', 'INFO'
+    systemProperty 'logging.level.org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver', 'ERROR'
+    systemProperty 'logging.level.org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver', 'ERROR'
+    
+    // Capture test output to separate files
+    outputs.dir file("build/test-outputs")
 }
 
 jacocoTestReport {
