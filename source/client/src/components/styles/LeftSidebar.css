@@ -122,6 +122,11 @@
   flex: 1; 
 }
 
+.control-label.disabled {
+  color: #888;
+  cursor: not-allowed;
+}
+
 .switch-container {
   flex-shrink: 0; 
   width: 28px; 

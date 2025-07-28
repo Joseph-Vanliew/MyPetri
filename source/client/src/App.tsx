@@ -463,6 +463,20 @@ export default function App() {
                             </label>
                         </div>
 
+                        {/* Stochastic Mode Switch - Greyed Out */}
+                        <div className="control-item">
+                            <span className="control-label disabled">Stochastic Mode</span>
+                            <label className="switch-container disabled" htmlFor="stochastic-mode">
+                            <input
+                                type="checkbox"
+                                id="stochastic-mode"
+                                disabled={true}
+                                style={{ opacity: 0, width: 0, height: 0 }}
+                                />
+                                <span className="switch-slider round"></span>
+                            </label>
+                        </div>
+
                         {/* Show Capacity Switch */}
                         <div className="control-item">
                             <span className="control-label">Show Capacity</span>
