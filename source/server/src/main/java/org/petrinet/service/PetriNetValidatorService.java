@@ -1,6 +1,7 @@
 package org.petrinet.service;
 
 import org.petrinet.client.*;
+import org.petrinet.util.PetriNetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,18 +41,16 @@ public class PetriNetValidatorService {
      */
     public ValidationResultDTO validatePetriNet(PetriNetValidationDTO requestDTO) {
         // Create a deep copy of the Petri net to avoid modifying the original
-        PetriNetDTO petriNetCopy = createDeepCopy(requestDTO);
+        PetriNetDTO petriNetCopy = PetriNetUtils.createDeepCopyFromValidation(requestDTO);
         
         // Force deterministic mode for validation
         petriNetCopy.setDeterministicMode(true);
         
         // Apply initial tokens based on input configurations
-        applyInputTokens(petriNetCopy, requestDTO.getInputConfigs());
+        PetriNetUtils.applyInputTokens(petriNetCopy, requestDTO.getInputConfigs());
         
         // Check if any initial tokens were actually set
-        long totalInitialTokens = petriNetCopy.getPlaces().stream()
-                                        .mapToLong(PlaceDTO::getTokens)
-                                        .sum();
+        long totalInitialTokens = PetriNetUtils.calculateTotalTokens(petriNetCopy);
         if (totalInitialTokens == 0) {
             ValidationResultDTO result = new ValidationResultDTO();
             result.setValid(false);
@@ -91,7 +90,7 @@ public class PetriNetValidatorService {
         
         while (!done) {
             // Create a state signature based on token distribution
-            String stateSignature = createStateSignature(currentState);
+            String stateSignature = PetriNetUtils.createStateSignature(currentState);
             
             // Check for infinite loop by revisiting a state
             if (seenStates.contains(stateSignature)) {
@@ -184,94 +183,5 @@ public class PetriNetValidatorService {
         }
         
         return result;
-    }
-    
-    /**
-     * Applies the initial token configuration to the places in the provided Petri net.
-     * First, all places in the net are reset to have 0 tokens. Then, tokens are added
-     * according to the provided input configurations.
-     *
-     * @param petriNet The {@link PetriNetDTO} whose places will be initialized. This object is modified directly.
-     * @param inputConfigs A list of {@link PetriNetValidationDTO.PlaceConfig} specifying the initial
-     *                     token counts for certain places. Places not listed remain at 0 tokens.
-     */
-    private void applyInputTokens(PetriNetDTO petriNet, List<PetriNetValidationDTO.PlaceConfig> inputConfigs) {
-        // Reset all places to 0 tokens first
-        petriNet.getPlaces().forEach(p -> p.setTokens(0));
-        
-        // Map places by ID for easier lookup
-        Map<String, PlaceDTO> placesById = petriNet.getPlaces().stream()
-            .collect(Collectors.toMap(PlaceDTO::getId, p -> p));
-        
-        // Apply token counts from input configurations
-        for (PetriNetValidationDTO.PlaceConfig input : inputConfigs) {
-            PlaceDTO place = placesById.get(input.getPlaceId());
-            if (place != null) {
-                place.setTokens(input.getTokens());
-            }
-        }
-    }
-    
-    /**
-     * Creates a deep copy of the Petri net structure (places, transitions, arcs) defined 
-     * within the validation request DTO. This is essential to prevent the simulation 
-     * from modifying the original data sent by the client.
-     *
-     * @param requestDTO The {@link PetriNetValidationDTO} containing the original Petri net definition.
-     * @return A new {@link PetriNetDTO} instance representing a deep copy of the places,
-     *         transitions, and arcs from the request DTO.
-     */
-    private PetriNetDTO createDeepCopy(PetriNetValidationDTO requestDTO) {
-        // Copy places
-        List<PlaceDTO> placesCopy = requestDTO.getPlaces().stream()
-            .map(p -> new PlaceDTO(
-                p.getId(),
-                p.getTokens(),
-                p.isBounded(),
-                p.getCapacity()
-            ))
-            .collect(Collectors.toList());
-        
-        // Copy transitions
-        List<TransitionDTO> transitionsCopy = requestDTO.getTransitions().stream()
-            .map(t -> {
-                // Ensure arcIds list is mutable for potential modifications if needed elsewhere
-                List<String> arcIdsCopy = t.getArcIds() == null ? new ArrayList<>() : new ArrayList<>(t.getArcIds());
-                TransitionDTO copy = new TransitionDTO(t.getId(), t.getEnabled(), arcIdsCopy);
-                return copy;
-            })
-            .collect(Collectors.toList());
-        
-        // Copy arcs
-        List<ArcDTO> arcsCopy = requestDTO.getArcs().stream()
-            .map(a -> new ArcDTO(a.getId(), a.getType(), a.getIncomingId(), a.getOutgoingId()))
-            .collect(Collectors.toList());
-        
-        // Create new Petri net DTO with copied components
-        PetriNetDTO copy = new PetriNetDTO(placesCopy, transitionsCopy, arcsCopy);
-        // Ensure deterministic mode setting from the original request is preserved if needed, 
-        // although it's forced to true in validatePetriNet for validation purposes.
-        return copy;
-    }
-
-    /**
-     * Creates a unique string signature for a given Petri net state based on its token distribution.
-     * The signature is generated by concatenating 'placeId:tokenCount' pairs, sorted alphabetically
-     * by place ID to ensure the signature is deterministic regardless of the order of places in the list.
-     * This signature is used for detecting repeated states (infinite loops).
-     *
-     * @param state The {@link PetriNetDTO} representing the current state of the Petri net.
-     * @return A deterministic string signature of the state's token distribution (e.g., "p1:1,p2:0,p3:2"),
-     *         or an empty string if the state or its places list is null.
-     */
-    private String createStateSignature(PetriNetDTO state) {
-        if (state == null || state.getPlaces() == null) {
-            return ""; // Or throw an exception, depending on desired handling
-        }
-        return state.getPlaces().stream()
-            .filter(Objects::nonNull) // Avoid NullPointerException if a place is null
-            .sorted(Comparator.comparing(PlaceDTO::getId)) // Sort by ID for consistent order
-            .map(place -> place.getId() + ":" + place.getTokens())
-            .collect(Collectors.joining(",")); // Join with a delimiter
     }
 }

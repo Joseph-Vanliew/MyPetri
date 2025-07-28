@@ -1,13 +1,14 @@
 package org.petrinet.service;
 
-import org.petrinet.client.ArcDTO;
+
 import org.petrinet.client.PetriNetDTO;
-import org.petrinet.client.PlaceDTO;
-import org.petrinet.client.TransitionDTO;
+
+
 import org.petrinet.service.model.Arc;
 import org.petrinet.service.model.Place;
 import org.petrinet.service.model.Transition;
 import org.petrinet.util.PetriNetMapper;
+import org.petrinet.util.PetriNetUtils;
 
 import org.springframework.stereotype.Service;
 
@@ -61,7 +62,7 @@ public class PetriNetService {
         // If in deterministic mode and multiple transitions are enabled, return early
         if (isDeterministicMode != null && isDeterministicMode && enabledTransitions.size() > 1) {
             // Pass original DTO to preserve mode
-            PetriNetDTO resultDTO = convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
+            PetriNetDTO resultDTO = PetriNetUtils.convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
             return resultDTO;
         }
         
@@ -84,7 +85,7 @@ public class PetriNetService {
             updateTokensForFiringTransition(selectedTransition, arcsMap, placesMap);
         }
 
-        return convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
+        return PetriNetUtils.convertDomainModelsToDTO(placesMap, evaluatedTransitions, arcsMap, petriNetDTO);
     }
 
     /**
@@ -266,56 +267,6 @@ public class PetriNetService {
     }
 
     /**
-     * Converts the internal domain models (Place, Transition, Arc maps/lists) back into a {@link PetriNetDTO}.
-     * This is used to return the state of the Petri net after processing or conflict resolution.
-     * Maps internal {@link Place}, {@link Transition}, and {@link Arc} representations to their respective DTOs.
-     * Also preserves the deterministicMode flag from the original request.
-     *
-     * @param placesMap A map of place IDs to {@link Place} domain models.
-     * @param transitions A list of {@link Transition} domain models (potentially with updated 'enabled' status).
-     * @param arcsMap A map of arc IDs to {@link Arc} domain models.
-     * @param originalDTO The original DTO passed to the service method, used to retrieve the deterministic mode flag.
-     * @return A new {@link PetriNetDTO} representing the current state derived from the domain models.
-     */
-    private PetriNetDTO convertDomainModelsToDTO(Map<String, Place> placesMap, List<Transition> transitions,
-                                                 Map<String, Arc> arcsMap, PetriNetDTO originalDTO) {
-        List<PlaceDTO> placeDTOs = placesMap.values().stream()
-                .map(place -> new PlaceDTO(
-                        place.getId(),
-                        place.getTokens(),
-                        place.isBounded(),
-                        place.getCapacity()
-                ))
-                .collect(Collectors.toList());
-        //These should really be in the mapper class
-        List<TransitionDTO> transitionDTOs = transitions.stream()
-                .map(transition -> new TransitionDTO(
-                        transition.getId(),
-                        transition.getEnabled(),
-                        transition.getArcIds()))
-                .collect(Collectors.toList());
-
-        List<ArcDTO> arcDTOs = arcsMap.values().stream().filter(Objects::nonNull)
-                .map(arc -> {
-                    String type = switch (arc) {
-                        case Arc.RegularArc regularArc -> "REGULAR";
-                        case Arc.InhibitorArc inhibitorArc -> "INHIBITOR";
-                        case Arc.BidirectionalArc bidirectionalArc -> "BIDIRECTIONAL";
-                    };
-                    return new ArcDTO(arc.getId(), type, arc.getIncomingId(), arc.getOutgoingId());
-                })
-                .collect(Collectors.toList());
-
-
-        PetriNetDTO newDTO = new PetriNetDTO(placeDTOs, transitionDTOs, arcDTOs);
-        
-        if (originalDTO != null) {
-             newDTO.setDeterministicMode(originalDTO.getDeterministicMode());
-        }
-        return newDTO;
-    }
-
-    /**
      * Resolves a conflict state where multiple transitions were enabled in deterministic mode.
      * This method is called after the user has selected which specific transition should fire.
      * It updates the Petri net state by firing only the selected transition.
@@ -364,7 +315,7 @@ public class PetriNetService {
         }
         
         // Pass original DTO to preserve mode
-        return convertDomainModelsToDTO(placesMap, transitions, arcsMap, petriNetDTO);
+        return PetriNetUtils.convertDomainModelsToDTO(placesMap, transitions, arcsMap, petriNetDTO);
     }
 }
 

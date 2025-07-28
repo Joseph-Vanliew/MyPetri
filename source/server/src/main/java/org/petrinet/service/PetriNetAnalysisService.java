@@ -3,6 +3,7 @@ package org.petrinet.service;
 import org.petrinet.client.*;
 import org.petrinet.service.model.*;
 import org.petrinet.util.PetriNetMapper;
+import org.petrinet.util.PetriNetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,14 +38,14 @@ public class PetriNetAnalysisService {
         
         Set<String> reachableStates = new HashSet<>();
         Queue<PetriNetDTO> statesToExplore = new LinkedList<>();
-        statesToExplore.add(createDeepCopy(petriNetDTO));
+        statesToExplore.add(PetriNetUtils.createDeepCopy(petriNetDTO));
         
         int maxStates = 1000; // Safety limit
         int exploredStates = 0;
         
         while (!statesToExplore.isEmpty() && exploredStates < maxStates) {
             PetriNetDTO currentState = statesToExplore.poll();
-            String stateSignature = createStateSignature(currentState);
+            String stateSignature = PetriNetUtils.createStateSignature(currentState);
             
             if (reachableStates.contains(stateSignature)) {
                 continue; // Already explored
@@ -64,7 +65,7 @@ public class PetriNetAnalysisService {
             
             // Explore next states by firing each enabled transition
             for (Transition enabledTransition : enabledTransitions) {
-                PetriNetDTO nextState = createDeepCopy(currentState);
+                PetriNetDTO nextState = PetriNetUtils.createDeepCopy(currentState);
                 Map<String, Place> nextPlacesMap = PetriNetMapper.mapPlacesToMap(nextState.getPlaces());
                 Map<String, Arc> nextArcsMap = PetriNetMapper.mapArcsToMap(nextState.getArcs());
                 
@@ -72,7 +73,7 @@ public class PetriNetAnalysisService {
                 petriNetService.updateTokensForFiringTransition(enabledTransition, nextArcsMap, nextPlacesMap);
                 
                 // Convert back to DTO and add to exploration queue
-                PetriNetDTO firedState = convertToDTO(nextPlacesMap, transitions, nextArcsMap, nextState);
+                PetriNetDTO firedState = PetriNetUtils.convertDomainModelsToDTO(nextPlacesMap, transitions, nextArcsMap, nextState);
                 statesToExplore.add(firedState);
             }
         }
@@ -175,8 +176,8 @@ public class PetriNetAnalysisService {
         for (ArcDTO arc : arcs) {
             if (arc.getType().equals("BIDIRECTIONAL")) {
                 // For bidirectional arcs, we need to determine which is place and which is transition
-                int placeIndex = findPlaceIndex(places, arc.getIncomingId());
-                int transitionIndex = findTransitionIndex(transitions, arc.getOutgoingId());
+                int placeIndex = PetriNetUtils.findPlaceIndex(places, arc.getIncomingId());
+                int transitionIndex = PetriNetUtils.findTransitionIndex(transitions, arc.getOutgoingId());
                 
                 if (placeIndex >= 0 && transitionIndex >= 0) {
                     // Place -> Transition (consumption)
@@ -186,8 +187,8 @@ public class PetriNetAnalysisService {
                     // Net result: 0
                 } else {
                     // Try the other direction
-                    placeIndex = findPlaceIndex(places, arc.getOutgoingId());
-                    transitionIndex = findTransitionIndex(transitions, arc.getIncomingId());
+                    placeIndex = PetriNetUtils.findPlaceIndex(places, arc.getOutgoingId());
+                    transitionIndex = PetriNetUtils.findTransitionIndex(transitions, arc.getIncomingId());
                     
                     if (placeIndex >= 0 && transitionIndex >= 0) {
                         // Place -> Transition (consumption)
@@ -199,8 +200,8 @@ public class PetriNetAnalysisService {
                 }
             } else {
                 // Handle regular and inhibitor arcs
-                int placeIndex = findPlaceIndex(places, arc.getIncomingId());
-                int transitionIndex = findTransitionIndex(transitions, arc.getOutgoingId());
+                int placeIndex = PetriNetUtils.findPlaceIndex(places, arc.getIncomingId());
+                int transitionIndex = PetriNetUtils.findTransitionIndex(transitions, arc.getOutgoingId());
                 
                 if (placeIndex >= 0 && transitionIndex >= 0) {
                     // Place -> Transition (consumption)
@@ -209,8 +210,8 @@ public class PetriNetAnalysisService {
                     }
                 }
                 
-                placeIndex = findPlaceIndex(places, arc.getOutgoingId());
-                transitionIndex = findTransitionIndex(transitions, arc.getIncomingId());
+                placeIndex = PetriNetUtils.findPlaceIndex(places, arc.getOutgoingId());
+                transitionIndex = PetriNetUtils.findTransitionIndex(transitions, arc.getIncomingId());
                 
                 if (placeIndex >= 0 && transitionIndex >= 0) {
                     // Transition -> Place (production)
@@ -290,76 +291,13 @@ public class PetriNetAnalysisService {
         return result;
     }
 
-    // Helper methods
-    private String createStateSignature(PetriNetDTO state) {
-        return state.getPlaces().stream()
-            .map(p -> p.getId() + ":" + p.getTokens())
-            .sorted()
-            .collect(Collectors.joining("|"));
-    }
+   
 
-    private PetriNetDTO createDeepCopy(PetriNetDTO original) {
-        // Create deep copy implementation
-        List<PlaceDTO> places = original.getPlaces().stream()
-            .map(p -> new PlaceDTO(p.getId(), p.getTokens(), p.isBounded(), p.getCapacity()))
-            .collect(Collectors.toList());
-            
-        List<TransitionDTO> transitions = original.getTransitions().stream()
-            .map(t -> new TransitionDTO(t.getId(), t.getEnabled(), new ArrayList<>(t.getArcIds())))
-            .collect(Collectors.toList());
-            
-        List<ArcDTO> arcs = original.getArcs().stream()
-            .map(a -> new ArcDTO(a.getId(), a.getType(), a.getIncomingId(), a.getOutgoingId()))
-            .collect(Collectors.toList());
-            
-        PetriNetDTO copy = new PetriNetDTO(places, transitions, arcs);
-        copy.setDeterministicMode(original.getDeterministicMode());
-        return copy;
-    }
+    
 
-    private PetriNetDTO convertToDTO(Map<String, Place> placesMap, List<Transition> transitions,
-                                   Map<String, Arc> arcsMap, PetriNetDTO originalDTO) {
-        // This would use the same logic as PetriNetService.convertDomainModelsToDTO
-        // For brevity, implementing a simplified version
-        List<PlaceDTO> placeDTOs = placesMap.values().stream()
-            .map(place -> new PlaceDTO(place.getId(), place.getTokens(), place.isBounded(), place.getCapacity()))
-            .collect(Collectors.toList());
-            
-        List<TransitionDTO> transitionDTOs = transitions.stream()
-            .map(transition -> new TransitionDTO(transition.getId(), transition.getEnabled(), transition.getArcIds()))
-            .collect(Collectors.toList());
-            
-        List<ArcDTO> arcDTOs = arcsMap.values().stream()
-            .map(arc -> {
-                String type = switch (arc) {
-                    case Arc.RegularArc regularArc -> "REGULAR";
-                    case Arc.InhibitorArc inhibitorArc -> "INHIBITOR";
-                    case Arc.BidirectionalArc bidirectionalArc -> "BIDIRECTIONAL";
-                };
-                return new ArcDTO(arc.getId(), type, arc.getIncomingId(), arc.getOutgoingId());
-            })
-            .collect(Collectors.toList());
+    
 
-        PetriNetDTO newDTO = new PetriNetDTO(placeDTOs, transitionDTOs, arcDTOs);
-        newDTO.setDeterministicMode(originalDTO.getDeterministicMode());
-        return newDTO;
-    }
+    
 
-    private int findPlaceIndex(List<PlaceDTO> places, String placeId) {
-        for (int i = 0; i < places.size(); i++) {
-            if (places.get(i).getId().equals(placeId)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private int findTransitionIndex(List<TransitionDTO> transitions, String transitionId) {
-        for (int i = 0; i < transitions.size(); i++) {
-            if (transitions.get(i).getId().equals(transitionId)) {
-                return i;
-            }
-        }
-        return -1;
-    }
+  
 } 
