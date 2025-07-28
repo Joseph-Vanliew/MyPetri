@@ -79,10 +79,10 @@ class ControllerTest {
         sampleValidationRequest.setTransitions(samplePetriNet.getTransitions());
         sampleValidationRequest.setArcs(samplePetriNet.getArcs());
         sampleValidationRequest.setInputConfigs(Arrays.asList(
-            new PetriNetValidationDTO.PlaceConfig("p1", 2)
+            new PlaceDTO("p1", 2)
         ));
         sampleValidationRequest.setExpectedOutputs(Arrays.asList(
-            new PetriNetValidationDTO.PlaceConfig("p2", 1)
+            new PlaceDTO("p2", 1)
         ));
     }
 

@@ -77,7 +77,7 @@ public class PetriNetValidatorService {
      * @return A {@link ValidationResultDTO} containing the results of the simulation and validation.
      */
     private ValidationResultDTO runSimulationForValidation(PetriNetDTO petriNet, 
-                                                       List<PetriNetValidationDTO.PlaceConfig> expectedOutputs) {
+                                                       List<PlaceDTO> expectedOutputs) {
         ValidationResultDTO result = new ValidationResultDTO();
         
         // Keep track of previously seen states
@@ -143,21 +143,21 @@ public class PetriNetValidatorService {
                 boolean allMatchingOutputs = true;
                 StringBuilder detailMessage = new StringBuilder();
                 
-                for (PetriNetValidationDTO.PlaceConfig expected : expectedOutputs) {
-                    PlaceDTO place = placesById.get(expected.getPlaceId());
+                for (PlaceDTO expected : expectedOutputs) {
+                    PlaceDTO place = placesById.get(expected.getId()); // Use getId() instead of getPlaceId()
                     
                     if (place == null) {
-                        outputMatches.put(expected.getPlaceId(), false);
+                        outputMatches.put(expected.getId(), false);
                         allMatchingOutputs = false;
-                        detailMessage.append("Place ").append(expected.getPlaceId())
+                        detailMessage.append("Place ").append(expected.getId())
                                     .append(" not found. ");
                     } else {
                         boolean matches = place.getTokens() == expected.getTokens();
-                        outputMatches.put(expected.getPlaceId(), matches);
+                        outputMatches.put(expected.getId(), matches);
                         
                         if (!matches) {
                             allMatchingOutputs = false;
-                            detailMessage.append("Place ").append(expected.getPlaceId())
+                            detailMessage.append("Place ").append(expected.getId())
                                         .append(" has ").append(place.getTokens())
                                         .append(" tokens, expected ").append(expected.getTokens())
                                         .append(". ");

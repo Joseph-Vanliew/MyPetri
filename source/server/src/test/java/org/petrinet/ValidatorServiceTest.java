@@ -47,11 +47,8 @@ public class ValidatorServiceTest {
     }
 
     // Helper method to create a PlaceConfig
-    private PetriNetValidationDTO.PlaceConfig placeConfig(String id, int tokens) {
-        PetriNetValidationDTO.PlaceConfig config = new PetriNetValidationDTO.PlaceConfig();
-        config.setPlaceId(id);
-        config.setTokens(tokens);
-        return config;
+    private PlaceDTO placeConfig(String id, int tokens) {
+        return new PlaceDTO(id, tokens);
     }
     
     // Helper method to create a copy for mocking purposes

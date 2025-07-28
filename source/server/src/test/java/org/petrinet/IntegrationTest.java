@@ -76,10 +76,10 @@ class IntegrationTest {
         sampleValidationRequest.setTransitions(samplePetriNet.getTransitions());
         sampleValidationRequest.setArcs(samplePetriNet.getArcs());
         sampleValidationRequest.setInputConfigs(Arrays.asList(
-            new PetriNetValidationDTO.PlaceConfig("p1", 2)
+            new PlaceDTO("p1", 2)
         ));
         sampleValidationRequest.setExpectedOutputs(Arrays.asList(
-            new PetriNetValidationDTO.PlaceConfig("p2", 1)
+            new PlaceDTO("p2", 1)
         ));
     }
 
@@ -167,9 +167,9 @@ class IntegrationTest {
         noInputRequest.setPlaces(samplePetriNet.getPlaces());
         noInputRequest.setTransitions(samplePetriNet.getTransitions());
         noInputRequest.setArcs(samplePetriNet.getArcs());
-        noInputRequest.setInputConfigs(Arrays.asList()); // No input tokens
+        noInputRequest.setInputConfigs(Arrays.asList()); // Empty list instead of PlaceConfig
         noInputRequest.setExpectedOutputs(Arrays.asList(
-            new PetriNetValidationDTO.PlaceConfig("p2", 1)
+            new PlaceDTO("p2", 1)
         ));
 
         // When & Then: Should fail validation due to no input tokens
