@@ -10,7 +10,7 @@
 #   - Java 21
 #   - Git (for version control)
 #
-# Author: PATS Development Team
+# Author: MyPetri Development Team
 # Date: 2025-07-28
 # Version: 1.0.0
 
@@ -195,7 +195,7 @@ extract_test_results() {
         echo -e "   - MapperTest ${GREEN}\033[1mPASSED\033[0m${NC}"
         echo -e "   - ControllerTest ${GREEN}\033[1mPASSED\033[0m${NC}"
         echo -e "   - IntegrationTest ${GREEN}\033[1mPASSED\033[0m${NC}"
-        echo -e "   - PatsApplicationTests ${GREEN}\033[1mPASSED\033[0m${NC}"
+        echo -e "   - MyPetriApplicationTests ${GREEN}\033[1mPASSED\033[0m${NC}"
         echo -e "   - AnalysisServiceTest ${GREEN}\033[1mPASSED\033[0m${NC}"
     else
         error "   - Some tests failed"
@@ -235,10 +235,10 @@ extract_test_results() {
             echo -e "   - IntegrationTest ${GREEN}\033[1mPASSED\033[0m${NC}"
         fi
         
-        if grep -q "PatsApplicationTests.*FAILED" $log_file; then
-            echo -e "   - PatsApplicationTests ${RED}\033[1mFAILED\033[0m${NC}"
+        if grep -q "MyPetriApplicationTests.*FAILED" $log_file; then
+            echo -e "   - MyPetriApplicationTests ${RED}\033[1mFAILED\033[0m${NC}"
         else
-            echo -e "   - PatsApplicationTests ${GREEN}\033[1mPASSED\033[0m${NC}"
+            echo -e "   - MyPetriApplicationTests ${GREEN}\033[1mPASSED\033[0m${NC}"
         fi
         
         if grep -q "AnalysisServiceTest.*FAILED" $log_file; then
