@@ -151,31 +151,31 @@ public class PetriNetUtils {
         return newDTO;
     }
 
-    /**
-     * Applies the initial token configuration to the places in the provided Petri net.
-     * First, all places in the net are reset to have 0 tokens. Then, tokens are added
-     * according to the provided input configurations.
-     *
-     * @param petriNet The {@link PetriNetDTO} whose places will be initialized. This object is modified directly.
-     * @param inputConfigs A list of {@link PetriNetValidationDTO.PlaceConfig} specifying the initial
-     *                     token counts for certain places. Places not listed remain at 0 tokens.
-     */
-    public static void applyInputTokens(PetriNetDTO petriNet, List<PetriNetValidationDTO.PlaceConfig> inputConfigs) {
-        // Reset all places to 0 tokens first
-        petriNet.getPlaces().forEach(p -> p.setTokens(0));
-        
-        // Map places by ID for easier lookup
-        Map<String, PlaceDTO> placesById = petriNet.getPlaces().stream()
-            .collect(Collectors.toMap(PlaceDTO::getId, p -> p));
-        
-        // Apply token counts from input configurations
-        for (PetriNetValidationDTO.PlaceConfig input : inputConfigs) {
-            PlaceDTO place = placesById.get(input.getPlaceId());
-            if (place != null) {
-                place.setTokens(input.getTokens());
-            }
-        }
-    }
+  /**
+ * Applies the initial token configuration to the places in the provided Petri net.
+ * First, all places in the net are reset to have 0 tokens. Then, tokens are added
+ * according to the provided input configurations.
+ *
+ * @param petriNet The {@link PetriNetDTO} whose places will be initialized. This object is modified directly.
+ * @param inputConfigs A list of {@link PlaceDTO} specifying the initial
+ *                     token counts for certain places. Places not listed remain at 0 tokens.
+ */
+public static void applyInputTokens(PetriNetDTO petriNet, List<PlaceDTO> inputConfigs) {
+          // Reset all places to 0 tokens first
+          petriNet.getPlaces().forEach(p -> p.setTokens(0));
+          
+          // Map places by ID for easier lookup
+          Map<String, PlaceDTO> placesById = petriNet.getPlaces().stream()
+              .collect(Collectors.toMap(PlaceDTO::getId, p -> p));
+          
+          // Apply token counts from input configurations
+          for (PlaceDTO input : inputConfigs) {
+              PlaceDTO place = placesById.get(input.getId());
+              if (place != null) {
+                  place.setTokens(input.getTokens());
+              }
+          }
+      }
 
     /**
      * Finds the index of a place in a list by its ID.
