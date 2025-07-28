@@ -1,47 +1,73 @@
 .analysis-container {
-  padding: 15px;
-  background-color: #242424;;
+  padding: 16px;
+  background-color: #242424;
   border-radius: 5px;
-  margin: 10px;
-  overflow-y: hidden;
+  overflow-y: auto;
   overflow-x: hidden;
   box-sizing: border-box;
   position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+/* Add scrollbar styling to match other components */
+.analysis-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.analysis-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.analysis-container::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+.analysis-container::-webkit-scrollbar-thumb:hover {
+  background-color: #777;
+}
+
+/* For Firefox */
+.analysis-container {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #242424;
 }
 
 .analysis-title {
-          margin: 0 0 16px 0;
-          color: rgba(255, 255, 255, 0.87);
-          font-size: 16px;
-          font-weight: 600;
+  margin: 0 0 16px 0;
+  color: rgba(255, 255, 255, 0.87);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .analysis-section {
   background-color: #1a1a1a;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
-  max-width: 100%;
+  width: 100%;
 }
 
 .analysis-section-title {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.1em;
-  color: #eee;
-  padding-bottom: 5px;
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.87);
 }
 
-.analysis-overview ul {
+.analysis-overview {
   list-style: none;
   padding-left: 0;
-  margin-top: 5px;
+  margin: 5px 0;
 }
 
 .analysis-overview li {
   padding: 3px 0;
+  color: rgba(255, 255, 255, 0.87);
 }
 
 .analysis-button-group {
@@ -49,12 +75,15 @@
   flex-direction: column;
   align-items: flex-start;
   margin-top: 10px;
+  width: 100%;
 }
 
 .analysis-button-group button {
   margin-bottom: 8px;
   min-width: 200px;
   padding: 8px 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .analysis-results-placeholder {
