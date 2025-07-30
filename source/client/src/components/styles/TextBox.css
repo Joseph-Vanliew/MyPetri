@@ -1,0 +1,111 @@
+/* TextBox component styles */
+.petri-element.textbox {
+    cursor: move;
+}
+
+/* Hover effect for text */
+.petri-element.textbox:hover .textbox-text {
+    fill: #ffffff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+/* Selected state for text */
+.textbox-text.selected {
+    fill: #007bff;
+    text-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+}
+
+.textbox-text {
+    fill: #ffffff;
+    font-size: 16px;
+    font-family: sans-serif;
+    font-weight: normal;
+    user-select: none;
+    text-shadow: 1px 1px 2px #141414;
+}
+
+/* Force white text in textarea with very specific selectors */
+.textbox-text-input,
+.textbox-text-input:focus,
+.textbox-text-input:active,
+.textbox-text-input:hover,
+foreignObject textarea,
+foreignObject textarea:focus,
+foreignObject textarea:active,
+foreignObject textarea:hover {
+    background-color: transparent !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-size: 16px !important;
+    font-family: sans-serif !important;
+    font-weight: normal !important;
+    padding: 0 !important;
+    outline: none !important;
+    resize: none !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+    caret-color: #ffffff !important;
+}
+
+.textbox-text-input::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Global override for any textarea in foreignObject */
+foreignObject textarea {
+    color: #ffffff !important;
+    background-color: transparent !important;
+}
+
+foreignObject textarea:focus {
+    color: #ffffff !important;
+    background-color: transparent !important;
+}
+
+/* Even more specific targeting */
+.petri-element.textbox foreignObject textarea,
+.petri-element.textbox foreignObject textarea:focus,
+.petri-element.textbox foreignObject textarea:active,
+.petri-element.textbox foreignObject textarea:hover {
+    color: #ffffff !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    font-size: 16px !important;
+    font-family: sans-serif !important;
+    text-align: center !important;
+    caret-color: #ffffff !important;
+}
+
+.textbox-bounding-box {
+    fill: none;
+    stroke: #007bff;
+    stroke-dasharray: 8;
+    stroke-width: 2;
+}
+
+.textbox-resize-handle {
+    fill: #007bff;
+    stroke: #007bff;
+    stroke-width: 2;
+}
+
+.textbox-resize-handle.right {
+    cursor: ew-resize;
+}
+
+.textbox-resize-handle.bottom {
+    cursor: ns-resize;
+}
+
+.textbox-resize-handle.bottom-right {
+    cursor: nwse-resize;
+}
+
+.textbox-arc-highlight {
+    fill: none;
+    stroke: rgba(0, 255, 0, 0.5);
+    stroke-width: 6;
+    cursor: pointer;
+} 

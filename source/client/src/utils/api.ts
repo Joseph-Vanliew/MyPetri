@@ -24,6 +24,7 @@ export const API_ENDPOINTS = {
 
 // Analysis API functions
 export const analysisAPI = {
+  
   async analyzeReachableStates(petriNet: PetriNetDTO): Promise<AnalysisResultDTO> {
     const response = await fetch(`${getApiBaseUrl()}/api/analysis/reachable-states`, {
       method: 'POST',

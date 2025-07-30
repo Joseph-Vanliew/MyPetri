@@ -36,23 +36,25 @@ export const useHistoryAndKeyboard = ({
   const saveToHistory = useCallback((pageDataToSave: PetriNetPageData) => { 
     if (!activePageId) return; 
 
-    const { places, transitions, arcs, title } = pageDataToSave; 
+    const { places, transitions, arcs, textBoxes, title } = pageDataToSave; 
     
     // Get the current history from the pages state to ensure we have the latest
     setPages(prevPages => {
       const currentPage = prevPages[activePageId!];
       if (!currentPage) return prevPages;
       
-      const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], title: [] };
+      const currentHistory = currentPage.history || { places: [], transitions: [], arcs: [], textBoxes: [], title: [] };
     
     const currentPlacesState = JSON.parse(JSON.stringify(places));
     const currentTransitionsState = JSON.parse(JSON.stringify(transitions));
     const currentArcsState = JSON.parse(JSON.stringify(arcs));
+    const currentTextBoxesState = JSON.parse(JSON.stringify(textBoxes));
     const currentTitleState = title;
 
     const nextPlacesHistory = [...currentHistory.places, currentPlacesState].slice(-MAX_HISTORY_LENGTH);
     const nextTransitionsHistory = [...currentHistory.transitions, currentTransitionsState].slice(-MAX_HISTORY_LENGTH);
     const nextArcsHistory = [...currentHistory.arcs, currentArcsState].slice(-MAX_HISTORY_LENGTH);
+    const nextTextBoxesHistory = [...currentHistory.textBoxes, currentTextBoxesState].slice(-MAX_HISTORY_LENGTH);
     const nextTitleHistory = [...currentHistory.title, currentTitleState].slice(-MAX_HISTORY_LENGTH);
 
     console.log('Saving to history:', {
@@ -75,6 +77,7 @@ export const useHistoryAndKeyboard = ({
           places: nextPlacesHistory,
           transitions: nextTransitionsHistory,
           arcs: nextArcsHistory,
+          textBoxes: nextTextBoxesHistory,
           title: nextTitleHistory
         }
       }
@@ -84,15 +87,17 @@ export const useHistoryAndKeyboard = ({
   
   const handleUndo = useCallback(() => {
     if (!activePageId || !activePageData) return; 
-    const currentHistory = activePageData.history || { places: [], transitions: [], arcs: [], title: [] };
+    const currentHistory = activePageData.history || { places: [], transitions: [], arcs: [], textBoxes: [], title: [] };
     if (currentHistory.places.length === 0) return; 
     const placesToRestore = currentHistory.places[currentHistory.places.length - 1];
     const transitionsToRestore = currentHistory.transitions[currentHistory.transitions.length - 1];
     const arcsToRestore = currentHistory.arcs[currentHistory.arcs.length - 1];
+    const textBoxesToRestore = currentHistory.textBoxes[currentHistory.textBoxes.length - 1];
     const titleToRestore = currentHistory.title[currentHistory.title.length - 1];
     const nextPlacesHistory = currentHistory.places.slice(0, -1);
     const nextTransitionsHistory = currentHistory.transitions.slice(0, -1);
     const nextArcsHistory = currentHistory.arcs.slice(0, -1);
+    const nextTextBoxesHistory = currentHistory.textBoxes.slice(0, -1);
     const nextTitleHistory = currentHistory.title.slice(0, -1);
 
     console.log('Undoing:', {
@@ -112,10 +117,12 @@ export const useHistoryAndKeyboard = ({
         places: placesToRestore,
         transitions: transitionsToRestore,
         arcs: arcsToRestore,
+        textBoxes: textBoxesToRestore,
         history: {
           places: nextPlacesHistory,
           transitions: nextTransitionsHistory,
           arcs: nextArcsHistory,
+          textBoxes: nextTextBoxesHistory,
           title: nextTitleHistory
         },
         selectedElements: [], 
@@ -167,6 +174,7 @@ export const useHistoryAndKeyboard = ({
             places: currentPlaces, 
             transitions: currentTransitions, 
             arcs: currentArcs, 
+            textBoxes: currentTextBoxes,
             selectedElements: currentSelectedElements
           } = currentPage;
 
@@ -177,6 +185,7 @@ export const useHistoryAndKeyboard = ({
           const selectedElementIds = new Set(currentSelectedElements);
           const updatedPlaces = currentPlaces.filter(p => !selectedElementIds.has(p.id));
           const updatedTransitions = currentTransitions.filter(t => !selectedElementIds.has(t.id));
+          const updatedTextBoxes = currentTextBoxes.filter(tb => !selectedElementIds.has(tb.id));
           const updatedArcs = currentArcs.filter(a => {
             const isIncomingSelected = selectedElementIds.has(a.incomingId);
             const isOutgoingSelected = selectedElementIds.has(a.outgoingId);
@@ -197,6 +206,7 @@ export const useHistoryAndKeyboard = ({
               ...currentPage,
               places: updatedPlaces,
               transitions: updatedTransitionsWithArcIds,
+              textBoxes: updatedTextBoxes,
               arcs: updatedArcs,
               selectedElements: [],
             }

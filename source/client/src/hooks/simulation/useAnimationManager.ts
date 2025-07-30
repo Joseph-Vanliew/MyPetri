@@ -2,24 +2,26 @@ import { useCallback } from 'react';
 import { UIPlace, UITransition, UIArc, ITokenAnimator, PetriNetDTO, PetriNetPageData } from '../../types';
 
 export const useAnimationManager = (tokenAnimator: ITokenAnimator) => {
-  const startTransitionAnimations = useCallback((
+  
+  // Shared animation logic for handling different arc types
+  const animateArcs = useCallback((
     transition: UITransition,
     arcs: UIArc[],
     places: UIPlace[],
-    onComplete?: () => void
+    options: {
+      onOutputComplete?: () => void;
+      onBidirectionalComplete?: () => void;
+      getFinalTokens?: (placeId: string) => number;
+      updateState?: (placeId: string, finalTokens: number) => void;
+    } = {}
   ) => {
-    // Find input and output arcs for this transition
+    const { onOutputComplete, onBidirectionalComplete, getFinalTokens, updateState } = options;
+
+    // Handle input arcs (consumption) - same for both preview and production
     const inputArcs = arcs.filter(a => 
       a.outgoingId === transition.id && a.type !== 'INHIBITOR'
     );
-    const outputArcs = arcs.filter(a => 
-      a.incomingId === transition.id
-    );
-    const bidirectionalArcs = arcs.filter(a =>
-      (a.incomingId === transition.id || a.outgoingId === transition.id) && a.type === 'BIDIRECTIONAL'
-    );
-
-    // Handle input arcs (consumption)
+    
     inputArcs.forEach(inputArc => {
       const sourcePlace = places.find(p => p.id === inputArc.incomingId);
       if (sourcePlace) {
@@ -33,55 +35,92 @@ export const useAnimationManager = (tokenAnimator: ITokenAnimator) => {
       }
     });
 
-    // Track if this is the last animation to complete
-    const outputArcCount = outputArcs.length;
+    // Handle output arcs (production)
+    const outputArcs = arcs.filter(a => 
+      a.incomingId === transition.id
+    );
+    
     let completedAnimations = 0;
+    const outputArcCount = outputArcs.length;
 
-    // Handle output arcs (production) separately
     outputArcs.forEach(outputArc => {
       const targetPlace = places.find(p => p.id === outputArc.outgoingId);
       if (targetPlace) {
+        const finalTokens = getFinalTokens ? getFinalTokens(targetPlace.id) : targetPlace.tokens;
+        
         tokenAnimator.startAnimation(
           transition,
           targetPlace,
           transition,
           arcs,
           () => {
-            // Check if all animations are complete
+            // Update state if provided
+            if (updateState) {
+              updateState(targetPlace.id, finalTokens);
+            }
+            
+            // Check completion
             completedAnimations++;
-            if (completedAnimations === outputArcCount && onComplete) {
-              onComplete();
+            if (completedAnimations === outputArcCount && onOutputComplete) {
+              onOutputComplete();
             }
           }
         );
       }
     });
 
-    // Handle bidirectional arcs consumption THEN production
+    // Handle bidirectional arcs
+    const bidirectionalArcs = arcs.filter(a =>
+      (a.incomingId === transition.id || a.outgoingId === transition.id) && a.type === 'BIDIRECTIONAL'
+    );
+
     bidirectionalArcs.forEach(bidirectionalArc => {
       const place = places.find(p => 
         p.id === bidirectionalArc.incomingId || p.id === bidirectionalArc.outgoingId
       );
       if (place) {
+        const finalTokens = getFinalTokens ? getFinalTokens(place.id) : place.tokens;
+        
         tokenAnimator.startBidirectionalAnimation(
           place,
           transition,
           arcs,
           () => {},
           () => {
-            // Complete: restore final count
-            if (onComplete) onComplete();
+            // Update state if provided
+            if (updateState) {
+              updateState(place.id, finalTokens);
+            }
+            
+            // Call completion callback
+            if (onBidirectionalComplete) {
+              onBidirectionalComplete();
+            }
           }
         );
       }
     });
 
-    // If there are no output arcs, call onComplete immediately
-    if (outputArcCount === 0 && bidirectionalArcs.length === 0 && onComplete) {
-      onComplete();
+    // If there are no output arcs, call completion immediately
+    if (outputArcCount === 0 && bidirectionalArcs.length === 0 && onOutputComplete) {
+      onOutputComplete();
     }
   }, [tokenAnimator]);
 
+  // Preview version (no state updates)
+  const startTransitionAnimations = useCallback((
+    transition: UITransition,
+    arcs: UIArc[],
+    places: UIPlace[],
+    onComplete?: () => void
+  ) => {
+    animateArcs(transition, arcs, places, {
+      onOutputComplete: onComplete,
+      onBidirectionalComplete: onComplete
+    });
+  }, [animateArcs]);
+
+  // Production version (with state updates)
   const startFiredTransitionAnimations = useCallback((
     firedTransitions: Array<{ id: string; name?: string; x?: number; y?: number; width?: number; height?: number }>,
     pageData: { transitions: UITransition[]; arcs: UIArc[]; places: UIPlace[] },
@@ -94,104 +133,41 @@ export const useAnimationManager = (tokenAnimator: ITokenAnimator) => {
       const transitionObj = pageData.transitions.find(t => t.id === firedTransition.id);
       if (!transitionObj) return;
 
-      // Separate arcs by type for proper handling
-      const regularInputArcs = pageData.arcs.filter(a => 
-        a.outgoingId === firedTransition.id && a.type === 'REGULAR'
-      );
-      const regularOutputArcs = pageData.arcs.filter(a => 
-        a.incomingId === firedTransition.id && a.type === 'REGULAR'
-      );
-      const bidirectionalArcs = pageData.arcs.filter(a =>
-        (a.incomingId === firedTransition.id || a.outgoingId === firedTransition.id) && a.type === 'BIDIRECTIONAL'
-      );
+      // Create state update function
+      const updateState = (placeId: string, finalTokens: number) => {
+        setPages(prevPages => {
+          const currentPage = prevPages[activePageId];
+          if (!currentPage) return prevPages;
 
-      // Handle regular input arcs (consumption only)
-      regularInputArcs.forEach(inputArc => {
-        const sourcePlace = pageData.places.find(p => p.id === inputArc.incomingId);
-        if (sourcePlace) {
-          tokenAnimator.startAnimation(
-            sourcePlace,
-            transitionObj,
-            transitionObj,
-            pageData.arcs,
-            () => {} // No callback needed for consumption
-          );
-        }
-      });
-
-      // Handle regular output arcs (production only)
-      regularOutputArcs.forEach(outputArc => {
-        const targetPlace = pageData.places.find(p => p.id === outputArc.outgoingId);
-        if (targetPlace) {
-          // Capture the final token value from responseData
-          const finalTokens = responseData.places.find(rp => rp.id === targetPlace.id)?.tokens ?? targetPlace.tokens;
-          
-          tokenAnimator.startAnimation(
-            transitionObj,
-            targetPlace,
-            transitionObj,
-            pageData.arcs,
-            () => {
-              // Update target place tokens after animation completes
-              setPages(prevPages => {
-                const currentPage = prevPages[activePageId];
-                if (!currentPage) return prevPages;
-
-                const updatedPlaces = currentPage.places.map(p => {
-                  if (p.id === targetPlace.id) {
-                    return { ...p, tokens: finalTokens };
-                  }
-                  return p;
-                });
-
-                return {
-                  ...prevPages,
-                  [activePageId]: {
-                    ...currentPage,
-                    places: updatedPlaces
-                  }
-                };
-              });
+          const updatedPlaces = currentPage.places.map(p => {
+            if (p.id === placeId) {
+              return { ...p, tokens: finalTokens };
             }
-          );
-        }
-      });
+            return p;
+          });
 
-      // Handle bidirectional arcs (consumption THEN production)
-      bidirectionalArcs.forEach(bidirectionalArc => {
-        const place = pageData.places.find(p => 
-          p.id === bidirectionalArc.incomingId || p.id === bidirectionalArc.outgoingId
-        );
-        if (place) {
-          const finalTokens = responseData.places.find(rp => rp.id === place.id)?.tokens ?? place.tokens;
-          
-          tokenAnimator.startBidirectionalAnimation(
-            place,
-            transitionObj,
-            pageData.arcs,
-            () => {},
-            () => {
-              // Complete: restore final count
-              setPages(prevPages => {
-                const currentPage = prevPages[activePageId];
-                if (!currentPage) return prevPages;
-                const updatedPlaces = currentPage.places.map(p => {
-                  if (p.id === place.id) {
-                    return { ...p, tokens: finalTokens };
-                  }
-                  return p;
-                });
-                return {
-                  ...prevPages,
-                  [activePageId]: { ...currentPage, places: updatedPlaces }
-                };
-              });
+          return {
+            ...prevPages,
+            [activePageId]: {
+              ...currentPage,
+              places: updatedPlaces
             }
-          );
-        }
+          };
+        });
+      };
+
+      // Create final tokens getter from response data
+      const getFinalTokens = (placeId: string) => {
+        return responseData.places.find(rp => rp.id === placeId)?.tokens ?? 0;
+      };
+
+      // Use shared animation logic with state updates
+      animateArcs(transitionObj, pageData.arcs, pageData.places, {
+        getFinalTokens,
+        updateState
       });
     });
-  }, [tokenAnimator]);
+  }, [animateArcs]);
 
   return { startTransitionAnimations, startFiredTransitionAnimations };
 }; 

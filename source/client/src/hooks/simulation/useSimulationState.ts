@@ -139,11 +139,12 @@ export const useSimulationState = (
         places: [],
         transitions: [],
         arcs: [],
+        textBoxes: [],
         deterministicMode: false,
         conflictResolutionMode: false,
         conflictingTransitions: [],
         selectedElements: [],
-        history: { places: [], transitions: [], arcs: [], title: [] },
+        history: { places: [], transitions: [], arcs: [], textBoxes: [], title: [] },
         zoomLevel: 1,
         panOffset: { x: 0, y: 0 }
       }

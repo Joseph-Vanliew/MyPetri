@@ -5,8 +5,8 @@ import { useState, useRef, useEffect } from 'react';
 import './styles/Toolbar.css';
 
 interface ToolbarProps {
-    selectedTool: 'PLACE' | 'TRANSITION' | 'ARC'| 'NONE';
-    setSelectedTool: (tool: 'PLACE' | 'TRANSITION' | 'ARC' | 'NONE') => void;
+    selectedTool: 'PLACE' | 'TRANSITION' | 'ARC'| 'NONE' | 'TEXTBOX';
+    setSelectedTool: (tool: 'PLACE' | 'TRANSITION' | 'ARC' | 'NONE' | 'TEXTBOX') => void;
     arcType: UIArc['type'];
     setArcType: (type: UIArc['type']) => void;
     showCapacityEditorMode: boolean;
@@ -20,9 +20,9 @@ export const Toolbar = ({
     setArcType,
 }: ToolbarProps) => {
     // Add state to track if we're currently dragging
-    const [isDragging, setIsDragging] = useState<'PLACE' | 'TRANSITION' | null>(null);
+    const [isDragging, setIsDragging] = useState<'PLACE' | 'TRANSITION' | 'TEXTBOX' | null>(null);
     const [dragPreview, setDragPreview] = useState<{
-        type: 'PLACE' | 'TRANSITION';
+        type: 'PLACE' | 'TRANSITION' | 'TEXTBOX';
         x: number;
         y: number;
         visible: boolean;
@@ -360,6 +360,87 @@ export const Toolbar = ({
                         </div>
                     )}
                 </div>
+                    {/* Text Box button */}
+                    <div 
+                        className={`toolbar-item toolbar-textbox ${selectedTool === 'TEXTBOX' || isDragging === 'TEXTBOX' ? 'active' : ''}`}
+                        onClick={() => handleToolSelect('TEXTBOX')}
+                        draggable
+                        onDragStart={(e) => {
+                            e.dataTransfer.setData('application/petri-item', 'TEXTBOX');
+                            e.dataTransfer.effectAllowed = "move";
+                            // Set global variable for Canvas to access
+                            window.currentToolbarDragType = 'TEXTBOX';
+                            setSelectedTool('TEXTBOX');
+                            setIsDragging('TEXTBOX');
+                            
+                            // Create transparent drag image
+                            const dragImage = document.createElement('div');
+                            dragImage.innerHTML = `<svg width="1" height="1"><rect width="1" height="1" fill="transparent"/></svg>`;
+                            dragImage.style.position = 'absolute';
+                            dragImage.style.top = '-1000px';
+                            dragImage.style.opacity = '0';
+                            document.body.appendChild(dragImage);
+                            e.dataTransfer.setDragImage(dragImage, 0, 0);
+                            setTimeout(() => {
+                                if (document.body.contains(dragImage)) {
+                                    document.body.removeChild(dragImage);
+                                }
+                            }, 0);
+                            
+                            // Start custom drag preview
+                            setDragPreview({
+                                type: 'TEXTBOX',
+                                x: e.clientX,
+                                y: e.clientY,
+                                visible: true
+                            });
+                        }}
+                        onDragEnd={() => {
+                            setIsDragging(null);
+                            setDragPreview(null);
+                            // Clear global variable
+                            window.currentToolbarDragType = undefined;
+                        }}
+                        title="Add a Text Box (editable text element)"
+                    >
+                        <div className="toolbar-icon-container">
+                            <svg viewBox="0 0 80 80">
+                                <rect 
+                                    x="15" 
+                                    y="20" 
+                                    width="50" 
+                                    height="40" 
+                                    rx="6"
+                                    fill="#0f0f0f" 
+                                    stroke="#ffffff" 
+                                    strokeWidth="2" 
+                                />
+                                <text 
+                                    x="40" 
+                                    y="35" 
+                                    textAnchor="middle" 
+                                    dominantBaseline="central" 
+                                    fill="white" 
+                                    fontSize="12" 
+                                    fontFamily="sans-serif"
+                                >
+                                    T
+                                </text>
+                                <text 
+                                    x="40" 
+                                    y="50" 
+                                    textAnchor="middle" 
+                                    dominantBaseline="central" 
+                                    fill="white" 
+                                    fontSize="12" 
+                                    fontFamily="sans-serif"
+                                >
+                                    Text
+                                </text>
+                            </svg>
+                        </div>
+                        <span className="toolbar-item-label">Text Box</span>
+                    </div>
             </div>
             
             {/* Custom drag preview */}
@@ -380,9 +461,17 @@ export const Toolbar = ({
                             <text x="40" y="40" textAnchor="middle" dominantBaseline="central" 
                                   fill="white" fontSize="18" fontWeight="bold" fontFamily="sans-serif">0</text>
                         </svg>
-                    ) : (
+                    ) : dragPreview.type === 'TRANSITION' ? (
                         <svg width="80" height="80" viewBox="0 0 80 80">
                             <rect x="10" y="25" width="60" height="30" rx="8" fill="#0f0f0f" stroke="#ffffff" strokeWidth="2" />
+                        </svg>
+                    ) : (
+                        <svg width="80" height="80" viewBox="0 0 80 80">
+                            <rect x="15" y="20" width="50" height="40" rx="6" fill="#0f0f0f" stroke="#ffffff" strokeWidth="2" />
+                            <text x="40" y="35" textAnchor="middle" dominantBaseline="central" 
+                                  fill="white" fontSize="12" fontFamily="sans-serif">T</text>
+                            <text x="40" y="50" textAnchor="middle" dominantBaseline="central" 
+                                  fill="white" fontSize="12" fontFamily="sans-serif">Text</text>
                         </svg>
                     )}
                 </div>

@@ -1,0 +1,338 @@
+/* Main Application Layout */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* Title Section */
+.title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #404040;
+  min-height: 48px;
+  flex-shrink: 0;
+}
+
+.project-title {
+  flex: 1;
+}
+
+.title-input {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  width: 100%;
+  max-width: 300px;
+}
+
+.title-input:focus {
+  outline: none;
+  border-bottom: 2px solid #007acc;
+}
+
+.file-menu {
+  display: flex;
+  gap: 8px;
+}
+
+.menu-button {
+  background: transparent;
+  border: 1px solid #404040;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.menu-button:hover {
+  background-color: #404040;
+}
+
+/* Ribbon */
+.ribbon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #404040;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+
+.tool-selection {
+  display: flex;
+  gap: 4px;
+}
+
+.tool-button {
+  background: transparent;
+  border: 1px solid #404040;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.tool-button:hover {
+  background-color: #404040;
+}
+
+.tool-button.active {
+  background-color: #007acc;
+  border-color: #007acc;
+}
+
+.file-operations {
+  display: flex;
+  gap: 8px;
+}
+
+.operation-button {
+  background: transparent;
+  border: 1px solid #404040;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.operation-button:hover {
+  background-color: #404040;
+}
+
+/* Main Content */
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0; /* Important for flex child */
+}
+
+/* Sidebars */
+.left-sidebar,
+.right-sidebar {
+  background-color: #2a2a2a;
+  border-right: 1px solid #404040;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.right-sidebar {
+  border-right: none;
+  border-left: 1px solid #404040;
+}
+
+.sidebar-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #404040;
+  background-color: #333333;
+  flex-shrink: 0;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.tool-options,
+.analysis-tools {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  min-height: 0; /* Important for flex child */
+}
+
+.options-panel h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.tool-tab {
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #333333;
+  border-radius: 4px;
+}
+
+.tool-tab h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Center Content */
+.center-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0; /* Important for flex child */
+}
+
+.canvas-container {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0; /* Important for flex child */
+}
+
+/* Pages Section */
+.pages-section {
+  background-color: #2a2a2a;
+  border-top: 1px solid #404040;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+
+.page-tabs {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.page-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #333333;
+  border: 1px solid #404040;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.page-tab.active {
+  background-color: #007acc;
+  border-color: #007acc;
+}
+
+.page-name-input {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.page-name-input:focus {
+  outline: none;
+}
+
+.remove-page-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.remove-page-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.add-page-btn {
+  background: transparent;
+  border: 1px dashed #404040;
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  min-width: 40px;
+}
+
+.add-page-btn:hover {
+  background-color: #404040;
+  border-color: #007acc;
+}
+
+/* Status Bar */
+.status-bar {
+  background-color: #2a2a2a;
+  border-top: 1px solid #404040;
+  padding: 8px 16px;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+
+.simulation-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.simulation-btn {
+  background: transparent;
+  border: 1px solid #404040;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.simulation-btn:hover {
+  background-color: #404040;
+}
+
+.simulation-btn.start {
+  border-color: #28a745;
+}
+
+.simulation-btn.stop {
+  border-color: #dc3545;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-control label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.speed-control input[type="range"] {
+  width: 100px;
+}
+
+.speed-control span {
+  font-size: 14px;
+  min-width: 30px;
+}
+
+.step-counter {
+  font-size: 14px;
+  font-weight: 600;
+} 

@@ -1,5 +1,5 @@
 import { useState, useCallback} from 'react';
-import { UIPlace, UITransition } from '../../../types';
+import { UIPlace, UITransition, UITextBox } from '../../../types';
 
 export interface AlignmentGuide {
   id: string;
@@ -16,7 +16,7 @@ export interface AlignmentResult {
   isSnapping: boolean;
 }
 
-type AligneableElement = UIPlace | UITransition;
+type AligneableElement = UIPlace | UITransition | UITextBox;
 
 interface ElementBounds {
   id: string;
@@ -50,7 +50,7 @@ export function useAlignmentGuides(options: {
         centerY: element.y
       };
     } else {
-      // Transition element
+      // Transition or TextBox element (both have width and height)
       const halfWidth = element.width / 2;
       const halfHeight = element.height / 2;
       return {

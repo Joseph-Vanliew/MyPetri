@@ -9,6 +9,7 @@ interface ZoomAndPanOptions {
   initialPanOffset?: { x: number; y: number };
   onViewChange?: (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => void;
   baseWidth?: number;
+  disabled?: boolean;
 }
 
 const mapVBtoView = (vb: {x:number, y:number, w:number, h:number}, baseW: number) => {
@@ -42,7 +43,8 @@ export function useZoomAndPan(
     initialZoomLevel = 1,
     initialPanOffset = { x: 0, y: 0 },
     onViewChange,
-    baseWidth = 1500
+    baseWidth = 1500,
+    disabled = false
   } = options;
 
   const initialAspectRatio = baseWidth ? baseWidth / (baseWidth * 9 / 16) : 16 / 9; 
@@ -62,13 +64,13 @@ export function useZoomAndPan(
   }, [initialZoomLevel, initialPanOffset, baseWidth, initialAspectRatio]);
   
   const handleMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-       if (e.target === e.currentTarget) {
+       if (e.target === e.currentTarget && !disabled) {
            e.stopPropagation();
            setIsPanning(true);
            setLastMouseX(e.clientX);
            setLastMouseY(e.clientY);
        }
-  }, []);
+  }, [disabled]);
   
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);

@@ -11,10 +11,11 @@ import { useSelectionBox } from './canvas/hooks/useSelectionBox';
 import { useAlignmentGuides } from './canvas/hooks/useAlignmentGuides';
 import { AlignmentGuides } from './canvas/AlignmentGuides';
 import { screenToSVGCoordinates, snapToGrid } from './canvas/utils/coordinateUtils';
-import { UIPlace, UITransition, UIArc } from '../types';
+import { UIPlace, UITransition, UIArc, UITextBox } from '../types';
 import { TokenAnimations } from './elements/TokenAnimations';
 import { TokenAnimator } from '../animations/TokenAnimator';
 import { SpeedControl } from './controls/SpeedControl';
+import { TextBox } from './elements/TextBox';
 
 
 declare global {
@@ -36,8 +37,8 @@ interface CanvasProps {
     onUpdateTransitionSize: (id: string, width: number, height: number, resizeState: 'start' | 'resizing' | 'end') => void;
     onUpdateElementPosition: (id: string, newX: number, newY: number, dragState: 'start' | 'dragging' | 'end') => void;
     onArcPortClick:(id: string)=> void;
-    selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';
-    onSelectTool: (tool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC') => void;
+    selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC' | 'TEXTBOX';
+    onSelectTool: (tool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC' | 'TEXTBOX') => void;
     arcType: UIArc['type'];
     onUpdateToken: (id: string, newTokens: number) => void;
     onTypingChange: (isTyping: boolean) => void;
@@ -53,6 +54,9 @@ interface CanvasProps {
     onViewChange: (view: { zoomLevel: number, panOffset: {x: number, y: number} }) => void;
     onCenterView: () => void;
     tokenAnimator?: TokenAnimator;
+    textBoxes: UITextBox[];
+    onUpdateTextBoxSize: (id: string, newWidth: number, newHeight: number, resizeState: 'start' | 'resizing' | 'end') => void;
+    onUpdateTextBoxText: (id: string, newText: string) => void;
 }
 
 export const Canvas = (props: CanvasProps) => {
@@ -63,13 +67,18 @@ export const Canvas = (props: CanvasProps) => {
     
     // Toolbar drag preview state
     const [toolbarDragPreview, setToolbarDragPreview] = useState<{
-        type: 'PLACE' | 'TRANSITION';
+        type: 'PLACE' | 'TRANSITION' | 'TEXTBOX';
         position: { x: number; y: number };
         snappedPosition: { x: number; y: number };
     } | null>(null);
+
+    // Text box drawing state
+    const [isDrawingTextBox, setIsDrawingTextBox] = useState(false);
+    const [textBoxDrawStart, setTextBoxDrawStart] = useState<{ x: number; y: number } | null>(null);
+    const [textBoxDrawPreview, setTextBoxDrawPreview] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
     
     // Track the current drag type from toolbar
-    const [currentDragType, setCurrentDragType] = useState<'PLACE' | 'TRANSITION' | null>(null);
+    const [currentDragType, setCurrentDragType] = useState<'PLACE' | 'TRANSITION' | 'TEXTBOX' | null>(null);
     
     // Calculate viewBox directly from props for synchronous updates
     const baseWidth = 1500;
@@ -90,6 +99,7 @@ export const Canvas = (props: CanvasProps) => {
         initialZoomLevel: props.zoomLevel, 
         initialPanOffset: props.panOffset,
         onViewChange: props.onViewChange,
+        disabled: !!currentDragType || !!window.currentToolbarDragType || props.selectedTool === 'TEXTBOX' || isDrawingTextBox,
     });
     
     const mouseTracking = useMouseTracking(svgRef, {
@@ -102,6 +112,7 @@ export const Canvas = (props: CanvasProps) => {
         svgRef,
         places: props.places,
         transitions: props.transitions,
+        textBoxes: props.textBoxes,
         onSelectionChange: props.onMultiSelectElement,
     });
 
@@ -200,13 +211,77 @@ export const Canvas = (props: CanvasProps) => {
         }
         
         // Logic for placing new elements: Use e.shiftKey directly
-        if (!e.shiftKey && e.target === e.currentTarget && (props.selectedTool === 'PLACE' || props.selectedTool === 'TRANSITION' || props.selectedTool === 'ARC')) {
+        if (!e.shiftKey && e.target === e.currentTarget && (props.selectedTool === 'PLACE' || props.selectedTool === 'TRANSITION' || props.selectedTool === 'ARC' || props.selectedTool === 'TEXTBOX')) {
             if (!svgRef.current) return;
             const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
             const snapped = snapToGrid(coords.x, coords.y);
             props.onCanvasClick(snapped.x, snapped.y);
         }
-    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick, props.selectedTool, didJustSelect]); 
+    }, [props.selectedElements, props.onSelectElement, props.onCanvasClick, props.selectedTool, didJustSelect]);
+
+    // Text box drawing handlers
+    const handleTextBoxMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+        if (props.selectedTool === 'TEXTBOX' && e.target === e.currentTarget && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!svgRef.current) return;
+            const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
+            const snapped = snapToGrid(coords.x, coords.y);
+            
+            setIsDrawingTextBox(true);
+            setTextBoxDrawStart(snapped);
+            setTextBoxDrawPreview({ x: snapped.x, y: snapped.y, width: 0, height: 0 });
+        }
+    }, [props.selectedTool, svgRef]);
+
+    const handleTextBoxMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+        if (isDrawingTextBox && textBoxDrawStart && svgRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
+            const snapped = snapToGrid(coords.x, coords.y);
+            
+            const width = Math.max(50, Math.abs(snapped.x - textBoxDrawStart.x));
+            const height = Math.max(30, Math.abs(snapped.y - textBoxDrawStart.y));
+            const x = Math.min(snapped.x, textBoxDrawStart.x);
+            const y = Math.min(snapped.y, textBoxDrawStart.y);
+            
+            setTextBoxDrawPreview({ x, y, width, height });
+        }
+    }, [isDrawingTextBox, textBoxDrawStart, svgRef]);
+
+    const handleTextBoxMouseUp = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+        if (isDrawingTextBox && textBoxDrawStart && textBoxDrawPreview && svgRef.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Create the text box with the drawn dimensions
+            const newTextBox: UITextBox = {
+                id: `textbox-${Date.now()}`,
+                text: 'Text',
+                x: textBoxDrawPreview.x + textBoxDrawPreview.width / 2, // Center point
+                y: textBoxDrawPreview.y + textBoxDrawPreview.height / 2, // Center point
+                width: textBoxDrawPreview.width,
+                height: textBoxDrawPreview.height,
+                fontSize: 16,
+                fontFamily: 'sans-serif',
+                color: '#ffffff',
+                backgroundColor: 'transparent',
+                borderColor: 'transparent',
+                borderWidth: 2
+            };
+            
+            // Call the canvas click handler to create the text box
+            props.onCanvasClick(newTextBox.x, newTextBox.y);
+            
+            // Reset drawing state
+            setIsDrawingTextBox(false);
+            setTextBoxDrawStart(null);
+            setTextBoxDrawPreview(null);
+        }
+    }, [isDrawingTextBox, textBoxDrawStart, textBoxDrawPreview, props.onCanvasClick]); 
     
     // Handle drag and drop
     const handleDragOver = (e: React.DragEvent<SVGSVGElement>) => {
@@ -223,7 +298,7 @@ export const Canvas = (props: CanvasProps) => {
             type = window.currentToolbarDragType;
         }
         
-        if (!type || (type !== 'PLACE' && type !== 'TRANSITION')) {
+        if (!type || (type !== 'PLACE' && type !== 'TRANSITION' && type !== 'TEXTBOX')) {
             return;
         }
         
@@ -234,7 +309,7 @@ export const Canvas = (props: CanvasProps) => {
         const coords = screenToSVGCoordinates(e.clientX, e.clientY, svgRef.current);
         
         // Create a temporary element for alignment checking
-        const tempElement: UIPlace | UITransition = type === 'PLACE' 
+        const tempElement: UIPlace | UITransition | UITextBox = type === 'PLACE' 
             ? {
                 id: 'temp-preview',
                 x: coords.x,
@@ -246,7 +321,8 @@ export const Canvas = (props: CanvasProps) => {
                 type: 'place',
                 bounded: false
             } as UIPlace
-            : {
+            : type === 'TRANSITION'
+            ? {
                 id: 'temp-preview',
                 x: coords.x,
                 y: coords.y,
@@ -256,10 +332,24 @@ export const Canvas = (props: CanvasProps) => {
                 type: 'transition',
                 enabled: true,
                 arcIds: []
-            } as UITransition;
+            } as UITransition
+            : {
+                id: 'temp-preview',
+                x: coords.x,
+                y: coords.y,
+                width: 200,  // Match default textbox width from App.tsx
+                height: 100,  // Match default textbox height from App.tsx
+                text: 'Text',
+                fontSize: 16,
+                fontFamily: 'sans-serif',
+                color: '#ffffff',
+                backgroundColor: 'transparent',
+                borderColor: 'transparent',
+                borderWidth: 2
+            } as UITextBox;
         
         // Get alignment guides and snap position
-        const allElements = [...props.places, ...props.transitions];
+        const allElements = [...props.places, ...props.transitions, ...props.textBoxes];
         
         const alignmentResult = alignmentGuides.updateAlignments(
             tempElement,
@@ -283,7 +373,7 @@ export const Canvas = (props: CanvasProps) => {
         
         // Try to get the drag type and store it
         const type = e.dataTransfer.getData("application/petri-item") || window.currentToolbarDragType;
-        if (type === 'PLACE' || type === 'TRANSITION') {
+        if (type === 'PLACE' || type === 'TRANSITION' || type === 'TEXTBOX') {
             setCurrentDragType(type);
         }
     }, []);
@@ -314,6 +404,8 @@ export const Canvas = (props: CanvasProps) => {
             props.onSelectTool('PLACE');
         } else if (type === 'TRANSITION') {
             props.onSelectTool('TRANSITION');
+        } else if (type === 'TEXTBOX') {
+            props.onSelectTool('TEXTBOX');
         }
         
         props.onCanvasClick(coords.x, coords.y);
@@ -340,7 +432,7 @@ export const Canvas = (props: CanvasProps) => {
         newY: number, 
         dragState: 'start' | 'dragging' | 'end'
     ) => {
-        const allElements = [...props.places, ...props.transitions];
+        const allElements = [...props.places, ...props.transitions, ...props.textBoxes];
         const currentElement = allElements.find(el => el.id === id);
         
         // Disable alignment guides when multiple elements are selected
@@ -431,23 +523,41 @@ export const Canvas = (props: CanvasProps) => {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onMouseDown={(e) => {
-                    if (!isShiftPressed) {
+                    // Handle text box drawing first
+                    handleTextBoxMouseDown(e);
+                    
+                    // Then handle zoom/pan if not drawing
+                    if (!isDrawingTextBox && !isShiftPressed) {
                         zoomAndPan.handleMouseDown(e);
                     }
                 }}
                 onMouseMove={(e) => {
                     mouseTracking.updateMousePosition(e.clientX, e.clientY);
                     
-                    if (!isSelecting) {
+                    // Handle text box drawing preview
+                    handleTextBoxMouseMove(e);
+                    
+                    // Handle zoom/pan if not drawing
+                    if (!isDrawingTextBox && !isSelecting) {
                         zoomAndPan.handlePan(e);
                     }
                 }}
-                onMouseUp={() => {
-                    if (!isSelecting) {
-                         zoomAndPan.handleMouseUp();
+                onMouseUp={(e) => {
+                    // Handle text box drawing completion
+                    handleTextBoxMouseUp(e);
+                    
+                    // Handle zoom/pan if not drawing
+                    if (!isDrawingTextBox && !isSelecting) {
+                        zoomAndPan.handleMouseUp();
                     }
                 }}
                 onMouseLeave={() => {
+                    // Reset text box drawing state if mouse leaves canvas
+                    if (isDrawingTextBox) {
+                        setIsDrawingTextBox(false);
+                        setTextBoxDrawStart(null);
+                        setTextBoxDrawPreview(null);
+                    }
                     zoomAndPan.handleMouseLeave(); 
                 }}
                 style={{ 
@@ -546,7 +656,7 @@ export const Canvas = (props: CanvasProps) => {
                                     0
                                 </text>
                             </g>
-                        ) : (
+                        ) : toolbarDragPreview.type === 'TRANSITION' ? (
                             <g transform={`translate(${toolbarDragPreview.snappedPosition.x},${toolbarDragPreview.snappedPosition.y})`}>
                                 {/* Transition rectangle with actual styling */}
                                 <rect
@@ -561,7 +671,53 @@ export const Canvas = (props: CanvasProps) => {
                                     pointerEvents="none"
                                 />
                             </g>
+                        ) : (
+                            <g transform={`translate(${toolbarDragPreview.snappedPosition.x},${toolbarDragPreview.snappedPosition.y})`}>
+                                {/* TextBox rectangle with actual styling */}
+                                <rect
+                                    x={-100}
+                                    y={-50}
+                                    width={200}
+                                    height={100}
+                                    rx={4}
+                                    fill="transparent"
+                                    stroke="rgba(255, 255, 255, 0.6)"
+                                    strokeWidth="2"
+                                    pointerEvents="none"
+                                />
+                                {/* Preview text */}
+                                <text
+                                    x="0"
+                                    y="0"
+                                    textAnchor="middle"
+                                    dominantBaseline="central"
+                                    fill="white"
+                                    fontSize="16"
+                                    fontFamily="sans-serif"
+                                    pointerEvents="none"
+                                >
+                                    Text
+                                </text>
+                            </g>
                         )}
+                    </g>
+                )}
+
+                {/* Text box drawing preview */}
+                {textBoxDrawPreview && (
+                    <g className="textbox-draw-preview" style={{ opacity: 0.8 }}>
+                        <rect
+                            x={textBoxDrawPreview.x}
+                            y={textBoxDrawPreview.y}
+                            width={textBoxDrawPreview.width}
+                            height={textBoxDrawPreview.height}
+                            rx={4}
+                            fill="transparent"
+                            stroke="rgba(255, 255, 255, 0.8)"
+                            strokeWidth="2"
+                            strokeDasharray="5,5"
+                            pointerEvents="none"
+                        />
                     </g>
                 )}
 
@@ -627,6 +783,37 @@ export const Canvas = (props: CanvasProps) => {
                                 onConflictingTransitionSelect={props.onConflictingTransitionSelect}
                                 conflictResolutionMode={props.conflictResolutionMode}
                                 isFired={props.firedTransitions?.includes(transition.id)}
+                            />
+                        );
+                    })}
+
+                    {props.textBoxes.map(textBox => {
+                        if (!elementRefs[textBox.id]) {
+                            setElementRefs(prev => ({...prev, [textBox.id]: React.createRef()}));
+                        }
+                        
+                        return (
+                            <TextBox
+                                key={textBox.id}
+                                id={textBox.id}
+                                text={textBox.text}
+                                x={textBox.x}
+                                y={textBox.y}
+                                width={textBox.width}
+                                height={textBox.height}
+                                fontSize={textBox.fontSize}
+                                fontFamily={textBox.fontFamily}
+                                color={textBox.color}
+                                backgroundColor={textBox.backgroundColor}
+                                borderColor={textBox.borderColor}
+                                borderWidth={textBox.borderWidth}
+                                isSelected={props.selectedElements.includes(textBox.id)}
+                                onSelect={(id: string) => props.onSelectElement(id)}
+                                onUpdateSize={props.onUpdateTextBoxSize}
+                                onUpdatePosition={handleElementPositionUpdate}
+                                arcMode={props.selectedTool === 'ARC'}
+                                onUpdateText={props.onUpdateTextBoxText}
+                                onTypingChange={props.onTypingChange}
                             />
                         );
                     })}

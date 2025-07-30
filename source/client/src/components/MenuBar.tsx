@@ -26,6 +26,7 @@ interface MenuBarProps {
 }
 
 export function MenuBar({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   projectData: _projectData,
   onImport, 
   onOpenProject,

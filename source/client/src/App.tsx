@@ -57,7 +57,7 @@ export default function App() {
 
     // ----- Transient UI & Interaction State (Not Persisted) -----
     const [currentFiredTransitions, setCurrentFiredTransitions] = useState<string[]>([]); // IDs of transitions that are currently visually "fired" in the simulation.
-    const [selectedTool, setSelectedTool] = useState<'NONE' |'PLACE' | 'TRANSITION' | 'ARC'>('NONE'); // The currently active tool selected from the toolbar (e.g., Place, Transition, Arc).
+    const [selectedTool, setSelectedTool] = useState<'NONE' |'PLACE' | 'TRANSITION' | 'ARC' | 'TEXTBOX'>('NONE'); // The currently active tool selected from the toolbar (e.g., Place, Transition, Arc).
     const [arcType, setArcType] = useState<UIArc['type']>('REGULAR'); // The type of arc to be created (e.g., Regular, Inhibitor).
     const [isTyping, setIsTyping] = useState(false); // Tracks if user is typing in an input field to prevent shortcut collisions
     const [autoScrollEnabled, setAutoScrollEnabled] = useState(true); // Controls whether the properties panel automatically scrolls to selected elements.
@@ -86,11 +86,12 @@ export default function App() {
                 places: [],
                 transitions: [],
                 arcs: [],
+                textBoxes: [],
                 deterministicMode: false,
                 conflictResolutionMode: false,
                 conflictingTransitions: [],
                 selectedElements: [],
-                history: { places: [], transitions: [], arcs: [], title: [] },
+                history: { places: [], transitions: [], arcs: [], textBoxes: [], title: [] },
                 zoomLevel: .85,
                 panOffset: { x: -880, y: -400 },
                 validatorConfigs: { ...defaultValidatorConfigs } // Initialize
@@ -339,6 +340,8 @@ export default function App() {
       handleZoomLevelChange,
       handleCenterView,
       handleReorderPages,
+      handleTextBoxSizeUpdate,
+      handleTextBoxTextUpdate,
     } = useCanvasInteractions({
       activePageId,
       activePageData,
@@ -538,6 +541,7 @@ export default function App() {
                             places={activePageData?.places || []}
                             transitions={activePageData?.transitions || []}
                             arcs={activePageData?.arcs || []}
+                            textBoxes={activePageData?.textBoxes || []}
                             selectedElements={activePageData?.selectedElements || []}
                             onCanvasClick={handleCanvasClick}
                             onSelectElement={handleSelectElement}
@@ -563,6 +567,8 @@ export default function App() {
                             onViewChange={handleViewChange}
                             onCenterView={handleCenterView}
                             tokenAnimator={tokenAnimator}
+                            onUpdateTextBoxSize={handleTextBoxSizeUpdate}
+                            onUpdateTextBoxText={handleTextBoxTextUpdate}
                         />
                     </div>
                     

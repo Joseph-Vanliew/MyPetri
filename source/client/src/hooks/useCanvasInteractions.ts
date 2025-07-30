@@ -106,9 +106,9 @@ export const useCanvasInteractions = ({
     // --- Drag Start Logic ---
     if (dragState === 'start') {
       saveToHistory(activePageData); 
-      const { places: placesAtDragStart, transitions: transitionsAtDragStart, selectedElements: currentSelectedElements } = activePageData; 
+      const { places: placesAtDragStart, transitions: transitionsAtDragStart, textBoxes: textBoxesAtDragStart, selectedElements: currentSelectedElements } = activePageData; 
       dragStartPositionsRef.current.clear();
-      const elementsToTrack = [...placesAtDragStart, ...transitionsAtDragStart];
+      const elementsToTrack = [...placesAtDragStart, ...transitionsAtDragStart, ...textBoxesAtDragStart];
       currentSelectedElements.forEach(selectedId => {
         const element = elementsToTrack.find(el => el.id === selectedId); 
         if (element) {
@@ -162,10 +162,20 @@ export const useCanvasInteractions = ({
         return t;
          });
 
+         const updatedTextBoxes = currentPage.textBoxes?.map(tb => {
+           const originalStartPos = dragStartPositionsRef.current.get(tb.id);
+           const shouldMove = tb.id === id || (isMultiSelect && currentSelectedElements.includes(tb.id));
+           if (shouldMove && originalStartPos) {
+             return { ...tb, x: originalStartPos.x + deltaX, y: originalStartPos.y + deltaY };
+           }
+           return tb;
+         }) || [];
+
          const placesChanged = JSON.stringify(currentPage.places) !== JSON.stringify(updatedPlaces);
          const transitionsChanged = JSON.stringify(currentPage.transitions) !== JSON.stringify(updatedTransitions);
+         const textBoxesChanged = JSON.stringify(currentPage.textBoxes) !== JSON.stringify(updatedTextBoxes);
 
-         if (!placesChanged && !transitionsChanged) {
+         if (!placesChanged && !transitionsChanged && !textBoxesChanged) {
            return prevPages; 
          }
 
@@ -175,6 +185,7 @@ export const useCanvasInteractions = ({
              ...currentPage,
              places: updatedPlaces,
              transitions: updatedTransitions,
+             textBoxes: updatedTextBoxes,
            }
          };
        });
@@ -388,6 +399,56 @@ export const useCanvasInteractions = ({
     }
   }, [pageOrder, setPageOrder, setProjectHasUnsavedChanges]);
 
+  // Add text box update handlers
+  const handleTextBoxSizeUpdate = useCallback((id: string, newWidth: number, newHeight: number, resizeState: 'start' | 'resizing' | 'end') => {
+    if (!activePageId || !activePageData) return;
+    
+    if (resizeState === 'start') {
+        // Save to history before resizing
+        saveToHistory(activePageData);
+    }
+    
+    setPages(prevPages => {
+        const currentPage = prevPages[activePageId!];
+        if (!currentPage) return prevPages;
+        
+        const updatedTextBoxes = currentPage.textBoxes?.map(textBox =>
+            textBox.id === id ? { ...textBox, width: newWidth, height: newHeight } : textBox
+        ) || [];
+        
+        if (updatedTextBoxes === currentPage.textBoxes) return prevPages;
+        
+        return {
+            ...prevPages,
+            [activePageId!]: { ...currentPage, textBoxes: updatedTextBoxes }
+        };
+    });
+    
+    if (resizeState === 'end') {
+        setProjectHasUnsavedChanges(true);
+    }
+}, [activePageId, activePageData, setPages, saveToHistory, setProjectHasUnsavedChanges]);
+
+const handleTextBoxTextUpdate = useCallback((id: string, newText: string) => {
+    if (!activePageId || !activePageData) return;
+    setPages(prevPages => {
+        const currentPage = prevPages[activePageId!];
+        if (!currentPage) return prevPages;
+        
+        const updatedTextBoxes = currentPage.textBoxes?.map(textBox =>
+            textBox.id === id ? { ...textBox, text: newText } : textBox
+        ) || [];
+        
+        if (updatedTextBoxes === currentPage.textBoxes) return prevPages;
+        
+        return {
+            ...prevPages,
+            [activePageId!]: { ...currentPage, textBoxes: updatedTextBoxes }
+        };
+    });
+    setProjectHasUnsavedChanges(true);
+}, [activePageId, activePageData, setPages, setProjectHasUnsavedChanges]);
+
   return {
     // Element resizing
     updatePlaceSize,
@@ -409,5 +470,9 @@ export const useCanvasInteractions = ({
     
     // Page management
     handleReorderPages,
+    
+    // Text box handlers
+    handleTextBoxSizeUpdate,
+    handleTextBoxTextUpdate,
   };
 }; 

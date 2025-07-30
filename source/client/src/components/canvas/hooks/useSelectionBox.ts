@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, RefObject} from 'react';
-import { UIPlace, UITransition } from '../../../types';
+import { UIPlace, UITransition, UITextBox } from '../../../types';
 import { screenToSVGCoordinates } from '../utils/coordinateUtils';
 
 interface SelectionBoxOptions {
     svgRef: RefObject<SVGSVGElement>;
     places: UIPlace[];
     transitions: UITransition[];
+    textBoxes: UITextBox[];
     onSelectionChange: (selectedIds: string[]) => void;
 }
 
@@ -21,6 +22,7 @@ export const useSelectionBox = ({
     svgRef,
     places,
     transitions,
+    textBoxes,
     onSelectionChange,
 }: SelectionBoxOptions) => {
     const [selectionRect, setSelectionRect] = useState<SelectionRect>({
@@ -75,11 +77,12 @@ export const useSelectionBox = ({
         const selectedIds = [
             ...places.filter(p => p.x >= rectX && p.x <= rectX + rectWidth && p.y >= rectY && p.y <= rectY + rectHeight).map(p => p.id),
             ...transitions.filter(t => (t.x + t.width / 2) >= rectX && (t.x + t.width / 2) <= rectX + rectWidth && (t.y + t.height / 2) >= rectY && (t.y + t.height / 2) <= rectY + rectHeight).map(t => t.id),
+            ...textBoxes.filter(tb => (tb.x + tb.width / 2) >= rectX && (tb.x + tb.width / 2) <= rectX + rectWidth && (tb.y + tb.height / 2) >= rectY && (tb.y + tb.height / 2) <= rectY + rectHeight).map(tb => tb.id),
         ];
 
         onSelectionChange(selectedIds);
 
-    }, [isSelecting, svgRef, places, transitions, onSelectionChange, selectionRect]); 
+    }, [isSelecting, svgRef, places, transitions, textBoxes, onSelectionChange, selectionRect]); 
    
     // Effect to auto-reset the didJustSelect flag shortly after it's set
     useEffect(() => {

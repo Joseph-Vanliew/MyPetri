@@ -290,14 +290,5 @@ public class PetriNetAnalysisService {
         
         return result;
     }
-
-   
-
-    
-
-    
-
-    
-
   
 } 

@@ -1,0 +1,29 @@
+/* App loading state */
+.app-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.loading-spinner {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Remove default App styles since we're using layout components */
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}

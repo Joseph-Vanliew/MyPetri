@@ -79,18 +79,18 @@ Use this check mark ✅ if doing for the first time!
 # Set these for the build
 export PROJECT_ID=$(gcloud config get-value project)
 export REGION=us-central1
-export REPO_NAME=mypetri-repo
+export REPO_NAME=pats-repo
 
 #Build docker image and submit to artifact registry
-gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/mypetri-app:v26
+gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v27
 
 #Deploy image to Cloud Run Instance
-gcloud run deploy mypetri-app \
-  --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/mypetri-app:v26 \
+gcloud run deploy pats-app \
+  --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/pats-app:v27 \
   --platform managed \
   --region ${REGION} \
   --allow-unauthenticated
 
 # View logs
-gcloud run logs tail --service mypetri-app
+gcloud run logs tail --service pats-app
 ``` 

@@ -42,6 +42,7 @@ export function loadAppState(): PersistedAppState | null {
                     places: Array.isArray(page.places) ? page.places : [],
                     transitions: Array.isArray(page.transitions) ? page.transitions : [],
                     arcs: Array.isArray(page.arcs) ? page.arcs : [],
+                    textBoxes: Array.isArray(page.textBoxes) ? page.textBoxes : [],
                     deterministicMode: typeof page.deterministicMode === 'boolean' ? page.deterministicMode : false,
                     conflictResolutionMode: typeof page.conflictResolutionMode === 'boolean' ? page.conflictResolutionMode : false,
                     conflictingTransitions: Array.isArray(page.conflictingTransitions) ? page.conflictingTransitions : [],
@@ -51,9 +52,10 @@ export function loadAppState(): PersistedAppState | null {
                                    places: Array.isArray(page.history.places) ? page.history.places : [],
                                    transitions: Array.isArray(page.history.transitions) ? page.history.transitions : [],
                                    arcs: Array.isArray(page.history.arcs) ? page.history.arcs : [],
+                                   textBoxes: Array.isArray(page.history.textBoxes) ? page.history.textBoxes : [],
                                    title: Array.isArray(page.history.title) ? page.history.title : [],
                                  }
-                               : { places: [], transitions: [], arcs: [], title: [] },
+                               : { places: [], transitions: [], arcs: [], textBoxes: [], title: [] },
                     zoomLevel: typeof page.zoomLevel === 'number' ? page.zoomLevel : 1,
                     panOffset: (page.panOffset && typeof page.panOffset.x === 'number' && typeof page.panOffset.y === 'number')
                                 ? page.panOffset

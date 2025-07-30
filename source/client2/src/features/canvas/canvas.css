@@ -1,0 +1,141 @@
+/* Canvas Styles */
+.canvas {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1a1a;
+  overflow: hidden;
+}
+
+.canvas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: #2a2a2a;
+  border-bottom: 1px solid #404040;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+
+.canvas-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.canvas-controls {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #cccccc;
+  align-items: center;
+}
+
+.canvas-controls span {
+  background-color: #333333;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #404040;
+  white-space: nowrap;
+}
+
+.grid-controls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.grid-toggle,
+.snap-toggle {
+  background: transparent;
+  border: 1px solid #404040;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 50px;
+}
+
+.grid-toggle:hover,
+.snap-toggle:hover {
+  background-color: #404040;
+}
+
+.grid-toggle.active,
+.snap-toggle.active {
+  background-color: #007acc;
+  border-color: #007acc;
+}
+
+.grid-size-select {
+  background: transparent;
+  border: 1px solid #404040;
+  color: #ffffff;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.grid-size-select option {
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
+
+.canvas-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background-color: #1a1a1a;
+  min-height: 0; /* Important for flex child */
+}
+
+.canvas-svg {
+  width: 100%;
+  height: 100%;
+  background-color: #1a1a1a;
+  cursor: crosshair;
+  display: block;
+}
+
+/* Canvas interaction states */
+.canvas-svg:active {
+  cursor: grabbing;
+}
+
+.canvas-svg.panning {
+  cursor: grab;
+}
+
+/* Grid pattern */
+.canvas-svg pattern#grid path {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+}
+
+/* Canvas background */
+.canvas-svg rect[fill="rgba(26, 26, 26, 0.8)"] {
+  pointer-events: none;
+}
+
+/* Instructions text */
+.canvas-svg text {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .canvas-controls {
+    gap: 8px;
+    font-size: 11px;
+  }
+  
+  .canvas-controls span {
+    padding: 2px 6px;
+  }
+} 

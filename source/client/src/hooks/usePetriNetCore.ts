@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
-import { UIPlace, UITransition, UIArc, GRID_CELL_SIZE, PetriNetPageData } from '../types';
+import { UIPlace, UITransition, UIArc, GRID_CELL_SIZE, PetriNetPageData, UITextBox } from '../types';
 
 interface UsePetriNetCoreProps {
   activePageId: string | null;
   setPages: React.Dispatch<React.SetStateAction<Record<string, PetriNetPageData>>>;
   saveToHistory: (pageDataToSave: PetriNetPageData) => void;
   setProjectHasUnsavedChanges: (hasChanges: boolean) => void;
-  setSelectedTool: (tool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC') => void;
+  setSelectedTool: (tool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC' | 'TEXTBOX') => void;
   arcType: UIArc['type'];
-  selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC';
+  selectedTool: 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC' | 'TEXTBOX';
   activePageData: PetriNetPageData | null;
   dragStartPositionsRef: React.MutableRefObject<Map<string, { x: number; y: number }>>;
 }
@@ -230,6 +230,40 @@ export const usePetriNetCore = ({
     } else if (selectedTool === 'ARC') {
       handleArcCreation(x, y);
       setSelectedTool('NONE');
+    } else if (selectedTool === 'TEXTBOX') {
+      const newTextBox: UITextBox = {
+        id: `textbox_${Date.now()}_${activePageId}`,
+        text: 'Text',
+        x, y,
+        width: 200,
+        height: 100,
+        fontSize: 16,
+        fontFamily: 'sans-serif',
+        color: '#ffffff',
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
+        borderWidth: 2
+      };
+      
+      // Save to history before adding new textbox
+      if (activePageData) {
+        saveToHistory(activePageData);
+      }
+      
+      setPages(prevPages => {
+        const currentPage = prevPages[activePageId!];
+        if (!currentPage) return prevPages;
+        
+        return {
+          ...prevPages,
+          [activePageId!]: {
+            ...currentPage,
+            textBoxes: [...(currentPage.textBoxes || []), newTextBox]
+          }
+        };
+      });
+      setSelectedTool('NONE');
+      setProjectHasUnsavedChanges(true);
     }
   }, [selectedTool, activePageId, activePageData, setPages, saveToHistory, setSelectedTool, setProjectHasUnsavedChanges, clearActivePageSelection]);
 

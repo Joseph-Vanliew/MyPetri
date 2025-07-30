@@ -271,7 +271,7 @@ export const useFileOperations = ({
       conflictResolutionMode: false,
       conflictingTransitions: [],
       selectedElements: [],
-      history: { places: [], transitions: [], arcs: [], title: [] },
+      history: { places: [], transitions: [], arcs: [], textBoxes: [], title: [] },
       zoomLevel: importedData.zoomLevel ?? 1,
       panOffset: importedData.panOffset ?? { x: -750, y: -421.875 }
     };

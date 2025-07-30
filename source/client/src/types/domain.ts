@@ -29,6 +29,21 @@ export interface UIArc {
   outgoingId: string;
 }
 
+export interface UITextBox {
+    id: string;
+    text: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    fontSize?: number;
+    fontFamily?: string;
+    color?: string;
+    backgroundColor?: string;
+    borderColor?: string;
+    borderWidth?: number;
+}
+
 export interface PageSnapshot {
   places: UIPlace[];
   transitions: UITransition[];
@@ -43,6 +58,7 @@ export interface PetriNetPageData {
   places: UIPlace[];
   transitions: UITransition[];
   arcs: UIArc[];
+  textBoxes: UITextBox[];
   deterministicMode: boolean;
   conflictResolutionMode: boolean;
   conflictingTransitions: string[];
@@ -51,6 +67,7 @@ export interface PetriNetPageData {
     places: UIPlace[][];
     transitions: UITransition[][];
     arcs: UIArc[][];
+    textBoxes: UITextBox[][];
     title: string[];
   };
   zoomLevel?: number;
