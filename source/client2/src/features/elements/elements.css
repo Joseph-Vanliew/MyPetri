@@ -1,0 +1,306 @@
+/* Element Styles - Matching Original Client */
+
+/* Place Styles */
+.place-element {
+  cursor: move;
+}
+
+.place-element .place-circle {
+  fill: #0f0f0f;
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.place-element .place-circle.bounded {
+  stroke: #FF8C00;
+}
+
+.place-element .token-count {
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: white;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: text;
+  user-select: none;
+}
+
+.place-element .place-label {
+  text-anchor: start;
+  dominant-baseline: hanging;
+  font-weight: bold;
+  fill: white;
+  font-size: 20px;
+  font-family: sans-serif;
+  user-select: none;
+  text-shadow: 1px 1px 2px #141414;
+}
+
+.place-element .place-bounding-box {
+  fill: none;
+  stroke: #007bff;
+  stroke-dasharray: 8;
+  stroke-width: 2;
+}
+
+.place-element .place-resize-handle {
+  fill: #007bff;
+  stroke: #007bff;
+  stroke-width: 2;
+}
+
+.place-element .place-resize-handle.top-left {
+  cursor: nwse-resize;
+}
+
+.place-element .place-resize-handle.top-right {
+  cursor: nesw-resize;
+}
+
+.place-element .place-resize-handle.bottom-left {
+  cursor: nesw-resize;
+}
+
+.place-element .place-resize-handle.bottom-right {
+  cursor: nwse-resize;
+}
+
+.place-element .place-arc-highlight {
+  fill: none;
+  stroke: rgba(0, 255, 0, 0.5);
+  stroke-width: 6;
+  cursor: pointer;
+}
+
+/* Transition Styles */
+.transition-element {
+  cursor: move;
+}
+
+.transition-element .transition-rectangle {
+  fill: #0f0f0f;
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.transition-element.enabled .transition-rectangle {
+  stroke: #4CAF50;
+  stroke-width: 3;
+}
+
+.transition-element .transition-label {
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  font-family: sans-serif;
+}
+
+.transition-element .transition-bounding-box {
+  fill: none;
+  stroke: #007bff;
+  stroke-dasharray: 8;
+  stroke-width: 2;
+}
+
+.transition-element .transition-resize-handle {
+  fill: #007bff;
+  r: 8;
+}
+
+.transition-element .transition-resize-handle.top-left {
+  cursor: nwse-resize;
+}
+
+.transition-element .transition-resize-handle.top-right {
+  cursor: nesw-resize;
+}
+
+.transition-element .transition-resize-handle.bottom-left {
+  cursor: nesw-resize;
+}
+
+.transition-element .transition-resize-handle.bottom-right {
+  cursor: nwse-resize;
+}
+
+.transition-element .transition-arc-highlight {
+  fill: none;
+  stroke: rgba(0, 255, 0, 0.5);
+  stroke-width: 6;
+  cursor: pointer;
+}
+
+/* Arc Styles */
+.arc-element {
+  cursor: pointer;
+}
+
+.arc-element .selection-hit-area {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 20;
+  pointer-events: stroke;
+}
+
+.arc-element .main-path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.arc-element .selection-indicator {
+  fill: none;
+  stroke: #007bff;
+  stroke-width: 2;
+  stroke-dasharray: 8,8;
+}
+
+.arc-element .weight-label {
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+/* Inhibitor Arc Styles */
+.arc-element.inhibitor .inhibitor-circle {
+  fill: #ff3333;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+/* Bidirectional Arc Styles */
+.arc-element.bidirectional .main-path {
+  marker-start: url(#bidirectional);
+  marker-end: url(#arrow);
+}
+
+/* Animation for transition firing */
+@keyframes flash-green {
+  0% { fill: #0f0f0f; }
+  25% { fill: #1a472a; }
+  50% { fill: #2e8b57; }
+  75% { fill: #1a472a; }
+  100% { fill: #0f0f0f; }
+}
+
+.transition-fired {
+  animation: flash-green 0.8s ease;
+}
+
+/* Text Element Styles */
+.text-element {
+  cursor: pointer;
+  transition: stroke-width 0.2s ease;
+}
+
+.text-element:hover {
+  stroke-width: 2;
+}
+
+.text-element.selected {
+  stroke: #007bff;
+  stroke-width: 2;
+}
+
+.text-element .text-content {
+  font-family: Arial, sans-serif;
+  fill: #ffffff;
+  pointer-events: none;
+}
+
+/* Shape Element Styles */
+.shape-element {
+  cursor: pointer;
+  transition: stroke-width 0.2s ease;
+}
+
+.shape-element:hover {
+  stroke-width: 3;
+}
+
+.shape-element.selected {
+  stroke: #007bff;
+  stroke-width: 3;
+}
+
+/* Token Styles */
+.token {
+  font-weight: bold;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+/* Label Styles */
+.element-label {
+  font-size: 12px;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+/* Selection Styles */
+.selection-indicator {
+  fill: none;
+  stroke: #007bff;
+  stroke-width: 2;
+  stroke-dasharray: 8,8;
+  pointer-events: none;
+}
+
+/* Animation Styles */
+.element-enter {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.element-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.element-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.element-exit-active {
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Drag Styles */
+.element-dragging {
+  opacity: 0.7;
+  cursor: grabbing;
+}
+
+.element-drag-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .element-label {
+    font-size: 10px;
+  }
+  
+  .token {
+    font-size: 10px;
+  }
+  
+  .arc-element .weight-label {
+    font-size: 10px;
+  }
+} 

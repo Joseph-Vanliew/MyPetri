@@ -1,0 +1,163 @@
+/* File Menu Styles */
+.file-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.file-menu-trigger {
+  background: transparent;
+  border: 1px solid #404040;
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.file-menu-trigger:hover {
+  background-color: #404040;
+  border-color: #007acc;
+}
+
+.file-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #2a2a2a;
+  border: 1px solid #404040;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 200px;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.menu-section {
+  border-bottom: 1px solid #404040;
+}
+
+.menu-section:last-child {
+  border-bottom: none;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  padding: 8px 16px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #404040;
+}
+
+.menu-item:disabled {
+  color: #666;
+  cursor: not-allowed;
+}
+
+.menu-item:disabled:hover {
+  background-color: transparent;
+}
+
+/* Submenu Styles */
+.submenu-container {
+  position: relative;
+}
+
+.submenu-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  padding: 8px 16px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.submenu-trigger:hover {
+  background-color: #404040;
+}
+
+.submenu-arrow {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.submenu-arrow.open {
+  transform: rotate(90deg);
+}
+
+.submenu-content {
+  background-color: #333333;
+  border-top: 1px solid #404040;
+}
+
+.submenu-item {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  padding: 6px 16px 6px 32px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.submenu-item:hover {
+  background-color: #404040;
+}
+
+.submenu-item:disabled {
+  color: #666;
+  cursor: not-allowed;
+}
+
+.submenu-item:disabled:hover {
+  background-color: transparent;
+}
+
+/* Recent Projects */
+.recent-projects-list {
+  padding: 8px 16px;
+  color: #888;
+  font-size: 12px;
+}
+
+.no-recent-projects {
+  text-align: center;
+  padding: 8px;
+  color: #666;
+}
+
+/* Project Info */
+.menu-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #888;
+}
+
+.info-label {
+  font-weight: 500;
+}
+
+.info-value {
+  color: #ffffff;
+} 

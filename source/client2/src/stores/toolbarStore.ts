@@ -23,7 +23,7 @@ interface ToolbarStoreState extends ToolbarState {
   resetToolOptions: (tool: ToolType) => void;
 }
 
-const defaultTools: ToolType[] = ['NONE', 'PLACE', 'TRANSITION', 'ARC', 'TEXT', 'SHAPE'];
+const defaultTools: ToolType[] = ['NONE', 'PLACE', 'TRANSITION', 'ARC', 'ARC_INHIBITOR', 'ARC_BIDIRECTIONAL', 'TEXT', 'SHAPE'];
 
 const defaultToolOptions: Record<ToolType, any> = {
   NONE: {},
@@ -40,6 +40,15 @@ const defaultToolOptions: Record<ToolType, any> = {
   ARC: {
     weight: 1,
     arcType: 'normal' as const,
+  },
+  ARC_INHIBITOR: {
+    weight: 1,
+    arcType: 'inhibitor' as const,
+  },
+
+  ARC_BIDIRECTIONAL: {
+    weight: 1,
+    arcType: 'bidirectional' as const,
   },
   TEXT: {
     fontSize: 16,

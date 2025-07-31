@@ -23,8 +23,8 @@ interface LayoutStoreState extends LayoutState {
 }
 
 const defaultLayout: LayoutState = {
-  leftSidebarWidth: 300,
-  rightSidebarWidth: 350,
+  leftSidebarWidth: 200,
+  rightSidebarWidth: 250,
   leftSidebarCollapsed: false,
   rightSidebarCollapsed: false,
   statusBarHeight: 40,
@@ -39,8 +39,8 @@ const fullscreenLayout: LayoutState = {
 };
 
 const compactLayout: LayoutState = {
-  leftSidebarWidth: 200,
-  rightSidebarWidth: 250,
+  leftSidebarWidth: 150,
+  rightSidebarWidth: 200,
   leftSidebarCollapsed: false,
   rightSidebarCollapsed: false,
   statusBarHeight: 30,
@@ -54,11 +54,11 @@ export const useLayoutStore = create<LayoutStoreState>()(
         isMobile: false,
 
         setLeftSidebarWidth: (width: number) => {
-          set({ leftSidebarWidth: Math.max(200, Math.min(500, width)) });
+          set({ leftSidebarWidth: Math.max(150, Math.min(400, width)) });
         },
 
         setRightSidebarWidth: (width: number) => {
-          set({ rightSidebarWidth: Math.max(250, Math.min(600, width)) });
+          set({ rightSidebarWidth: Math.max(200, Math.min(500, width)) });
         },
 
         toggleLeftSidebar: () => {

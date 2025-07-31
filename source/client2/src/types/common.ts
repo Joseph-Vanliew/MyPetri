@@ -38,7 +38,7 @@ export interface Sizable extends Size {
 
 export interface PositionedAndSizable extends Positioned, Sizable {}
 
-export type ToolType = 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC' | 'TEXT' | 'SHAPE';
+export type ToolType = 'NONE' | 'PLACE' | 'TRANSITION' | 'ARC' | 'ARC_INHIBITOR' | 'ARC_BIDIRECTIONAL' | 'TEXT' | 'SHAPE';
 
 export type ElementType = 'place' | 'transition' | 'arc' | 'text' | 'shape';
 

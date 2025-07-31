@@ -22,14 +22,17 @@ export const useZoomAndPan = () => {
       // Pan with mouse wheel - reduced sensitivity
       const panSpeed = 5; // Reduced from 20
       
-      if (e.shiftKey) {
-        // Shift + wheel = horizontal pan (left/right)
-        const deltaX = e.deltaY; // Use deltaY for horizontal panning
+      // Add tolerance for direction detection
+      const tolerance = 2; // Minimum delta to consider a direction
+      
+      // Handle horizontal scrolling (trackpad or shift+wheel)
+      if ((Math.abs(e.deltaX) > tolerance && Math.abs(e.deltaX) > Math.abs(e.deltaY)) || e.shiftKey) {
+        const deltaX = e.deltaX !== 0 ? e.deltaX : e.deltaY; // Use deltaX for trackpad, deltaY for shift+wheel
         setPanOffset({
-          x: panOffset.x - deltaX * panSpeed,
+          x: panOffset.x - deltaX * panSpeed, // Flipped direction: negative deltaX moves canvas right
           y: panOffset.y
         });
-      } else {
+      } else if (Math.abs(e.deltaY) > tolerance) {
         // Normal wheel = vertical pan (up/down)
         const deltaY = e.deltaY;
         setPanOffset({
@@ -99,15 +102,21 @@ export const useZoomAndPan = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Add event listeners to both the SVG and the canvas container
+    // Find the canvas content container
+    const canvasContent = canvas.closest('.canvas-content');
+    if (!canvasContent) return;
+
+    // Add event listeners
     const handleWheelWrapper = (e: WheelEvent) => handleWheel(e);
     const handleMouseDownWrapper = (e: MouseEvent) => handleMouseDown(e);
     const handleMouseMoveWrapper = (e: MouseEvent) => handleMouseMove(e);
     const handleMouseUpWrapper = () => handleMouseUp();
     const handleKeyDownWrapper = (e: KeyboardEvent) => handleKeyDown(e);
 
-    // Add to SVG element
-    canvas.addEventListener('wheel', handleWheelWrapper, { passive: false });
+    // Add wheel events to canvas content container only (to avoid conflicts)
+    canvasContent.addEventListener('wheel', handleWheelWrapper as EventListener, { passive: false });
+    
+    // Add mouse events to SVG element only
     canvas.addEventListener('mousedown', handleMouseDownWrapper);
     
     // Add to document for global events
@@ -116,7 +125,7 @@ export const useZoomAndPan = () => {
     document.addEventListener('keydown', handleKeyDownWrapper);
 
     return () => {
-      canvas.removeEventListener('wheel', handleWheelWrapper);
+      canvasContent.removeEventListener('wheel', handleWheelWrapper as EventListener);
       canvas.removeEventListener('mousedown', handleMouseDownWrapper);
       document.removeEventListener('mousemove', handleMouseMoveWrapper);
       document.removeEventListener('mouseup', handleMouseUpWrapper);

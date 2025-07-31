@@ -22,7 +22,7 @@ export interface Arc extends ElementBase {
   sourceId: string;
   targetId: string;
   weight: number;
-  arcType: 'normal' | 'inhibitor' | 'reset';
+  arcType: 'normal' | 'inhibitor' | 'bidirectional';
 }
 
 export interface TextElement extends ElementBase {

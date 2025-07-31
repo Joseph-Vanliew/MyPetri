@@ -1,10 +1,16 @@
+/* Global CSS Variables */
+:root {
+  --app-background-color: #1a1a1a;
+  --grid-background-color: #080808;
+}
+
 /* Main Application Layout */
 .app-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background-color: #1a1a1a;
+  background-color: var(--app-background-color);
   color: #ffffff;
   overflow: hidden;
 }
@@ -15,7 +21,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
-  background-color: #2a2a2a;
+  background-color: var(--app-background-color);
   border-bottom: 1px solid #404040;
   min-height: 48px;
   flex-shrink: 0;
@@ -62,13 +68,27 @@
 /* Ribbon */
 .ribbon {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
-  background-color: #2a2a2a;
+  background-color: var(--app-background-color);
   border-bottom: 1px solid #404040;
   min-height: 40px;
   flex-shrink: 0;
+  gap: 24px;
+}
+
+.ribbon-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ribbon-section h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  min-width: 40px;
 }
 
 .tool-selection {
@@ -120,17 +140,19 @@
   flex: 1;
   overflow: hidden;
   min-height: 0; /* Important for flex child */
+  gap: 0; /* Remove any gaps between sidebars and center */
 }
 
 /* Sidebars */
 .left-sidebar,
 .right-sidebar {
-  background-color: #2a2a2a;
+  background-color: var(--app-background-color);
   border-right: 1px solid #404040;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
+  flex-grow: 0; /* Prevent sidebars from growing */
 }
 
 .right-sidebar {
@@ -141,7 +163,7 @@
 .sidebar-header {
   padding: 12px 16px;
   border-bottom: 1px solid #404040;
-  background-color: #333333;
+  background-color: var(--app-background-color);
   flex-shrink: 0;
 }
 
@@ -185,41 +207,48 @@
   flex-direction: column;
   overflow: hidden;
   min-height: 0; /* Important for flex child */
+  min-width: 600px; /* Ensure minimum width for center content */
 }
 
 .canvas-container {
   flex: 1;
   overflow: hidden;
   min-height: 0; /* Important for flex child */
+  min-width: 600px; /* Ensure minimum width for canvas */
 }
 
 /* Pages Section */
 .pages-section {
-  background-color: #2a2a2a;
+  background-color: var(--app-background-color);
   border-top: 1px solid #404040;
-  min-height: 40px;
+  min-height: 28px;
   flex-shrink: 0;
 }
 
 .page-tabs {
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 4px;
+  padding: 0 12px;
+  gap: 2px;
   overflow-x: auto;
 }
 
 .page-tab {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 4px 8px;
   background-color: #333333;
   border: 1px solid #404040;
   border-radius: 4px 4px 0 0;
   cursor: pointer;
-  min-width: 120px;
-  max-width: 200px;
+  min-width: 50px;
+  max-width: 100px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .page-tab.active {
@@ -231,9 +260,14 @@
   background: transparent;
   border: none;
   color: inherit;
-  font-size: 14px;
+  font-size: 12px;
   flex: 1;
   min-width: 0;
+  max-width: 100%;
+  width: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .page-name-input:focus {
@@ -245,10 +279,10 @@
   border: none;
   color: inherit;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   padding: 0;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -263,11 +297,11 @@
   background: transparent;
   border: 1px dashed #404040;
   color: #ffffff;
-  padding: 8px 12px;
+  padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
-  min-width: 40px;
+  font-size: 14px;
+  min-width: 32px;
 }
 
 .add-page-btn:hover {
@@ -277,7 +311,7 @@
 
 /* Status Bar */
 .status-bar {
-  background-color: #2a2a2a;
+  background-color: var(--app-background-color);
   border-top: 1px solid #404040;
   padding: 8px 16px;
   min-height: 40px;

@@ -1,27 +1,25 @@
 import React from 'react';
-import { useToolbarStore } from '../../stores/index.js';
+import FileMenu from '../../features/project/components/FileMenu.js';
+import EditMenu from '../../features/project/components/EditMenu.js';
 
 const Ribbon: React.FC = () => {
-  const { selectedTool, availableTools, setSelectedTool } = useToolbarStore();
-
   return (
     <div className="ribbon">
-      <div className="tool-selection">
-        {availableTools.map((tool) => (
-          <button
-            key={tool}
-            className={`tool-button ${selectedTool === tool ? 'active' : ''}`}
-            onClick={() => setSelectedTool(tool as any)}
-          >
-            {tool}
-          </button>
-        ))}
+      <div className="ribbon-section">
+        <FileMenu />
       </div>
-      <div className="file-operations">
-        <button className="operation-button">New</button>
-        <button className="operation-button">Open</button>
-        <button className="operation-button">Save</button>
-        <button className="operation-button">Export</button>
+      
+      <div className="ribbon-section">
+        <EditMenu />
+      </div>
+      
+      <div className="ribbon-section">
+        <h4>View</h4>
+        <div className="view-operations">
+          <button className="operation-button">Zoom In</button>
+          <button className="operation-button">Zoom Out</button>
+          <button className="operation-button">Fit to View</button>
+        </div>
       </div>
     </div>
   );

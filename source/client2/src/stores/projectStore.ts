@@ -10,8 +10,9 @@ interface ProjectState {
   
   // Actions
   createProject: (name: string) => void;
-  loadProject: (projectData: ProjectData) => void;
-  saveProject: () => ProjectData | null;
+  createNewProject: (name: string) => void; // Alias for createProject
+  loadProject: (projectData: ProjectData | File) => void;
+  saveProject: (forceSaveAs?: boolean) => ProjectData | null;
   updateProjectName: (name: string) => void;
   
   // Page management
@@ -23,8 +24,8 @@ interface ProjectState {
   
   // Project operations
   clearProject: () => void;
-  exportProject: (format: 'json' | 'pats' | 'pnml') => string;
-  importProject: (data: string, format: 'json' | 'pats' | 'pnml') => void;
+  exportProject: (format: 'json' | 'pats' | 'png' | 'svg' | 'pdf') => void;
+  importProject: (data: string, format: 'json' | 'pats') => void;
 }
 
 const initialProject: ProjectData = {
@@ -61,11 +62,45 @@ export const useProjectStore = create<ProjectState>()(
           set({ project: newProject });
         },
 
-        loadProject: (projectData: ProjectData) => {
-          set({ project: projectData });
+        createNewProject: (name: string) => {
+          const newProject: ProjectData = {
+            ...initialProject,
+            id: `project_${Date.now()}`,
+            name,
+            pages: [
+              {
+                id: `page_${Date.now()}`,
+                name: 'Page 1',
+                elements: [],
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+              }
+            ],
+            activePageId: `page_${Date.now()}`,
+          };
+          set({ project: newProject });
         },
 
-        saveProject: () => {
+        loadProject: (projectData: ProjectData | File) => {
+          if (projectData instanceof File) {
+            // Handle file upload
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              try {
+                const data = JSON.parse(e.target?.result as string);
+                set({ project: data });
+              } catch (error) {
+                console.error('Error loading project file:', error);
+              }
+            };
+            reader.readAsText(projectData);
+          } else {
+            // Handle direct project data
+            set({ project: projectData });
+          }
+        },
+
+        saveProject: (forceSaveAs = false) => {
           const { project } = get();
           if (project) {
             const updatedProject = {
@@ -73,6 +108,20 @@ export const useProjectStore = create<ProjectState>()(
               updatedAt: Date.now(),
             };
             set({ project: updatedProject });
+            
+            // TODO: Implement actual file save dialog
+            if (forceSaveAs) {
+              // Trigger save as dialog
+              const dataStr = JSON.stringify(updatedProject, null, 2);
+              const dataBlob = new Blob([dataStr], { type: 'application/json' });
+              const url = URL.createObjectURL(dataBlob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `${project.name}.pats`;
+              link.click();
+              URL.revokeObjectURL(url);
+            }
+            
             return updatedProject;
           }
           return null;
@@ -174,25 +223,54 @@ export const useProjectStore = create<ProjectState>()(
           set({ project: null });
         },
 
-        exportProject: (format: 'json' | 'pats' | 'pnml') => {
+        exportProject: (format: 'json' | 'pats' | 'png' | 'svg' | 'pdf') => {
           const { project } = get();
-          if (!project) return '';
+          if (!project) return;
           
           switch (format) {
             case 'json':
-              return JSON.stringify(project, null, 2);
+              const jsonData = JSON.stringify(project, null, 2);
+              const jsonBlob = new Blob([jsonData], { type: 'application/json' });
+              const jsonUrl = URL.createObjectURL(jsonBlob);
+              const jsonLink = document.createElement('a');
+              jsonLink.href = jsonUrl;
+              jsonLink.download = `${project.name}.json`;
+              jsonLink.click();
+              URL.revokeObjectURL(jsonUrl);
+              break;
+              
             case 'pats':
-              // TODO: Implement PATS format export
-              return JSON.stringify(project, null, 2);
-            case 'pnml':
-              // TODO: Implement PNML format export
-              return JSON.stringify(project, null, 2);
+              const patsData = JSON.stringify(project, null, 2);
+              const patsBlob = new Blob([patsData], { type: 'application/json' });
+              const patsUrl = URL.createObjectURL(patsBlob);
+              const patsLink = document.createElement('a');
+              patsLink.href = patsUrl;
+              patsLink.download = `${project.name}.pats`;
+              patsLink.click();
+              URL.revokeObjectURL(patsUrl);
+              break;
+              
+            case 'png':
+              // TODO: Implement PNG export (canvas to image)
+              console.log('PNG export not yet implemented');
+              break;
+              
+            case 'svg':
+              // TODO: Implement SVG export
+              console.log('SVG export not yet implemented');
+              break;
+              
+            case 'pdf':
+              // TODO: Implement PDF export
+              console.log('PDF export not yet implemented');
+              break;
+              
             default:
-              return JSON.stringify(project, null, 2);
+              console.warn('Unknown export format:', format);
           }
         },
 
-        importProject: (data: string, format: 'json' | 'pats' | 'pnml') => {
+        importProject: (data: string, format: 'json' | 'pats') => {
           try {
             let projectData: ProjectData;
             
@@ -202,10 +280,6 @@ export const useProjectStore = create<ProjectState>()(
                 break;
               case 'pats':
                 // TODO: Implement PATS format import
-                projectData = JSON.parse(data);
-                break;
-              case 'pnml':
-                // TODO: Implement PNML format import
                 projectData = JSON.parse(data);
                 break;
               default:

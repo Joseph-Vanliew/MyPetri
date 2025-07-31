@@ -15,12 +15,6 @@ const TitleSection: React.FC = () => {
           placeholder="Untitled Project"
         />
       </div>
-      <div className="file-menu">
-        {/* TODO: Add file menu buttons */}
-        <button className="menu-button">File</button>
-        <button className="menu-button">Edit</button>
-        <button className="menu-button">View</button>
-      </div>
     </div>
   );
 };

@@ -21,20 +21,23 @@ const Grid: React.FC<GridProps> = ({ viewBox, gridSize, showGrid }) => {
           width={gridSize} 
           height={gridSize} 
           patternUnits="userSpaceOnUse"
+          patternTransform={`translate(${viewBox.x % gridSize}, ${viewBox.y % gridSize})`}
         >
           <path 
             d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`} 
             fill="none" 
-            stroke="rgba(255,255,255,0.1)" 
+            stroke="rgba(255, 255, 255, 0.08)" 
             strokeWidth="1"
           />
         </pattern>
       </defs>
       
-      {/* Grid background */}
+      {/* Grid background - tied to viewport */}
       <rect 
-        width="100%" 
-        height="100%" 
+        x={viewBox.x}
+        y={viewBox.y}
+        width={viewBox.width} 
+        height={viewBox.height} 
         fill="url(#grid-pattern)" 
       />
       
@@ -48,7 +51,7 @@ const Grid: React.FC<GridProps> = ({ viewBox, gridSize, showGrid }) => {
               y1={viewBox.y}
               x2={x}
               y2={viewBox.y + viewBox.height}
-              stroke="rgba(255,255,255,0.2)"
+              stroke="rgba(255, 255, 255, 0.15)"
               strokeWidth="1"
             />
           );
@@ -65,7 +68,7 @@ const Grid: React.FC<GridProps> = ({ viewBox, gridSize, showGrid }) => {
               y1={y}
               x2={viewBox.x + viewBox.width}
               y2={y}
-              stroke="rgba(255,255,255,0.2)"
+              stroke="rgba(255,255,255,0.15)"
               strokeWidth="1"
             />
           );

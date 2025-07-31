@@ -4,7 +4,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #1a1a1a;
+  background-color: var(--app-background-color);
   overflow: hidden;
 }
 
@@ -12,11 +12,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
-  background-color: #2a2a2a;
+  padding: 0 16px;
+  background-color: var(--app-background-color);
   border-bottom: 1px solid #404040;
-  min-height: 40px;
   flex-shrink: 0;
+  height: 48px; /* Fixed height to match other headers */
 }
 
 .canvas-header h3 {
@@ -36,7 +36,7 @@
 
 .canvas-controls span {
   background-color: #333333;
-  padding: 4px 8px;
+  padding: 8px 10px;
   border-radius: 4px;
   border: 1px solid #404040;
   white-space: nowrap;
@@ -53,7 +53,7 @@
   background: transparent;
   border: 1px solid #404040;
   color: #ffffff;
-  padding: 4px 8px;
+  padding: 8px 10px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -90,14 +90,14 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  background-color: #1a1a1a;
+  background-color: var(--grid-background-color); /* Darker background */
   min-height: 0; /* Important for flex child */
 }
 
 .canvas-svg {
   width: 100%;
   height: 100%;
-  background-color: #1a1a1a;
+  background-color: var(--app-background-color); /* Canvas background */
   cursor: crosshair;
   display: block;
 }

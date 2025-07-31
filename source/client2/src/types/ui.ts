@@ -1,4 +1,6 @@
 // UI types - placeholder for future implementation
+import type { ToolType } from './common';
+
 export interface LayoutState {
   leftSidebarWidth: number;
   rightSidebarWidth: number;
@@ -8,8 +10,8 @@ export interface LayoutState {
 }
 
 export interface ToolbarState {
-  selectedTool: string;
-  availableTools: string[];
+  selectedTool: ToolType;
+  availableTools: ToolType[];
 }
 
 export interface CanvasState {
