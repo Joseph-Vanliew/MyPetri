@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { v4 as uuidv4 } from 'uuid';
 import type { Element, Place, Transition, Arc, TextElement, ShapeElement } from '../types/domain';
 
 
@@ -30,7 +31,7 @@ interface ElementsState {
   // Element creation helpers
   createPlace: (pageId: string, x: number, y: number, radius?: number) => Place;
   createTransition: (pageId: string, x: number, y: number, width?: number, height?: number) => Transition;
-  createArc: (pageId: string, sourceId: string, targetId: string, weight?: number) => Arc;
+  createArc: (pageId: string, sourceId: string, targetId: string, weight?: number, arcType?: Arc['arcType']) => Arc;
   createTextElement: (pageId: string, x: number, y: number, text?: string) => TextElement;
   createShapeElement: (pageId: string, x: number, y: number, shapeType?: ShapeElement['shapeType']) => ShapeElement;
   
@@ -170,7 +171,7 @@ export const useElementsStore = create<ElementsState>()(
 
         createPlace: (pageId: string, x: number, y: number, radius = 46) => {
           const place: Place = {
-            id: `place_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: uuidv4(),
             type: 'place',
             name: '',
             x,
@@ -191,7 +192,7 @@ export const useElementsStore = create<ElementsState>()(
 
         createTransition: (pageId: string, x: number, y: number, width = 60, height = 30) => {
           const transition: Transition = {
-            id: `transition_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: uuidv4(),
             type: 'transition',
             name: '',
             x,
@@ -208,9 +209,9 @@ export const useElementsStore = create<ElementsState>()(
           return transition;
         },
 
-        createArc: (pageId: string, sourceId: string, targetId: string, weight = 1) => {
+        createArc: (pageId: string, sourceId: string, targetId: string, weight = 1, arcType: Arc['arcType'] = 'normal') => {
           const arc: Arc = {
-            id: `arc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: uuidv4(),
             type: 'arc',
             name: '',
             x: 0,
@@ -220,7 +221,7 @@ export const useElementsStore = create<ElementsState>()(
             sourceId,
             targetId,
             weight,
-            arcType: 'normal',
+            arcType,
             createdAt: Date.now(),
             updatedAt: Date.now(),
           };
@@ -231,7 +232,7 @@ export const useElementsStore = create<ElementsState>()(
 
         createTextElement: (pageId: string, x: number, y: number, text = 'Text') => {
           const textElement: TextElement = {
-            id: `text_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: uuidv4(),
             type: 'text',
             name: '',
             x,
@@ -255,7 +256,7 @@ export const useElementsStore = create<ElementsState>()(
 
         createShapeElement: (pageId: string, x: number, y: number, shapeType: ShapeElement['shapeType'] = 'rectangle') => {
           const shapeElement: ShapeElement = {
-            id: `shape_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: uuidv4(),
             type: 'shape',
             name: '',
             x,

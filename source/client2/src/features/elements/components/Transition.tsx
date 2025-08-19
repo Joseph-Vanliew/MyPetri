@@ -9,13 +9,20 @@ interface TransitionProps {
   onDragStart?: (transition: TransitionType, event: React.MouseEvent) => void;
   onDrag?: (transition: TransitionType, event: React.MouseEvent) => void;
   onDragEnd?: (transition: TransitionType, event: React.MouseEvent) => void;
+  // Arc targeting UX
+  isArcTarget?: boolean;
+  onMouseEnterElement?: (transition: TransitionType, event: React.MouseEvent) => void;
+  onMouseLeaveElement?: (transition: TransitionType, event: React.MouseEvent) => void;
 }
 
 const Transition: React.FC<TransitionProps> = ({ 
   transition, 
   onSelect, 
   onDeselect, 
-  onDragStart
+  onDragStart,
+  isArcTarget,
+  onMouseEnterElement,
+  onMouseLeaveElement,
 }) => {
   const { x, y, width, height, name: label, isSelected: selected, enabled } = transition;
 
@@ -37,6 +44,8 @@ const Transition: React.FC<TransitionProps> = ({
     <g
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onMouseEnter={(e) => onMouseEnterElement?.(transition, e)}
+      onMouseLeave={(e) => onMouseLeaveElement?.(transition, e)}
       className="transition-element"
       transform={`translate(${x},${y})`}
     >
@@ -69,6 +78,17 @@ const Transition: React.FC<TransitionProps> = ({
           width={width}
           height={height}
           className="transition-bounding-box"
+        />
+      )}
+
+      {/* Arc target highlight */}
+      {isArcTarget && (
+        <rect
+          x={-width / 2}
+          y={-height / 2}
+          width={width}
+          height={height}
+          className="transition-arc-highlight"
         />
       )}
     </g>

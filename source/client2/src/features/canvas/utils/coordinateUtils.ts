@@ -1,17 +1,21 @@
-import { useCanvasStore } from '../../../stores/index.js';
+import { useGridStore } from '../../../stores/index.js';
 
-// Convert screen coordinates to SVG coordinates
+// Convert screen coordinates to SVG coordinates with improved accuracy
 export const screenToSVGCoordinates = (
   screenX: number,
   screenY: number,
   svgElement: SVGSVGElement
 ): { x: number; y: number } => {
-  // Simplified coordinate transformation
   const rect = svgElement.getBoundingClientRect();
   const viewBox = svgElement.viewBox.baseVal;
   
-  const x = ((screenX - rect.left) / rect.width) * viewBox.width + viewBox.x;
-  const y = ((screenY - rect.top) / rect.height) * viewBox.height + viewBox.y;
+  // Use more precise calculations to avoid rounding errors
+  const normalizedX = (screenX - rect.left) / rect.width;
+  const normalizedY = (screenY - rect.top) / rect.height;
+  
+  // Apply viewBox transformation with better precision
+  const x = viewBox.x + (normalizedX * viewBox.width);
+  const y = viewBox.y + (normalizedY * viewBox.height);
   
   return { x, y };
 };
@@ -32,15 +36,21 @@ export const svgToScreenCoordinates = (
   return { x, y };
 };
 
-// Snap coordinates to grid
+// Snap coordinates to grid with improved accuracy
 export const snapToGrid = (
   x: number,
   y: number,
   gridSize: number
 ): { x: number; y: number } => {
+  // Use more precise rounding to avoid edge case errors
+  const snappedX = Math.round(x / gridSize) * gridSize;
+  const snappedY = Math.round(y / gridSize) * gridSize;
+  
+  // Handle floating point precision issues
+  const epsilon = 1e-10;
   return {
-    x: Math.round(x / gridSize) * gridSize,
-    y: Math.round(y / gridSize) * gridSize
+    x: Math.abs(snappedX - x) < epsilon ? x : snappedX,
+    y: Math.abs(snappedY - y) < epsilon ? y : snappedY
   };
 };
 
@@ -100,35 +110,10 @@ export const getGridAlignedSize = (
   };
 };
 
-// Get grid lines for a given area
-export const getGridLines = (
-  viewBox: { x: number; y: number; width: number; height: number },
-  gridSize: number
-): { vertical: number[]; horizontal: number[] } => {
-  const startX = Math.floor(viewBox.x / gridSize) * gridSize;
-  const endX = Math.ceil((viewBox.x + viewBox.width) / gridSize) * gridSize;
-  const startY = Math.floor(viewBox.y / gridSize) * gridSize;
-  const endY = Math.ceil((viewBox.y + viewBox.height) / gridSize) * gridSize;
-  
-  const vertical: number[] = [];
-  const horizontal: number[] = [];
-  
-  // Generate vertical lines
-  for (let x = startX; x <= endX; x += gridSize) {
-    vertical.push(x);
-  }
-  
-  // Generate horizontal lines
-  for (let y = startY; y <= endY; y += gridSize) {
-    horizontal.push(y);
-  }
-  
-  return { vertical, horizontal };
-};
 
 // Hook to get grid utilities with current canvas state
 export const useGridUtils = () => {
-  const { gridSize, snapToGrid: snapToGridEnabled } = useCanvasStore();
+  const { gridSize, snapToGrid: snapToGridEnabled } = useGridStore();
   
   return {
     gridSize,
@@ -136,9 +121,9 @@ export const useGridUtils = () => {
     snapToGrid: (x: number, y: number) => snapToGridEnabled ? snapToGrid(x, y, gridSize) : { x, y },
     getGridPosition: (x: number, y: number) => getGridPosition(x, y, gridSize),
     isOnGrid: (x: number, y: number) => isOnGrid(x, y, gridSize),
-    getGridBounds: (x: number, y: number, width: number, height: number) => 
+    getGridBounds: (x: number, y: number, width: number, height: number) =>
       getGridBounds(x, y, width, height, gridSize),
-    getGridAlignedSize: (width: number, height: number) => 
+    getGridAlignedSize: (width: number, height: number) =>
       getGridAlignedSize(width, height, gridSize)
   };
 }; 

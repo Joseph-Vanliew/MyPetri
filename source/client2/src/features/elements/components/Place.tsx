@@ -9,6 +9,10 @@ interface PlaceProps {
   onDragStart?: (place: PlaceType, event: React.MouseEvent) => void;
   onDrag?: (place: PlaceType, event: React.MouseEvent) => void;
   onDragEnd?: (place: PlaceType, event: React.MouseEvent) => void;
+  // Arc targeting UX
+  isArcTarget?: boolean;
+  onMouseEnterElement?: (place: PlaceType, event: React.MouseEvent) => void;
+  onMouseLeaveElement?: (place: PlaceType, event: React.MouseEvent) => void;
 }
 
 const Place: React.FC<PlaceProps> = ({ 
@@ -17,7 +21,10 @@ const Place: React.FC<PlaceProps> = ({
   onDeselect, 
   onDragStart, 
   onDrag: _onDrag, 
-  onDragEnd: _onDragEnd 
+  onDragEnd: _onDragEnd,
+  isArcTarget,
+  onMouseEnterElement,
+  onMouseLeaveElement,
 }) => {
   const { x, y, width, height, tokens, name: label, isSelected: selected, bounded, radius: placeRadius } = place;
   
@@ -42,6 +49,8 @@ const Place: React.FC<PlaceProps> = ({
     <g
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onMouseEnter={(e) => onMouseEnterElement?.(place, e)}
+      onMouseLeave={(e) => onMouseLeaveElement?.(place, e)}
       className="place-element"
       transform={`translate(${x},${y})`}
     >
@@ -79,6 +88,14 @@ const Place: React.FC<PlaceProps> = ({
           width={2 * radius}
           height={2 * radius}
           className="place-bounding-box"
+        />
+      )}
+
+      {/* Arc target highlight */}
+      {isArcTarget && (
+        <circle
+          r={radius}
+          className="place-arc-highlight"
         />
       )}
     </g>

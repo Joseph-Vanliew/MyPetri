@@ -166,6 +166,15 @@
   pointer-events: none;
 }
 
+/* Arc preview path */
+.arc-preview-path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+  pointer-events: none;
+}
+
 /* Inhibitor Arc Styles */
 .arc-element.inhibitor .inhibitor-circle {
   fill: #ff3333;

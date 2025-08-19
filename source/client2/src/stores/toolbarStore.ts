@@ -16,11 +16,20 @@ interface ToolbarStoreState extends ToolbarState {
   // Tool state
   isDrawing: boolean;
   setIsDrawing: (isDrawing: boolean) => void;
+
+  // Arc drawing state
+  arcDrawingStartId: string | null;
+  setArcDrawingStartId: (elementId: string | null) => void;
   
   // Tool options
   toolOptions: Record<ToolType, any>;
   setToolOption: (tool: ToolType, option: string, value: any) => void;
   resetToolOptions: (tool: ToolType) => void;
+
+  // Drag and drop actions
+  startDragFromToolbar: (elementType: ToolType) => void;
+  updateDragPreviewPosition: (position: { x: number; y: number }) => void;
+  endDragFromToolbar: () => void;
 }
 
 const defaultTools: ToolType[] = ['NONE', 'PLACE', 'TRANSITION', 'ARC', 'ARC_INHIBITOR', 'ARC_BIDIRECTIONAL', 'TEXT', 'SHAPE'];
@@ -72,7 +81,12 @@ export const useToolbarStore = create<ToolbarStoreState>()(
       selectedTool: 'NONE',
       availableTools: [...defaultTools],
       isDrawing: false,
+      arcDrawingStartId: null,
       toolOptions: { ...defaultToolOptions },
+      // Drag and drop state
+      isDraggingFromToolbar: false,
+      draggedElementType: null,
+      dragPreviewPosition: null,
 
       setSelectedTool: (tool: ToolType) => {
         set({ selectedTool: tool });
@@ -111,6 +125,10 @@ export const useToolbarStore = create<ToolbarStoreState>()(
         set({ isDrawing });
       },
 
+      setArcDrawingStartId: (elementId: string | null) => {
+        set({ arcDrawingStartId: elementId });
+      },
+
       setToolOption: (tool: ToolType, option: string, value: any) => {
         const { toolOptions } = get();
         set({
@@ -132,6 +150,32 @@ export const useToolbarStore = create<ToolbarStoreState>()(
             [tool]: { ...defaultToolOptions[tool] }
           }
         });
+      },
+
+      // Drag and drop actions
+      startDragFromToolbar: (elementType: ToolType) => {
+        set((state) => ({
+          ...state,
+          isDraggingFromToolbar: true,
+          draggedElementType: elementType,
+          dragPreviewPosition: null
+        }));
+      },
+
+      updateDragPreviewPosition: (position: { x: number; y: number }) => {
+        set((state) => ({
+          ...state,
+          dragPreviewPosition: position
+        }));
+      },
+
+      endDragFromToolbar: () => {
+        set((state) => ({
+          ...state,
+          isDraggingFromToolbar: false,
+          draggedElementType: null,
+          dragPreviewPosition: null
+        }));
       },
     }),
     {

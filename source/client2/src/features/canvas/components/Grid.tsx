@@ -1,19 +1,66 @@
 import React from 'react';
-import { getGridLines } from '../utils/coordinateUtils.js';
+import { useGridStore } from '../../../stores/gridStore.js';
 
 interface GridProps {
   viewBox: { x: number; y: number; width: number; height: number };
-  gridSize: number;
-  showGrid: boolean;
 }
 
-const Grid: React.FC<GridProps> = ({ viewBox, gridSize, showGrid }) => {
+const Grid: React.FC<GridProps> = ({ viewBox }) => {
+  const { 
+    gridSize, 
+    setGridSize, 
+    showGrid, 
+    majorGridWidthMultiplier, 
+    majorGridHeightMultiplier 
+  } = useGridStore();
+  
   if (!showGrid) return null;
 
-  const { vertical, horizontal } = getGridLines(viewBox, gridSize);
+  // Calculate the major grid dimensions using store constants
+  const majorGridWidth = gridSize * majorGridWidthMultiplier;
+  const majorGridHeight = gridSize * majorGridHeightMultiplier;
+  
+  // Calculate grid boundaries that align with major grid lines
+  const startX = Math.floor(viewBox.x / majorGridWidth) * majorGridWidth;
+  const startY = Math.floor(viewBox.y / majorGridHeight) * majorGridHeight;
+  const endX = Math.floor((viewBox.x + viewBox.width) / majorGridWidth) * majorGridWidth;
+  const endY = Math.floor((viewBox.y + viewBox.height) / majorGridHeight) * majorGridHeight;
+  
+  const gridWidth = Math.max(majorGridWidth, endX - startX);
+  const gridHeight = Math.max(majorGridHeight, endY - startY);
 
   return (
     <g className="grid" style={{ pointerEvents: 'none' }}>
+      {/* Grid size selector */}
+      <foreignObject x={viewBox.x + 10} y={viewBox.y + 10} width="120" height="30">
+        <div style={{ 
+          background: 'rgba(0, 0, 0, 0.7)', 
+          color: 'white', 
+          padding: '5px', 
+          borderRadius: '4px',
+          fontSize: '12px',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
+          <label style={{ marginRight: '8px' }}>Grid:</label>
+          <select 
+            value={gridSize} 
+            onChange={(e) => setGridSize(Number(e.target.value))}
+            style={{ 
+              background: 'rgba(255, 255, 255, 0.1)', 
+              color: 'white', 
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '2px',
+              padding: '2px 4px'
+            }}
+          >
+            <option value={10}>10px</option>
+            <option value={20}>20px</option>
+            <option value={50}>50px</option>
+            <option value={100}>100px</option>
+          </select>
+        </div>
+      </foreignObject>
+      
       {/* Grid pattern for background */}
       <defs>
         <pattern 
@@ -21,10 +68,11 @@ const Grid: React.FC<GridProps> = ({ viewBox, gridSize, showGrid }) => {
           width={gridSize} 
           height={gridSize} 
           patternUnits="userSpaceOnUse"
-          patternTransform={`translate(${viewBox.x % gridSize}, ${viewBox.y % gridSize})`}
+          patternTransform={`translate(${startX}, ${startY})`}
         >
+          {/* Simple grid cell border */}
           <path 
-            d={`M ${gridSize} 0 L 0 0 0 ${gridSize}`} 
+            d={`M 0 0 L ${gridSize} 0 L ${gridSize} ${gridSize} L 0 ${gridSize} Z`} 
             fill="none" 
             stroke="rgba(255, 255, 255, 0.08)" 
             strokeWidth="1"
@@ -32,88 +80,51 @@ const Grid: React.FC<GridProps> = ({ viewBox, gridSize, showGrid }) => {
         </pattern>
       </defs>
       
-      {/* Grid background - tied to viewport */}
+      {/* Grid background - aligned with major grid boundaries */}
       <rect 
-        x={viewBox.x}
-        y={viewBox.y}
-        width={viewBox.width} 
-        height={viewBox.height} 
+        x={startX}
+        y={startY}
+        width={gridWidth} 
+        height={gridHeight} 
         fill="url(#grid-pattern)" 
       />
       
-      {/* Major grid lines (every 5th line) */}
-      {vertical.map((x, index) => {
-        if (index % 5 === 0) {
-          return (
+      {/* Major grid lines */}
+      {(() => {
+        const lines = [];
+        for (let x = startX; x <= startX + gridWidth; x += majorGridWidth) {
+          lines.push(
             <line
               key={`v-${x}`}
               x1={x}
-              y1={viewBox.y}
+              y1={startY}
               x2={x}
-              y2={viewBox.y + viewBox.height}
+              y2={startY + gridHeight}
               stroke="rgba(255, 255, 255, 0.15)"
               strokeWidth="1"
             />
           );
         }
-        return null;
-      })}
+        return lines;
+      })()}
       
-      {horizontal.map((y, index) => {
-        if (index % 5 === 0) {
-          return (
+      {(() => {
+        const lines = [];
+        for (let y = startY; y <= startY + gridHeight; y += majorGridHeight) {
+          lines.push(
             <line
               key={`h-${y}`}
-              x1={viewBox.x}
+              x1={startX}
               y1={y}
-              x2={viewBox.x + viewBox.width}
+              x2={startX + gridWidth}
               y2={y}
               stroke="rgba(255,255,255,0.15)"
               strokeWidth="1"
             />
           );
         }
-        return null;
-      })}
-      
-      {/* Grid coordinates (optional - can be toggled) */}
-      {vertical.map((x, index) => {
-        if (index % 10 === 0) {
-          return (
-            <text
-              key={`coord-x-${x}`}
-              x={x}
-              y={viewBox.y + 15}
-              textAnchor="middle"
-              fill="rgba(255,255,255,0.3)"
-              fontSize="10"
-              style={{ pointerEvents: 'none' }}
-            >
-              {x}
-            </text>
-          );
-        }
-        return null;
-      })}
-      
-      {horizontal.map((y, index) => {
-        if (index % 10 === 0) {
-          return (
-            <text
-              key={`coord-y-${y}`}
-              x={viewBox.x + 15}
-              y={y}
-              textAnchor="middle"
-              fill="rgba(255,255,255,0.3)"
-              fontSize="10"
-              style={{ pointerEvents: 'none' }}
-            >
-              {y}
-            </text>
-          );
-        }
-        return null;
-      })}
+        return lines;
+      })()}
     </g>
   );
 };

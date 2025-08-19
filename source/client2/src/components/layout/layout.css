@@ -1,16 +1,10 @@
-/* Global CSS Variables */
-:root {
-  --app-background-color: #1a1a1a;
-  --grid-background-color: #080808;
-}
-
 /* Main Application Layout */
 .app-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  background-color: var(--app-background-color);
+  background-color: #1a1a1a;
   color: #ffffff;
   overflow: hidden;
 }
@@ -21,7 +15,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 16px;
-  background-color: var(--app-background-color);
+  background-color: #2a2a2a;
   border-bottom: 1px solid #404040;
   min-height: 48px;
   flex-shrink: 0;
@@ -70,7 +64,7 @@
   display: flex;
   align-items: center;
   padding: 8px 16px;
-  background-color: var(--app-background-color);
+  background-color: #2a2a2a;
   border-bottom: 1px solid #404040;
   min-height: 40px;
   flex-shrink: 0;
@@ -140,19 +134,17 @@
   flex: 1;
   overflow: hidden;
   min-height: 0; /* Important for flex child */
-  gap: 0; /* Remove any gaps between sidebars and center */
 }
 
 /* Sidebars */
 .left-sidebar,
 .right-sidebar {
-  background-color: var(--app-background-color);
+  background-color: #2a2a2a;
   border-right: 1px solid #404040;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
-  flex-grow: 0; /* Prevent sidebars from growing */
 }
 
 .right-sidebar {
@@ -163,7 +155,7 @@
 .sidebar-header {
   padding: 12px 16px;
   border-bottom: 1px solid #404040;
-  background-color: var(--app-background-color);
+  background-color: #333333;
   flex-shrink: 0;
 }
 
@@ -207,19 +199,17 @@
   flex-direction: column;
   overflow: hidden;
   min-height: 0; /* Important for flex child */
-  min-width: 600px; /* Ensure minimum width for center content */
 }
 
 .canvas-container {
   flex: 1;
   overflow: hidden;
   min-height: 0; /* Important for flex child */
-  min-width: 600px; /* Ensure minimum width for canvas */
 }
 
 /* Pages Section */
 .pages-section {
-  background-color: var(--app-background-color);
+  background-color: #2a2a2a;
   border-top: 1px solid #404040;
   min-height: 28px;
   flex-shrink: 0;
@@ -311,7 +301,7 @@
 
 /* Status Bar */
 .status-bar {
-  background-color: var(--app-background-color);
+  background-color: #2a2a2a;
   border-top: 1px solid #404040;
   padding: 8px 16px;
   min-height: 40px;

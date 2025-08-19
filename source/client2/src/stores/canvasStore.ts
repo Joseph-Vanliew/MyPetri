@@ -29,9 +29,6 @@ const initialCanvasState: CanvasState = {
   zoomLevel: 1,
   panOffset: { x: 0, y: 0 },
   viewBox: { x: 0, y: 0, width: 1500, height: 900 },
-  gridSize: 20,
-  showGrid: true,
-  snapToGrid: true,
 };
 
 const initialSelectionState: SelectionState = {
@@ -56,20 +53,6 @@ export const useCanvasStore = create<CanvasStoreState>()(
 
       setViewBox: (viewBox: { x: number; y: number; width: number; height: number }) => {
         set({ viewBox });
-      },
-
-      setGridSize: (gridSize: number) => {
-        set({ gridSize: Math.max(5, Math.min(100, gridSize)) });
-      },
-
-      toggleGrid: () => {
-        const { showGrid } = get();
-        set({ showGrid: !showGrid });
-      },
-
-      toggleSnapToGrid: () => {
-        const { snapToGrid } = get();
-        set({ snapToGrid: !snapToGrid });
       },
 
       setSelectionBox: (selectionBox: { x: number; y: number; width: number; height: number } | null) => {

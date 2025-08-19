@@ -1,10 +1,13 @@
 import React from 'react';
 import type { Arc as ArcType } from '../../../types/domain.js';
+import { calculateInhibitorCirclePosition } from '../utils/arcCalculationUtils.js';
 import '../elements.css';
 
 interface ArcProps {
   arc: ArcType;
   pathData: string; // Canvas will provide the calculated path
+  startPoint?: { x: number; y: number };
+  endPoint?: { x: number; y: number };
   onSelect?: (arc: ArcType) => void;
   onDeselect?: (arc: ArcType) => void;
   onDragStart?: (arc: ArcType, event: React.MouseEvent) => void;
@@ -15,6 +18,8 @@ interface ArcProps {
 const Arc: React.FC<ArcProps> = ({ 
   arc, 
   pathData, 
+  startPoint,
+  endPoint,
   onSelect, 
   onDeselect, 
   onDragStart, 
@@ -57,13 +62,18 @@ const Arc: React.FC<ArcProps> = ({
         className="main-path"
       />
       
-      {/* Inhibitor circle - positioned at the end of the path */}
-      {arcType === 'inhibitor' && (
-        <circle
-          r={8}
-          className="inhibitor-circle"
-        />
-      )}
+      {/* Inhibitor circle - position just outside the target border */}
+      {arcType === 'inhibitor' && startPoint && endPoint && (() => {
+        const { cx, cy, r } = calculateInhibitorCirclePosition(startPoint, endPoint);
+        return (
+          <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            className="inhibitor-circle"
+          />
+        );
+      })()}
       
       {/* Selection indicator */}
       {selected && (

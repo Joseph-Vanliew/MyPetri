@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useCanvasStore, useElementsStore, useProjectStore, useToolbarStore } from '../../../stores/index.js';
+import { useGridStore } from '../../../stores/gridStore.js';
 import { useZoomAndPan } from '../hooks/useZoomAndPan.js';
 import { useElementDrag } from '../hooks/useElementDrag.js';
 import Grid from './Grid.js';
@@ -7,25 +8,67 @@ import MarkerDefinitions from '../../elements/components/MarkerDefinitions.js';
 import Place from '../../elements/components/Place.js';
 import Transition from '../../elements/components/Transition.js';
 import Arc from '../../elements/components/Arc.js';
+import ArcPreview from '../../elements/components/ArcPreview.js';
 import '../canvas.css';
+import { calculateArcEndpoints} from '../../elements/utils/arcCalculationUtils.js';
+import { screenToSVGCoordinates, snapToGrid as snapToGridUtil } from '../utils/coordinateUtils.js';
 
 const Canvas: React.FC = () => {
-  const { 
-    zoomLevel, 
-    panOffset, 
-    viewBox, 
-    gridSize, 
-    showGrid, 
-    snapToGrid,
-    toggleGrid,
-    toggleSnapToGrid,
-    setGridSize
+  const [arcPreviewPos, setArcPreviewPos] = useState<{ x: number; y: number } | null>(null);
+  const [arcHoverElementId, setArcHoverElementId] = useState<string | null>(null);
+    const {
+    zoomLevel,
+    panOffset,
+    viewBox
   } = useCanvasStore();
   
-  const { selectElement, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement } = useElementsStore();
+  const { selectElement, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
   const { project } = useProjectStore();
-  const { selectedTool, toolOptions } = useToolbarStore();
+  const { selectedTool, toolOptions, arcDrawingStartId, setArcDrawingStartId, setSelectedTool } = useToolbarStore();
   const { canvasRef } = useZoomAndPan();
+
+  const {
+    gridSize,
+    showGrid,
+    snapToGrid,
+    toggleGrid,
+    toggleSnapToGrid
+  } = useGridStore();
+
+  // Helper function to clear arc drawing state (keeps tool selected for multiple arcs)
+  const clearArcState = useCallback(() => {
+    setArcDrawingStartId(null);
+    setArcPreviewPos(null);
+    setArcHoverElementId(null);
+  }, [setArcDrawingStartId]);
+
+  // Handle escape key to clear selection and arc drawing mode
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        // Clear any selected elements
+        if (project?.activePageId) {
+          clearSelection(project.activePageId);
+        }
+        // Clear arc drawing mode and preview state
+        clearArcState();
+        // Reset tool to none
+        setSelectedTool('NONE' as any);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [clearSelection, clearArcState, setSelectedTool, project?.activePageId]);
+
+  // Clear arc state when tool changes (unless explicitly setting to NONE)
+  useEffect(() => {
+    if (selectedTool !== 'ARC' && selectedTool !== 'ARC_INHIBITOR' && selectedTool !== 'ARC_BIDIRECTIONAL' && selectedTool !== 'NONE') {
+      clearArcState();
+    }
+  }, [selectedTool, clearArcState]);
 
   // Use the element drag hook
   const {
@@ -52,30 +95,82 @@ const Canvas: React.FC = () => {
   const transitions = currentPageElements.filter((el: any) => el.type === 'transition');
   const arcs = currentPageElements.filter((el: any) => el.type === 'arc');
 
-  // Calculate arc paths (simplified for now)
-  const calculateArcPath = (arc: any) => {
-    // For now, just draw a simple line from source to target
-    // This will be enhanced later with proper anchor point calculations
+  // Compute arc endpoints using shared utility
+  const getArcEndpoints = (arc: any) => {
     const sourceElement = currentPageElements.find(el => el.id === arc.sourceId);
     const targetElement = currentPageElements.find(el => el.id === arc.targetId);
-    
     if (!sourceElement || !targetElement) {
-      return `M ${arc.x},${arc.y} L ${arc.x + arc.width},${arc.y + arc.height}`;
+      return {
+        startPoint: { x: arc.x, y: arc.y },
+        endPoint: { x: arc.x + arc.width, y: arc.y + arc.height }
+      };
     }
 
-    const sourceCenter = {
-      x: sourceElement.x + sourceElement.width / 2,
-      y: sourceElement.y + sourceElement.height / 2
-    };
-    const targetCenter = {
-      x: targetElement.x + targetElement.width / 2,
-      y: targetElement.y + targetElement.height / 2
-    };
+    // Use shared calculation utility for consistent behavior
+    const { startPoint, endPoint } = calculateArcEndpoints({
+      startElement: sourceElement as any,
+      endElement: targetElement as any,
+      arcType: arc.arcType
+    });
 
-    return `M ${sourceCenter.x},${sourceCenter.y} L ${targetCenter.x},${targetCenter.y}`;
+    return { startPoint, endPoint };
+  };
+
+  // Element click handling for arc connection workflow
+  const handleConnectableClick = (elementId: string) => {
+    if (!project?.activePageId) return;
+    if (!(selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL')) return;
+
+    if (!arcDrawingStartId) {
+      setArcDrawingStartId(elementId);
+      return;
+    }
+
+    if (arcDrawingStartId === elementId) {
+      clearArcState();
+      return;
+    }
+
+    // Validate endpoints
+    const startEl = currentPageElements.find(el => el.id === arcDrawingStartId);
+    const endEl = currentPageElements.find(el => el.id === elementId);
+    if (!startEl || !endEl) {
+      clearArcState();
+      return;
+    }
+
+    const isStartPlace = startEl.type === 'place';
+    const isStartTransition = startEl.type === 'transition';
+    const isEndPlace = endEl.type === 'place';
+    const isEndTransition = endEl.type === 'transition';
+
+    // Only between place and transition (no place->place or transition->transition)
+    if ((isStartPlace && isEndPlace) || (isStartTransition && isEndTransition)) {
+      clearArcState();
+      return;
+    }
+
+    // Map tool to arc type
+    const arcType = selectedTool === 'ARC' ? 'normal' : selectedTool === 'ARC_INHIBITOR' ? 'inhibitor' : 'bidirectional';
+
+    // Inhibitor only allowed from place -> transition
+    if (arcType === 'inhibitor' && !(isStartPlace && isEndTransition)) {
+      clearArcState();
+      return;
+    }
+
+    // Create arc with default weight 1
+    createArc(project.activePageId, arcDrawingStartId, elementId, 1, arcType as any);
+    // Clear arc drawing state but stay in arc mode for multiple arcs
+    clearArcState();
+    // Don't reset tool - stay in arc mode for multiple arcs
   };
 
   const handleElementSelect = (element: any) => {
+    if (selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL') {
+      handleConnectableClick(element.id);
+      return;
+    }
     selectElement(project?.activePageId || '', element.id);
   };
 
@@ -95,7 +190,13 @@ const Canvas: React.FC = () => {
 
   const handleMouseMoveWrapper = useCallback((event: React.MouseEvent) => {
     handleMouseMove(event, canvasRef);
-  }, [handleMouseMove, canvasRef]);
+    // Update arc preview position if drawing
+    const isArcModeLocal = selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL';
+    if (isArcModeLocal && arcDrawingStartId && canvasRef.current) {
+      const pos = screenToSVGCoordinates(event.clientX, event.clientY, canvasRef.current);
+      setArcPreviewPos(pos);
+    }
+  }, [handleMouseMove, canvasRef, selectedTool, arcDrawingStartId]);
 
   // Handle canvas click for element placement
   const handleCanvasClick = (event: React.MouseEvent) => {
@@ -103,19 +204,59 @@ const Canvas: React.FC = () => {
       return;
     }
 
-    const svgElement = event.currentTarget as SVGSVGElement;
-    const rect = svgElement.getBoundingClientRect();
-    const viewBox = svgElement.viewBox.baseVal;
+    // Use consistent coordinate transformation
+    const svgPoint = screenToSVGCoordinates(event.clientX, event.clientY, event.currentTarget as SVGSVGElement);
     
-    // Convert click coordinates to SVG coordinates
-    const clickX = ((event.clientX - rect.left) / rect.width) * viewBox.width + viewBox.x;
-    const clickY = ((event.clientY - rect.top) / rect.height) * viewBox.height + viewBox.y;
-    
-    // Snap to grid if enabled
-    const finalX = snapToGrid ? Math.round(clickX / gridSize) * gridSize : clickX;
-    const finalY = snapToGrid ? Math.round(clickY / gridSize) * gridSize : clickY;
+    // Snap to grid if enabled using utility function
+    const finalCoords = snapToGrid ? snapToGridUtil(svgPoint.x, svgPoint.y, gridSize) : svgPoint;
     
     switch (selectedTool) {
+      case 'PLACE':
+        createPlace(project.activePageId, finalCoords.x, finalCoords.y, toolOptions.PLACE.radius);
+        break;
+      case 'TRANSITION':
+        createTransition(project.activePageId, finalCoords.x, finalCoords.y, toolOptions.TRANSITION.width, toolOptions.TRANSITION.height);
+        break;
+      case 'TEXT':
+        createTextElement(project.activePageId, finalCoords.x, finalCoords.y, 'Text');
+        break;
+      case 'SHAPE':
+        createShapeElement(project.activePageId, finalCoords.x, finalCoords.y, toolOptions.SHAPE.shapeType);
+        break;
+      case 'ARC':
+      case 'ARC_INHIBITOR':
+      case 'ARC_BIDIRECTIONAL':
+        // Click on empty canvas does nothing for arc tools
+        break;
+    }
+  };
+
+  // Arc hover targeting state
+  const isArcMode = selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL';
+  const handleElementMouseEnter = (_element: any) => {
+    if (!isArcMode) return;
+    setArcHoverElementId(_element.id);
+  };
+  const handleElementMouseLeave = (_element: any) => {
+    if (!isArcMode) return;
+    setArcHoverElementId((prev) => (prev === _element.id ? null : prev));
+  };
+
+  // Handle drop from toolbar for non-arc elements
+  const handleCanvasDragOver: React.DragEventHandler<SVGSVGElement> = (e) => {
+    e.preventDefault();
+  };
+
+  const handleCanvasDrop: React.DragEventHandler<SVGSVGElement> = (e) => {
+    e.preventDefault();
+    if (!project?.activePageId) return;
+    const tool = e.dataTransfer.getData('text/plain');
+    if (!tool || tool === 'ARC' || tool === 'ARC_INHIBITOR' || tool === 'ARC_BIDIRECTIONAL') return;
+    if (!canvasRef.current) return;
+    const svgPoint = screenToSVGCoordinates(e.clientX, e.clientY, canvasRef.current);
+    const finalX = snapToGrid ? Math.round(svgPoint.x / gridSize) * gridSize : svgPoint.x;
+    const finalY = snapToGrid ? Math.round(svgPoint.y / gridSize) * gridSize : svgPoint.y;
+    switch (tool) {
       case 'PLACE':
         createPlace(project.activePageId, finalX, finalY, toolOptions.PLACE.radius);
         break;
@@ -128,12 +269,6 @@ const Canvas: React.FC = () => {
       case 'SHAPE':
         createShapeElement(project.activePageId, finalX, finalY, toolOptions.SHAPE.shapeType);
         break;
-      case 'ARC':
-      case 'ARC_INHIBITOR':
-      case 'ARC_BIDIRECTIONAL':
-        // TODO: Implement arc creation between two elements
-        console.log(`${selectedTool} tool selected - need to implement connection logic`);
-        break;
     }
   };
 
@@ -145,7 +280,7 @@ const Canvas: React.FC = () => {
           <span>Zoom: {(zoomLevel * 100).toFixed(0)}%</span>
           <span>Pan: ({panOffset.x.toFixed(0)}, {panOffset.y.toFixed(0)})</span>
           
-          {/* Grid Controls */}
+                    {/* Grid Controls */}
           <div className="grid-controls">
             <button 
               className={`grid-toggle ${showGrid ? 'active' : ''}`}
@@ -161,16 +296,7 @@ const Canvas: React.FC = () => {
             >
               Snap
             </button>
-            <select 
-              value={gridSize} 
-              onChange={(e) => setGridSize(Number(e.target.value))}
-              className="grid-size-select"
-            >
-              <option value={10}>10px</option>
-              <option value={20}>20px</option>
-              <option value={50}>50px</option>
-              <option value={100}>100px</option>
-            </select>
+
           </div>
         </div>
       </div>
@@ -186,12 +312,14 @@ const Canvas: React.FC = () => {
           onMouseMove={handleMouseMoveWrapper}
           onMouseUp={handleMouseUp}
           onClick={handleCanvasClick}
+          onDragOver={handleCanvasDragOver}
+          onDrop={handleCanvasDrop}
         >
           {/* Marker definitions for arrows */}
           <MarkerDefinitions />
           
           {/* Grid */}
-          <Grid viewBox={viewBox} gridSize={gridSize} showGrid={showGrid} />
+          <Grid viewBox={viewBox} />
           
           {/* Canvas background - transparent to let grid show through */}
           <rect 
@@ -203,17 +331,36 @@ const Canvas: React.FC = () => {
           
           {/* Render Arcs (render first so they appear behind elements) */}
           {arcs.map((arc) => (
-            <Arc
-              key={arc.id}
-              arc={arc as any}
-              pathData={calculateArcPath(arc)}
-              onSelect={handleElementSelect}
-              onDeselect={handleElementDeselect}
-              onDragStart={handleElementDragStartWrapper}
-              onDrag={handleElementDragWrapper}
-              onDragEnd={handleElementDragEnd}
-            />
+            (() => {
+              const { startPoint, endPoint } = getArcEndpoints(arc);
+              return (
+                <Arc
+                  key={arc.id}
+                  arc={arc as any}
+                  pathData={`M ${startPoint.x},${startPoint.y} L ${endPoint.x},${endPoint.y}`}
+                  startPoint={startPoint}
+                  endPoint={endPoint}
+                  onSelect={handleElementSelect}
+                  onDeselect={handleElementDeselect}
+                  onDragStart={handleElementDragStartWrapper}
+                  onDrag={handleElementDragWrapper}
+                  onDragEnd={handleElementDragEnd}
+                />
+              );
+            })()
           ))}
+
+          {/* In-progress arc preview */}
+          <ArcPreview
+            isArcMode={isArcMode}
+            arcDrawingStartId={arcDrawingStartId}
+            arcPreviewPos={arcPreviewPos}
+            arcHoverElementId={arcHoverElementId}
+            currentPageElements={currentPageElements}
+            selectedTool={selectedTool}
+          />
+
+
           
           {/* Render Places */}
           {places.map((place) => (
@@ -225,6 +372,9 @@ const Canvas: React.FC = () => {
               onDragStart={handleElementDragStartWrapper}
               onDrag={handleElementDragWrapper}
               onDragEnd={handleElementDragEnd}
+              isArcTarget={isArcMode && selectedTool !== 'ARC_INHIBITOR'}
+              onMouseEnterElement={(p) => handleElementMouseEnter(p)}
+              onMouseLeaveElement={(p) => handleElementMouseLeave(p)}
             />
           ))}
           
@@ -238,6 +388,9 @@ const Canvas: React.FC = () => {
               onDragStart={handleElementDragStartWrapper}
               onDrag={handleElementDragWrapper}
               onDragEnd={handleElementDragEnd}
+              isArcTarget={isArcMode}
+              onMouseEnterElement={(t) => handleElementMouseEnter(t)}
+              onMouseLeaveElement={(t) => handleElementMouseLeave(t)}
             />
           ))}
           

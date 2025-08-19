@@ -5,6 +5,7 @@ import Ribbon from './Ribbon.tsx';
 import { Toolbar } from '../../features/tools/ToolsIndex.js';
 import MainContent from './MainContent.tsx';
 import StatusBar from './StatusBar.tsx';
+import DragPreview from '../../features/tools/components/DragPreview.js';
 import './layout.css';
 
 const AppLayout: React.FC = () => {
@@ -27,6 +28,9 @@ const AppLayout: React.FC = () => {
       
       {/* Status Bar - Simulation controls */}
       <StatusBar />
+      
+      {/* Drag Preview - Renders globally when dragging from toolbar */}
+      <DragPreview />
     </div>
   );
 };

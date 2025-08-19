@@ -12,15 +12,16 @@ export interface LayoutState {
 export interface ToolbarState {
   selectedTool: ToolType;
   availableTools: ToolType[];
+  // Drag and drop state
+  isDraggingFromToolbar: boolean;
+  draggedElementType: ToolType | null;
+  dragPreviewPosition: { x: number; y: number } | null;
 }
 
 export interface CanvasState {
   zoomLevel: number;
   panOffset: { x: number; y: number };
   viewBox: { x: number; y: number; width: number; height: number };
-  gridSize: number;
-  showGrid: boolean;
-  snapToGrid: boolean;
 }
 
 export interface SelectionState {
