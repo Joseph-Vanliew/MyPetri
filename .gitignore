@@ -47,3 +47,6 @@ out/
 ### Cursor ###
 .cursor/
 
+# Local agent rules (not committed)
+agent-rules.mdc
+
