@@ -1,5 +1,5 @@
 import React from 'react';
-import { useToolbarStore } from '../../stores/index.js';
+import { useToolbarStore } from '../stores/index.js';
 
 interface LeftSidebarProps {
   width: number;

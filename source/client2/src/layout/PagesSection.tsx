@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useProjectStore } from '../../stores/index.js';
+import { useProjectStore } from '../stores/index.js';
 
 const PagesSection: React.FC = () => {
   const { project, setActivePage, addPage, removePage, updatePageName } = useProjectStore();

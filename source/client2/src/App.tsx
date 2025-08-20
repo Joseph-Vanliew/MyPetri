@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useProjectStore, useLayoutStore } from './stores/index.js';
-import AppLayout from './components/layout/AppLayout.js';
+import AppLayout from './layout/AppLayout.js';
 import { useHistoryStore } from './stores/index.js';
 import './App.css';
 

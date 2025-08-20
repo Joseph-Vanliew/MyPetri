@@ -1,5 +1,5 @@
 import React from 'react';
-import { useProjectStore, useHistoryStore } from '../../stores/index.js';
+import { useProjectStore, useHistoryStore } from '../stores/index.js';
 
 const TitleSection: React.FC = () => {
   const { project, updateProjectName } = useProjectStore();

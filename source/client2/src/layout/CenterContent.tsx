@@ -1,5 +1,5 @@
 import React from 'react';
-import Canvas from '../../features/canvas/components/Canvas.tsx';
+import Canvas from '../features/canvas/components/Canvas.tsx';
 import PagesSection from './PagesSection.tsx';
 
 const CenterContent: React.FC = () => {
