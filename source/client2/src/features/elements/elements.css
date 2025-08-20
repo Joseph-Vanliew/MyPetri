@@ -2,7 +2,7 @@
 
 /* Place Styles */
 .place-element {
-  cursor: pointer; /* regular pointer until drag starts */
+  cursor: move; /* four-sided move cursor over elements */
 }
 
 .place-element .place-circle {
@@ -77,7 +77,7 @@
 
 /* Transition Styles */
 .transition-element {
-  cursor: pointer; /* regular pointer until drag starts */
+  cursor: move; /* four-sided move cursor over elements */
 }
 
 .transition-element .transition-rectangle {
@@ -116,7 +116,7 @@
 
 /* Arc Styles */
 .arc-element {
-  cursor: pointer;
+  cursor: move; /* four-sided move cursor over elements */
 }
 
 .arc-element .selection-hit-area {

@@ -33,7 +33,7 @@ interface CanvasStoreState extends CanvasState, SelectionState {
 const initialCanvasState: CanvasState = {
   zoomLevel: 1,
   panOffset: { x: 0, y: 0 },
-  viewBox: { x: 0, y: 0, width: 1500, height: 900 },
+  viewBox: { x: 0, y: 0, width: 1300, height: 1500 },
 };
 
 const initialSelectionState: SelectionState = {
