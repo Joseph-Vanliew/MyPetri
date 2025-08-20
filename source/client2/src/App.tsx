@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { useProjectStore, useLayoutStore } from './stores/index.js';
 import AppLayout from './components/layout/AppLayout.js';
+import { useHistoryStore } from './stores/index.js';
 import './App.css';
 
 const App: React.FC = () => {
   const { project, createProject } = useProjectStore();
+  const { clear } = useHistoryStore();
   const { setDefaultLayout } = useLayoutStore();
 
   // Initialize the application
@@ -16,7 +18,9 @@ const App: React.FC = () => {
 
     // Set default layout
     setDefaultLayout();
-  }, [project, createProject, setDefaultLayout]);
+    // Clear history on app init/new project
+    clear();
+  }, [project, createProject, setDefaultLayout, clear]);
 
   // Show loading state while initializing
   if (!project) {

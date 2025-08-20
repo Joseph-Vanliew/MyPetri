@@ -10,3 +10,4 @@ export * from './validatorStore.js';
 export * from './analyzerStore.js';
 export * from './fileManagerStore.js';
 export * from './storeUtils.js'; 
+export * from './historyStore.js';

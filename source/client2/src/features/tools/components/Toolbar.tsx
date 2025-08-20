@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useToolbarStore, useElementsStore, useProjectStore, useCanvasStore } from '../../../stores/index.js';
+import { useInteractionStore } from '../../../stores/interactionStore.js';
 import ToolButton from './ToolButton.js';
 import ToolSection from './ToolSection.js';
 import { 
@@ -16,9 +17,10 @@ import type { ToolType } from '../types/ToolTypes';
 
 const Toolbar: React.FC = () => {
   const { selectedTool, setSelectedTool, toolOptions } = useToolbarStore();
-  const { createPlace, createTransition, createTextElement, createShapeElement } = useElementsStore();
+  const { createPlace, createTransition, createTextElement, createShapeElement, selectElements } = useElementsStore();
   const { project } = useProjectStore();
-  const { viewBox } = useCanvasStore();
+  const { viewBox, zoomLevel, panOffset } = useCanvasStore();
+  const { interactionVersion } = useInteractionStore();
 
   // Calculate the center of the current viewport
   const getViewportCenter = () => {
@@ -26,6 +28,10 @@ const Toolbar: React.FC = () => {
     const centerY = viewBox.y + viewBox.height / 2;
     return { x: centerX, y: centerY };
   };
+
+  // Track last placement offset state across renders
+  const perToolLastPosRef = useRef<Record<string, { x: number; y: number } | null>>({});
+  const PLACE_OFFSET = 40;
 
   // Handle tool selection and element placement
   const handleToolClick = (tool: ToolType) => {
@@ -36,20 +42,44 @@ const Toolbar: React.FC = () => {
 
     // If we have an active page, place the element at viewport center
     if (project?.activePageId) {
+      // Determine placement position: use last placed position + offset, else center
       const center = getViewportCenter();
+      const key = tool;
+      const last = perToolLastPosRef.current[key] || null;
+      const base = last || center;
+      const pos = {
+        x: base.x + (last ? PLACE_OFFSET : 0),
+        y: base.y
+      };
       
       switch (tool) {
         case 'PLACE':
-          createPlace(project.activePageId, center.x, center.y, toolOptions.PLACE.radius);
+          {
+            const el = createPlace(project.activePageId, pos.x, pos.y, toolOptions.PLACE.radius);
+            selectElements(project.activePageId, [el.id]);
+            perToolLastPosRef.current[key] = { x: pos.x, y: pos.y };
+          }
           break;
         case 'TRANSITION':
-          createTransition(project.activePageId, center.x, center.y, toolOptions.TRANSITION.width, toolOptions.TRANSITION.height);
+          {
+            const el = createTransition(project.activePageId, pos.x, pos.y, toolOptions.TRANSITION.width, toolOptions.TRANSITION.height);
+            selectElements(project.activePageId, [el.id]);
+            perToolLastPosRef.current[key] = { x: pos.x, y: pos.y };
+          }
           break;
         case 'TEXT':
-          createTextElement(project.activePageId, center.x, center.y, 'Text');
+          {
+            const el = createTextElement(project.activePageId, pos.x, pos.y, 'Text');
+            selectElements(project.activePageId, [el.id]);
+            perToolLastPosRef.current[key] = { x: pos.x, y: pos.y };
+          }
           break;
         case 'SHAPE':
-          createShapeElement(project.activePageId, center.x, center.y, toolOptions.SHAPE.shapeType);
+          {
+            const el = createShapeElement(project.activePageId, pos.x, pos.y, toolOptions.SHAPE.shapeType);
+            selectElements(project.activePageId, [el.id]);
+            perToolLastPosRef.current[key] = { x: pos.x, y: pos.y };
+          }
           break;
         case 'ARC':
         case 'ARC_INHIBITOR':
@@ -67,6 +97,19 @@ const Toolbar: React.FC = () => {
     }
   };
 
+  // Reset last placement map if page changes, viewport changes, or any interaction occurs (drag, etc.)
+  useEffect(() => {
+    perToolLastPosRef.current = {};
+  }, [project?.activePageId]);
+
+  useEffect(() => {
+    perToolLastPosRef.current = {};
+  }, [zoomLevel, panOffset.x, panOffset.y]);
+
+  useEffect(() => {
+    perToolLastPosRef.current = {};
+  }, [interactionVersion]);
+
   return (
     <div className="toolbar-sidebar">
       <div className="toolbar-header">
@@ -80,6 +123,7 @@ const Toolbar: React.FC = () => {
           isActive={selectedTool === 'PLACE'}
           onClick={handleToolClick}
           title="Add a place (circle)"
+          // Prevent keyboard activation via space/enter from placing items unintentionally
         >
           <div className="tool-preview">
             <PlaceIcon size={DEFAULT_ICON_SIZE} />
@@ -93,6 +137,7 @@ const Toolbar: React.FC = () => {
           isActive={selectedTool === 'TRANSITION'}
           onClick={handleToolClick}
           title="Add a transition (rectangle)"
+          // Prevent keyboard activation via space/enter from placing items unintentionally
         >
           <div className="tool-preview">
             <TransitionIcon size={DEFAULT_ICON_SIZE} />

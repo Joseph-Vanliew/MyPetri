@@ -78,8 +78,8 @@
   - ✅ Update `Canvas.tsx` to render elements from store
   - ✅ Add element selection and interaction
   - ✅ Add click-to-place functionality
-  - ⏳ Implement element dragging and resizing
-  - ⏳ Add arc path calculation logic
+  - ✅ Implement element dragging and resizing
+  - ✅ Add arc path calculation logic
 
 ### 🎯 PRIORITY 2: Tool System
 

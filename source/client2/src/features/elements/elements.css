@@ -45,25 +45,26 @@
 
 /* removed outer selection ring for place */
 
-.place-element .place-resize-handle {
+.resize-handle {
   fill: #007bff;
-  stroke: #007bff;
-  stroke-width: 2;
+  stroke: #ffffff;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
 }
 
-.place-element .place-resize-handle.top-left {
+.resize-handle.top-left {
   cursor: nwse-resize;
 }
 
-.place-element .place-resize-handle.top-right {
+.resize-handle.top-right {
   cursor: nesw-resize;
 }
 
-.place-element .place-resize-handle.bottom-left {
+.resize-handle.bottom-left {
   cursor: nesw-resize;
 }
 
-.place-element .place-resize-handle.bottom-right {
+.resize-handle.bottom-right {
   cursor: nwse-resize;
 }
 
@@ -104,29 +105,6 @@
   stroke: #007bff;
   stroke-dasharray: 8;
   stroke-width: 2;
-}
-
-/* removed outer selection ring for transition */
-
-.transition-element .transition-resize-handle {
-  fill: #007bff;
-  r: 8;
-}
-
-.transition-element .transition-resize-handle.top-left {
-  cursor: nwse-resize;
-}
-
-.transition-element .transition-resize-handle.top-right {
-  cursor: nesw-resize;
-}
-
-.transition-element .transition-resize-handle.bottom-left {
-  cursor: nesw-resize;
-}
-
-.transition-element .transition-resize-handle.bottom-right {
-  cursor: nwse-resize;
 }
 
 .transition-element .transition-arc-highlight {
@@ -292,10 +270,7 @@
 }
 
 /* Drag Styles */
-.element-dragging {
-  opacity: 0.7;
-  cursor: grabbing;
-}
+/* Visual drag feedback handled by preview/interaction state; avoid sticky classes */
 
 .element-drag-overlay {
   position: absolute;

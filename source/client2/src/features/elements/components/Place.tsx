@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Place as PlaceType } from '../../../types/domain.js';
 import '../elements.css';
+import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants.js';
 import { useGridStore } from '../../../stores/gridStore.js';
 
 interface PlaceProps {
@@ -47,22 +48,14 @@ const Place: React.FC<PlaceProps> = ({
 
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation();
-    // Switch cursor to grabbing for the duration of the drag
-    const target = event.currentTarget as SVGGElement;
-    target.classList.add('element-dragging');
+    event.preventDefault();
     onDragStart?.(place, event);
-  };
-
-  const handleMouseUp = (event: React.MouseEvent) => {
-    const target = event.currentTarget as SVGGElement;
-    target.classList.remove('element-dragging');
   };
 
   return (
     <g
       onClick={handleClick}
       onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
       onMouseEnter={(e) => onMouseEnterElement?.(place, e)}
       onMouseLeave={(e) => onMouseLeaveElement?.(place, e)}
       className="place-element"
@@ -98,11 +91,11 @@ const Place: React.FC<PlaceProps> = ({
       {selected && (
         <g className="selection-indicators">
           <rect x={-radius} y={-radius} width={2 * radius} height={2 * radius} className="place-bounding-box" />
-          <g className="resize-handles">
-            <circle cx={-radius} cy={-radius} r={4} className="place-resize-handle top-left" />
-            <circle cx={radius} cy={-radius} r={4} className="place-resize-handle top-right" />
-            <circle cx={-radius} cy={radius} r={4} className="place-resize-handle bottom-left" />
-            <circle cx={radius} cy={radius} r={4} className="place-resize-handle bottom-right" />
+          <g className="resize-handles" vectorEffect="non-scaling-stroke">
+            <circle cx={-radius} cy={-radius} r={RESIZE_HANDLE_RADIUS} className="resize-handle top-left" />
+            <circle cx={radius} cy={-radius} r={RESIZE_HANDLE_RADIUS} className="resize-handle top-right" />
+            <circle cx={-radius} cy={radius} r={RESIZE_HANDLE_RADIUS} className="resize-handle bottom-left" />
+            <circle cx={radius} cy={radius} r={RESIZE_HANDLE_RADIUS} className="resize-handle bottom-right" />
           </g>
         </g>
       )}

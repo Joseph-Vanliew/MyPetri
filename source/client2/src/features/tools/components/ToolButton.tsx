@@ -48,6 +48,20 @@ const ToolButton: React.FC<ToolButtonProps> = ({
       className={`tool-button ${isActive ? 'active' : ''}`}
       onClick={() => onClick(toolType)}
       title={title}
+      onKeyDown={(e) => {
+        // Prevent spacebar from triggering button 'click' activation
+        if (e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      onKeyUp={(e) => {
+        // Prevent spacebar from dispatching a synthetic click on keyup
+        if (e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
       draggable={!isArcTool}
       onDragStart={handleDragStart}
       // Intentionally omit onDrag to avoid duplicate position updates

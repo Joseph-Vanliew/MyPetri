@@ -1,10 +1,10 @@
 ## Client2 Feature Parity Checklist
 
 - [ ] Arc creation workflow
-  - [ ] Start/complete arcs by clicking ports on places/transitions
-  - [ ] Arc preview while drawing (hover), snapping to source/target, cancel with Esc
-  - [ ] Support arc types: Regular, Inhibitor (circle), Bidirectional (double arrows)
-  - [ ] Maintain transition `arcIds` and cascade deletes when nodes removed
+  - [✅] Start/complete arcs by clicking ports on places/transitions
+  - [✅] Arc preview while drawing (hover), snapping to source/target, cancel with Esc
+  - [✅] Support arc types: Regular, Inhibitor (circle), Bidirectional (double arrows)
+  - [] Maintain transition `arcIds` and cascade deletes when nodes removed
 
 - [ ] Canvas selection and alignment
   - [ ] Click-drag selection box with multi-select

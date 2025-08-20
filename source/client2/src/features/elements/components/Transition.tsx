@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Transition as TransitionType } from '../../../types/domain.js';
 import '../elements.css';
+import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants.js';
 
 interface TransitionProps {
   transition: TransitionType;
@@ -37,21 +38,14 @@ const Transition: React.FC<TransitionProps> = ({
 
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation();
-    const target = event.currentTarget as SVGGElement;
-    target.classList.add('element-dragging');
+    event.preventDefault();
     onDragStart?.(transition, event);
-  };
-
-  const handleMouseUp = (event: React.MouseEvent) => {
-    const target = event.currentTarget as SVGGElement;
-    target.classList.remove('element-dragging');
   };
 
   return (
     <g
       onClick={handleClick}
       onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
       onMouseEnter={(e) => onMouseEnterElement?.(transition, e)}
       onMouseLeave={(e) => onMouseLeaveElement?.(transition, e)}
       className="transition-element"
@@ -88,11 +82,11 @@ const Transition: React.FC<TransitionProps> = ({
             height={height}
             className="transition-bounding-box"
           />
-          <g className="resize-handles">
-            <circle cx={-width / 2} cy={-height / 2} r={4} className="transition-resize-handle top-left" />
-            <circle cx={width / 2} cy={-height / 2} r={4} className="transition-resize-handle top-right" />
-            <circle cx={-width / 2} cy={height / 2} r={4} className="transition-resize-handle bottom-left" />
-            <circle cx={width / 2} cy={height / 2} r={4} className="transition-resize-handle bottom-right" />
+          <g className="resize-handles" vectorEffect="non-scaling-stroke">
+            <circle cx={-width / 2} cy={-height / 2} r={RESIZE_HANDLE_RADIUS} className="resize-handle top-left" />
+            <circle cx={width / 2} cy={-height / 2} r={RESIZE_HANDLE_RADIUS} className="resize-handle top-right" />
+            <circle cx={-width / 2} cy={height / 2} r={RESIZE_HANDLE_RADIUS} className="resize-handle bottom-left" />
+            <circle cx={width / 2} cy={height / 2} r={RESIZE_HANDLE_RADIUS} className="resize-handle bottom-right" />
           </g>
         </g>
       )}

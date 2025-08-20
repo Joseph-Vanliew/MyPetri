@@ -23,7 +23,7 @@ const Canvas: React.FC = () => {
     setActivePage
   } = useCanvasStore();
   
-  const { selectElement, selectElements, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
+  const { selectElement, selectElements, removeElements, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
   const { project } = useProjectStore();
   useEffect(() => {
     if (project?.activePageId) {
@@ -53,9 +53,17 @@ const Canvas: React.FC = () => {
     setArcHoverElementId(null);
   }, [setArcDrawingStartId]);
 
-  // Handle escape key to clear selection and arc drawing mode
+  // Handle keyboard shortcuts (Escape: clear selection/arc; Delete/Backspace: delete selected)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore when typing in inputs or contenteditable
+      const target = event.target as HTMLElement | null;
+      const isTyping = !!target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      );
+
       if (event.key === 'Escape') {
         // Clear any selected elements
         if (project?.activePageId) {
@@ -65,6 +73,22 @@ const Canvas: React.FC = () => {
         clearArcState();
         // Reset tool to none
         setSelectedTool('NONE' as any);
+      } else if (!isTyping && (event.key === 'Delete' || event.key === 'Backspace')) {
+        if (project?.activePageId) {
+          const selected = useElementsStore.getState().getSelectedElements(project.activePageId);
+          if (selected.length > 0) {
+            event.preventDefault();
+            const selectedIds = new Set(selected.map(el => el.id));
+            // Also delete arcs connected to any selected element
+            const all = useElementsStore.getState().getElements(project.activePageId);
+            const connectedArcIds = all
+              .filter((el: any) => el.type === 'arc' && (selectedIds.has(el.sourceId) || selectedIds.has(el.targetId)))
+              .map((el: any) => el.id);
+            const idsToDelete = [...selectedIds, ...connectedArcIds].map(String);
+            removeElements(project.activePageId, idsToDelete);
+            clearSelection(project.activePageId);
+          }
+        }
       }
     };
 
@@ -290,6 +314,7 @@ const Canvas: React.FC = () => {
     if ((e.target as Element).tagName.toLowerCase() !== 'svg' && (e.target as SVGElement).closest('.place-element, .transition-element, .arc-element')) {
       return;
     }
+    e.preventDefault();
     const svg = e.currentTarget;
     const start = screenToSVGCoordinates(e.clientX, e.clientY, svg);
     selectionStartRef.current = start;
