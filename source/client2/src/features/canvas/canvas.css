@@ -98,12 +98,12 @@
   width: 100%;
   height: 100%;
   background-color: var(--app-background-color); /* Canvas background */
-  cursor: crosshair;
+  cursor: default; /* Regular cursor over canvas/grid */
   display: block;
 }
 
 /* Canvas interaction states */
-.canvas-svg:active {
+.canvas-svg.panning:active {
   cursor: grabbing;
 }
 

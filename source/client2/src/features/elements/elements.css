@@ -2,13 +2,13 @@
 
 /* Place Styles */
 .place-element {
-  cursor: move;
+  cursor: pointer; /* regular pointer until drag starts */
 }
 
 .place-element .place-circle {
   fill: #0f0f0f;
   stroke: #ffffff;
-  stroke-width: 3;
+  stroke-width: 1; /* thinner stroke for place nodes */
 }
 
 .place-element .place-circle.bounded {
@@ -68,24 +68,24 @@
 .place-element .place-arc-highlight {
   fill: none;
   stroke: rgba(0, 255, 0, 0.5);
-  stroke-width: 6;
+  stroke-width: 2;
   cursor: pointer;
 }
 
 /* Transition Styles */
 .transition-element {
-  cursor: move;
+  cursor: pointer; /* regular pointer until drag starts */
 }
 
 .transition-element .transition-rectangle {
   fill: #0f0f0f;
   stroke: #ffffff;
-  stroke-width: 3;
+  stroke-width: 1;
 }
 
 .transition-element.enabled .transition-rectangle {
   stroke: #4CAF50;
-  stroke-width: 3;
+  stroke-width: 2;
 }
 
 .transition-element .transition-label {
@@ -128,7 +128,7 @@
 .transition-element .transition-arc-highlight {
   fill: none;
   stroke: rgba(0, 255, 0, 0.5);
-  stroke-width: 6;
+  stroke-width: 2;
   cursor: pointer;
 }
 
@@ -147,7 +147,7 @@
 .arc-element .main-path {
   fill: none;
   stroke: #fff;
-  stroke-width: 3;
+  stroke-width: 2;
 }
 
 .arc-element .selection-indicator {

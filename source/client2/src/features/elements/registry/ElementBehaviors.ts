@@ -32,7 +32,7 @@ export const placeBehavior: ElementBehavior = {
     createdAt: Date.now(),
     updatedAt: Date.now(),
     bounded: false,
-    radius: 30,
+    radius: ELEMENT_DEFAULT_SIZES[ELEMENT_TYPES.PLACE].width / 2,
   }),
 
   // Properties

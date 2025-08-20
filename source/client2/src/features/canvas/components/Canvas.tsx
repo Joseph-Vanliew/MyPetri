@@ -16,14 +16,20 @@ import { screenToSVGCoordinates, snapToGrid as snapToGridUtil } from '../utils/c
 const Canvas: React.FC = () => {
   const [arcPreviewPos, setArcPreviewPos] = useState<{ x: number; y: number } | null>(null);
   const [arcHoverElementId, setArcHoverElementId] = useState<string | null>(null);
-    const {
+  const {
     zoomLevel,
     panOffset,
-    viewBox
+    viewBox,
+    setActivePage
   } = useCanvasStore();
   
   const { selectElement, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
   const { project } = useProjectStore();
+  useEffect(() => {
+    if (project?.activePageId) {
+      setActivePage(project.activePageId);
+    }
+  }, [project?.activePageId, setActivePage]);
   const { selectedTool, toolOptions, arcDrawingStartId, setArcDrawingStartId, setSelectedTool } = useToolbarStore();
   const { canvasRef } = useZoomAndPan();
 

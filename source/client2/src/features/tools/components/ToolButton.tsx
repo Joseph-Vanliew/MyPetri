@@ -36,10 +36,7 @@ const ToolButton: React.FC<ToolButtonProps> = ({
     } catch {}
   };
 
-  const handleDrag: React.DragEventHandler<HTMLButtonElement> = (e) => {
-    if (isArcTool) return;
-    updateDragPreviewPosition({ x: e.clientX, y: e.clientY });
-  };
+  // Position updates are handled globally via document dragover in DragPreview
 
   const handleDragEnd: React.DragEventHandler<HTMLButtonElement> = () => {
     if (isArcTool) return;
@@ -53,7 +50,7 @@ const ToolButton: React.FC<ToolButtonProps> = ({
       title={title}
       draggable={!isArcTool}
       onDragStart={handleDragStart}
-      onDrag={handleDrag}
+      // Intentionally omit onDrag to avoid duplicate position updates
       onDragEnd={handleDragEnd}
     >
       {children}

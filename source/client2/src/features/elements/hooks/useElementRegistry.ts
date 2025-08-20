@@ -5,7 +5,6 @@ import {
   ELEMENT_TYPE_ARRAY, 
   ELEMENT_DISPLAY_NAMES, 
   ELEMENT_DESCRIPTIONS,
-  ELEMENT_ICONS,
   ELEMENT_DEFAULT_SIZES,
   ELEMENT_MIN_SIZES,
   ELEMENT_MAX_SIZES,
@@ -76,7 +75,6 @@ export const useElementRegistry = () => {
       type,
       displayName: ELEMENT_DISPLAY_NAMES[type],
       description: ELEMENT_DESCRIPTIONS[type],
-      icon: ELEMENT_ICONS[type],
       defaultSize: ELEMENT_DEFAULT_SIZES[type],
       minSize: ELEMENT_MIN_SIZES[type],
       maxSize: ELEMENT_MAX_SIZES[type],
@@ -108,7 +106,6 @@ export const useElementRegistry = () => {
     // Direct access to constants
     ELEMENT_DISPLAY_NAMES,
     ELEMENT_DESCRIPTIONS,
-    ELEMENT_ICONS,
     ELEMENT_DEFAULT_SIZES,
     ELEMENT_MIN_SIZES,
     ELEMENT_MAX_SIZES,

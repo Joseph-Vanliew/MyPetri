@@ -14,17 +14,17 @@ const RightSidebar: React.FC<RightSidebarProps> = ({ width }) => {
         <div className="tool-tab">
           <h4>Validator</h4>
           {/* TODO: Add validator component */}
-          <p>Petri net validation tools will be here</p>
+          <p>Petri net validation tools</p>
         </div>
         <div className="tool-tab">
           <h4>Analyzer</h4>
           {/* TODO: Add analyzer component */}
-          <p>Petri net analysis tools will be here</p>
+          <p>Petri net analysis tools</p>
         </div>
         <div className="tool-tab">
           <h4>JSON Viewer</h4>
           {/* TODO: Add JSON viewer component */}
-          <p>Project data viewer will be here</p>
+          <p>Project PNML display</p>
         </div>
       </div>
     </div>

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useProjectStore } from '../../stores/index.js';
 
 const PagesSection: React.FC = () => {
   const { project, setActivePage, addPage, removePage, updatePageName } = useProjectStore();
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
 
   if (!project) return null;
 
@@ -14,14 +15,28 @@ const PagesSection: React.FC = () => {
             key={page.id}
             className={`page-tab ${project.activePageId === page.id ? 'active' : ''}`}
             onClick={() => setActivePage(page.id)}
+            onDoubleClick={() => setEditingPageId(page.id)}
           >
-            <input
-              type="text"
-              value={page.name}
-              onChange={(e) => updatePageName(page.id, e.target.value)}
-              className="page-name-input"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {editingPageId === page.id ? (
+              <input
+                type="text"
+                value={page.name}
+                autoFocus
+                onChange={(e) => updatePageName(page.id, e.target.value)}
+                onBlur={() => setEditingPageId(null)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    (e.target as HTMLInputElement).blur();
+                  } else if (e.key === 'Escape') {
+                    setEditingPageId(null);
+                  }
+                }}
+                className="page-name-input"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span className="page-name">{page.name}</span>
+            )}
             <button
               className="remove-page-btn"
               onClick={(e) => {

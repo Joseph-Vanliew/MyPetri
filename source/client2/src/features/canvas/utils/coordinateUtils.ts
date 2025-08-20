@@ -6,17 +6,24 @@ export const screenToSVGCoordinates = (
   screenY: number,
   svgElement: SVGSVGElement
 ): { x: number; y: number } => {
+  // Prefer SVGPoint + CTM for accuracy across pans/transforms
+  const point = svgElement.createSVGPoint();
+  point.x = screenX;
+  point.y = screenY;
+  // account for current transformation matrix from screen to SVG
+  const ctm = svgElement.getScreenCTM();
+  if (ctm) {
+    const inverse = ctm.inverse();
+    const svgPoint = point.matrixTransform(inverse);
+    return { x: svgPoint.x, y: svgPoint.y };
+  }
+  // Fallback to viewBox math if CTM unavailable
   const rect = svgElement.getBoundingClientRect();
   const viewBox = svgElement.viewBox.baseVal;
-  
-  // Use more precise calculations to avoid rounding errors
   const normalizedX = (screenX - rect.left) / rect.width;
   const normalizedY = (screenY - rect.top) / rect.height;
-  
-  // Apply viewBox transformation with better precision
-  const x = viewBox.x + (normalizedX * viewBox.width);
-  const y = viewBox.y + (normalizedY * viewBox.height);
-  
+  const x = viewBox.x + normalizedX * viewBox.width;
+  const y = viewBox.y + normalizedY * viewBox.height;
   return { x, y };
 };
 
@@ -26,13 +33,19 @@ export const svgToScreenCoordinates = (
   svgY: number,
   svgElement: SVGSVGElement
 ): { x: number; y: number } => {
-  // Simplified coordinate transformation
+  const point = svgElement.createSVGPoint();
+  point.x = svgX;
+  point.y = svgY;
+  const ctm = svgElement.getScreenCTM();
+  if (ctm) {
+    const screenPoint = point.matrixTransform(ctm);
+    return { x: screenPoint.x, y: screenPoint.y };
+  }
+  // Fallback to rect/viewBox math
   const rect = svgElement.getBoundingClientRect();
   const viewBox = svgElement.viewBox.baseVal;
-  
   const x = ((svgX - viewBox.x) / viewBox.width) * rect.width + rect.left;
   const y = ((svgY - viewBox.y) / viewBox.height) * rect.height + rect.top;
-  
   return { x, y };
 };
 

@@ -36,20 +36,11 @@ export const ELEMENT_DESCRIPTIONS: Record<ElementType, string> = {
   [ELEMENT_TYPES.SHAPE]: 'Geometric shape for diagrams',
 };
 
-// Element icons (placeholder - we'll add actual icons later)
-export const ELEMENT_ICONS: Record<ElementType, string> = {
-  [ELEMENT_TYPES.PLACE]: '⭕',
-  [ELEMENT_TYPES.TRANSITION]: '⬜',
-  [ELEMENT_TYPES.ARC]: '➖',
-  [ELEMENT_TYPES.TEXT]: 'T',
-  [ELEMENT_TYPES.SHAPE]: '⬟',
-};
-
 // Default sizes for each element type
 export const ELEMENT_DEFAULT_SIZES: Record<ElementType, { width: number; height: number }> = {
-  [ELEMENT_TYPES.PLACE]: { width: 60, height: 60 },
-  [ELEMENT_TYPES.TRANSITION]: { width: 40, height: 40 },
-  [ELEMENT_TYPES.ARC]: { width: 100, height: 2 },
+  [ELEMENT_TYPES.PLACE]: { width: 78, height: 78 },
+  [ELEMENT_TYPES.TRANSITION]: { width: 78, height: 38 },
+  [ELEMENT_TYPES.ARC]: { width: 100, height: 1 },
   [ELEMENT_TYPES.TEXT]: { width: 80, height: 20 },
   [ELEMENT_TYPES.SHAPE]: { width: 50, height: 50 },
 };

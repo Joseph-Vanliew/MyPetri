@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Place as PlaceType } from '../../../types/domain.js';
 import '../elements.css';
+import { useGridStore } from '../../../stores/gridStore.js';
 
 interface PlaceProps {
   place: PlaceType;
@@ -26,10 +27,14 @@ const Place: React.FC<PlaceProps> = ({
   onMouseEnterElement,
   onMouseLeaveElement,
 }) => {
-  const { x, y, width, height, tokens, name: label, isSelected: selected, bounded, radius: placeRadius } = place;
+  const { x, y, tokens, name: label, isSelected: selected, bounded, radius: placeRadius } = place;
+  const { gridSize, majorGridWidthMultiplier, majorGridHeightMultiplier } = useGridStore();
   
-  // Use the radius from the place data, or calculate from width/height
-  const radius = placeRadius || Math.min(width, height) / 2;
+  // Match place radius to the larger major grid dimension
+  const majorGridWidth = gridSize * majorGridWidthMultiplier;
+  const majorGridHeight = gridSize * majorGridHeightMultiplier;
+  const targetRadius = Math.max(majorGridWidth, majorGridHeight) / 2;
+  const radius = placeRadius || targetRadius;
 
   const handleClick = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -42,13 +47,22 @@ const Place: React.FC<PlaceProps> = ({
 
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation();
+    // Switch cursor to grabbing for the duration of the drag
+    const target = event.currentTarget as SVGGElement;
+    target.classList.add('element-dragging');
     onDragStart?.(place, event);
+  };
+
+  const handleMouseUp = (event: React.MouseEvent) => {
+    const target = event.currentTarget as SVGGElement;
+    target.classList.remove('element-dragging');
   };
 
   return (
     <g
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       onMouseEnter={(e) => onMouseEnterElement?.(place, e)}
       onMouseLeave={(e) => onMouseLeaveElement?.(place, e)}
       className="place-element"

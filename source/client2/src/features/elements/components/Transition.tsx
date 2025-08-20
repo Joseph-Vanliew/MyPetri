@@ -37,13 +37,21 @@ const Transition: React.FC<TransitionProps> = ({
 
   const handleMouseDown = (event: React.MouseEvent) => {
     event.stopPropagation();
+    const target = event.currentTarget as SVGGElement;
+    target.classList.add('element-dragging');
     onDragStart?.(transition, event);
+  };
+
+  const handleMouseUp = (event: React.MouseEvent) => {
+    const target = event.currentTarget as SVGGElement;
+    target.classList.remove('element-dragging');
   };
 
   return (
     <g
       onClick={handleClick}
       onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       onMouseEnter={(e) => onMouseEnterElement?.(transition, e)}
       onMouseLeave={(e) => onMouseLeaveElement?.(transition, e)}
       className="transition-element"

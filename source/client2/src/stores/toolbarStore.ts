@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { ToolbarState } from '../types/ui';
+import { ELEMENT_TYPES, ELEMENT_DEFAULT_SIZES } from '../features/elements/registry/ElementTypes.js';
 import type { ToolType } from '../types/common';
 
 interface ToolbarStoreState extends ToolbarState {
@@ -37,14 +38,14 @@ const defaultTools: ToolType[] = ['NONE', 'PLACE', 'TRANSITION', 'ARC', 'ARC_INH
 const defaultToolOptions: Record<ToolType, any> = {
   NONE: {},
   PLACE: {
-    radius: 46,
+    radius: ELEMENT_DEFAULT_SIZES[ELEMENT_TYPES.PLACE].width / 2,
     tokens: 0,
     capacity: undefined,
     bounded: false,
   },
   TRANSITION: {
-    width: 60,
-    height: 30,
+    width: ELEMENT_DEFAULT_SIZES[ELEMENT_TYPES.TRANSITION].width,
+    height: ELEMENT_DEFAULT_SIZES[ELEMENT_TYPES.TRANSITION].height,
   },
   ARC: {
     weight: 1,
@@ -83,7 +84,6 @@ export const useToolbarStore = create<ToolbarStoreState>()(
       isDrawing: false,
       arcDrawingStartId: null,
       toolOptions: { ...defaultToolOptions },
-      // Drag and drop state
       isDraggingFromToolbar: false,
       draggedElementType: null,
       dragPreviewPosition: null,
@@ -163,10 +163,16 @@ export const useToolbarStore = create<ToolbarStoreState>()(
       },
 
       updateDragPreviewPosition: (position: { x: number; y: number }) => {
-        set((state) => ({
-          ...state,
-          dragPreviewPosition: position
-        }));
+        set((state) => {
+          const prev = state.dragPreviewPosition;
+          if (prev && prev.x === position.x && prev.y === position.y) {
+            return state; // avoid redundant updates
+          }
+          return {
+            ...state,
+            dragPreviewPosition: position
+          };
+        });
       },
 
       endDragFromToolbar: () => {

@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import type { Element, Place, Transition, Arc, TextElement, ShapeElement } from '../types/domain';
+import { ELEMENT_TYPES, ELEMENT_DEFAULT_SIZES } from '../features/elements/registry/ElementTypes.js';
 
 
 interface ElementsState {
@@ -169,7 +170,7 @@ export const useElementsStore = create<ElementsState>()(
           return pageElements.filter(element => selectedIds.includes(element.id));
         },
 
-        createPlace: (pageId: string, x: number, y: number, radius = 46) => {
+        createPlace: (pageId: string, x: number, y: number, radius = ELEMENT_DEFAULT_SIZES[ELEMENT_TYPES.PLACE].width / 2) => {
           const place: Place = {
             id: uuidv4(),
             type: 'place',
@@ -190,7 +191,7 @@ export const useElementsStore = create<ElementsState>()(
           return place;
         },
 
-        createTransition: (pageId: string, x: number, y: number, width = 60, height = 30) => {
+        createTransition: (pageId: string, x: number, y: number, width = ELEMENT_DEFAULT_SIZES[ELEMENT_TYPES.TRANSITION].width, height = ELEMENT_DEFAULT_SIZES[ELEMENT_TYPES.TRANSITION].height) => {
           const transition: Transition = {
             id: uuidv4(),
             type: 'transition',

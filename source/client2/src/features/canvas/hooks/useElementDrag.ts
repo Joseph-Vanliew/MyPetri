@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { screenToSVGCoordinates } from '../../canvas/utils/coordinateUtils.js';
 import type { ToolType } from '../../../types/common';
 
 interface DragState {
@@ -41,11 +42,7 @@ export const useElementDrag = ({
     const svgElement = canvasRef.current;
     if (!svgElement) return;
 
-    const rect = svgElement.getBoundingClientRect();
-    const viewBox = svgElement.viewBox.baseVal;
-    
-    const mouseX = ((event.clientX - rect.left) / rect.width) * viewBox.width + viewBox.x;
-    const mouseY = ((event.clientY - rect.top) / rect.height) * viewBox.height + viewBox.y;
+    const { x: mouseX, y: mouseY } = screenToSVGCoordinates(event.clientX, event.clientY, svgElement);
     
     setDragState({
       isDragging: true,
@@ -66,11 +63,7 @@ export const useElementDrag = ({
     const svgElement = canvasRef.current;
     if (!svgElement) return;
 
-    const rect = svgElement.getBoundingClientRect();
-    const viewBox = svgElement.viewBox.baseVal;
-    
-    const mouseX = ((event.clientX - rect.left) / rect.width) * viewBox.width + viewBox.x;
-    const mouseY = ((event.clientY - rect.top) / rect.height) * viewBox.height + viewBox.y;
+    const { x: mouseX, y: mouseY } = screenToSVGCoordinates(event.clientX, event.clientY, svgElement);
     
     const deltaX = mouseX - dragState.dragStartPos.x;
     const deltaY = mouseY - dragState.dragStartPos.y;
