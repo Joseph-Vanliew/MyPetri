@@ -43,6 +43,8 @@
   stroke-width: 2;
 }
 
+/* removed outer selection ring for place */
+
 .place-element .place-resize-handle {
   fill: #007bff;
   stroke: #007bff;
@@ -103,6 +105,8 @@
   stroke-dasharray: 8;
   stroke-width: 2;
 }
+
+/* removed outer selection ring for transition */
 
 .transition-element .transition-resize-handle {
   fill: #007bff;

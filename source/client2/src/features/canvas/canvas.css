@@ -101,6 +101,19 @@
   cursor: default; /* Regular cursor over canvas/grid */
   display: block;
 }
+/* Selection box fade-out */
+.selection-box-fade {
+  fill: rgba(0, 122, 204, 0.15);
+  stroke: #007acc;
+  stroke-dasharray: 6 4;
+  stroke-width: 1;
+  animation: selection-fade 0.2s ease forwards;
+}
+
+@keyframes selection-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 
 /* Canvas interaction states */
 .canvas-svg.panning:active {

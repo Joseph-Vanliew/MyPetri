@@ -14,6 +14,8 @@ interface UseElementDragProps {
   gridSize: number;
   onUpdateElement: (pageId: string, elementId: string, updates: any) => void;
   projectActivePageId?: string;
+  // Optional: get currently selected elements for group dragging
+  getSelectedElements?: (pageId: string) => any[];
 }
 
 export const useElementDrag = ({
@@ -21,7 +23,8 @@ export const useElementDrag = ({
   snapToGrid,
   gridSize,
   onUpdateElement,
-  projectActivePageId
+  projectActivePageId,
+  getSelectedElements,
 }: UseElementDragProps) => {
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
@@ -30,6 +33,8 @@ export const useElementDrag = ({
   });
   
   const dragStartElementPos = useRef({ x: 0, y: 0 });
+  const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+  const draggingIdsRef = useRef<string[]>([]);
 
   const handleElementDragStart = useCallback((element: any, event: React.MouseEvent, canvasRef: React.RefObject<SVGSVGElement | null>) => {
     // Only allow dragging when no tool is selected (NONE tool)
@@ -51,6 +56,22 @@ export const useElementDrag = ({
     });
     
     dragStartElementPos.current = { x: element.x, y: element.y };
+
+    // Prepare group drag positions
+    draggingIdsRef.current = [];
+    dragStartPositionsRef.current.clear();
+    if (projectActivePageId && typeof getSelectedElements === 'function') {
+      const selected = getSelectedElements(projectActivePageId) || [] as any[];
+      const isElementSelected = selected.some((el: any) => el.id === element.id);
+      const group = isElementSelected ? selected : [element];
+      group.forEach((el: any) => {
+        draggingIdsRef.current.push(el.id);
+        dragStartPositionsRef.current.set(el.id, { x: el.x, y: el.y });
+      });
+    } else {
+      draggingIdsRef.current = [element.id];
+      dragStartPositionsRef.current.set(element.id, { x: element.x, y: element.y });
+    }
   }, [selectedTool]);
 
   const handleElementDrag = useCallback((element: any, event: React.MouseEvent, canvasRef: React.RefObject<SVGSVGElement | null>) => {
@@ -67,17 +88,26 @@ export const useElementDrag = ({
     
     const deltaX = mouseX - dragState.dragStartPos.x;
     const deltaY = mouseY - dragState.dragStartPos.y;
-    
-    const newX = dragStartElementPos.current.x + deltaX;
-    const newY = dragStartElementPos.current.y + deltaY;
-    
-    // Snap to grid if enabled
-    const finalX = snapToGrid ? Math.round(newX / gridSize) * gridSize : newX;
-    const finalY = snapToGrid ? Math.round(newY / gridSize) * gridSize : newY;
-    
-    // Update element position
+
+    // Compute anchor (primary element) snapped delta if needed
+    let anchorNewX = dragStartElementPos.current.x + deltaX;
+    let anchorNewY = dragStartElementPos.current.y + deltaY;
+    if (snapToGrid) {
+      anchorNewX = Math.round(anchorNewX / gridSize) * gridSize;
+      anchorNewY = Math.round(anchorNewY / gridSize) * gridSize;
+    }
+    const snappedDeltaX = anchorNewX - dragStartElementPos.current.x;
+    const snappedDeltaY = anchorNewY - dragStartElementPos.current.y;
+
     if (projectActivePageId) {
-      onUpdateElement(projectActivePageId, element.id, { x: finalX, y: finalY });
+      // Move all dragging ids using their own start positions plus snapped delta
+      const idsToMove = draggingIdsRef.current.length > 0 ? draggingIdsRef.current : [element.id];
+      idsToMove.forEach((id) => {
+        const start = dragStartPositionsRef.current.get(id) || dragStartElementPos.current;
+        const nx = start.x + snappedDeltaX;
+        const ny = start.y + snappedDeltaY;
+        onUpdateElement(projectActivePageId, id, { x: nx, y: ny });
+      });
     }
   }, [dragState, selectedTool, snapToGrid, gridSize, projectActivePageId, onUpdateElement]);
 

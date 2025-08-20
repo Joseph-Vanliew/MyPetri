@@ -23,7 +23,7 @@ const Canvas: React.FC = () => {
     setActivePage
   } = useCanvasStore();
   
-  const { selectElement, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
+  const { selectElement, selectElements, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
   const { project } = useProjectStore();
   useEffect(() => {
     if (project?.activePageId) {
@@ -40,6 +40,11 @@ const Canvas: React.FC = () => {
     toggleGrid,
     toggleSnapToGrid
   } = useGridStore();
+
+  // Selection box state (uses canvas store for UI; elements store for selection)
+  const { selectionBox, setSelectionBox, isSelecting, setIsSelecting } = useCanvasStore();
+  const selectionStartRef = React.useRef<{ x: number; y: number } | null>(null);
+  const [fadeSelectionBox, setFadeSelectionBox] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
 
   // Helper function to clear arc drawing state (keeps tool selected for multiple arcs)
   const clearArcState = useCallback(() => {
@@ -88,7 +93,8 @@ const Canvas: React.FC = () => {
     snapToGrid,
     gridSize,
     onUpdateElement: updateElement,
-    projectActivePageId: project?.activePageId
+    projectActivePageId: project?.activePageId,
+    getSelectedElements: (pageId: string) => useElementsStore.getState().getSelectedElements(pageId)
   });
 
   // Get elements for the current page
@@ -278,6 +284,57 @@ const Canvas: React.FC = () => {
     }
   };
 
+  // Mouse handlers for selection box
+  const handleCanvasMouseDown: React.MouseEventHandler<SVGSVGElement> = (e) => {
+    // Only start selection when clicking on empty canvas area (not on elements)
+    if ((e.target as Element).tagName.toLowerCase() !== 'svg' && (e.target as SVGElement).closest('.place-element, .transition-element, .arc-element')) {
+      return;
+    }
+    const svg = e.currentTarget;
+    const start = screenToSVGCoordinates(e.clientX, e.clientY, svg);
+    selectionStartRef.current = start;
+    setSelectionBox({ x: start.x, y: start.y, width: 0, height: 0 });
+    setIsSelecting(true);
+  };
+
+  const handleCanvasMouseMove: React.MouseEventHandler<SVGSVGElement> = (e) => {
+    if (!isSelecting || !selectionStartRef.current) return;
+    const svg = e.currentTarget;
+    const curr = screenToSVGCoordinates(e.clientX, e.clientY, svg);
+    const x = Math.min(selectionStartRef.current.x, curr.x);
+    const y = Math.min(selectionStartRef.current.y, curr.y);
+    const width = Math.abs(curr.x - selectionStartRef.current.x);
+    const height = Math.abs(curr.y - selectionStartRef.current.y);
+    setSelectionBox({ x, y, width, height });
+  };
+
+  const handleCanvasMouseUp: React.MouseEventHandler<SVGSVGElement> = () => {
+    if (!isSelecting || !selectionBox) return;
+    if (project?.activePageId) {
+      // Determine which elements intersect selectionBox
+      const elems = currentPageElements;
+      const selectedIds = elems.filter((el: any) => {
+        const elBounds = { x: el.x - el.width / 2, y: el.y - el.height / 2, width: el.width, height: el.height };
+        const intersects = !(elBounds.x + elBounds.width < selectionBox.x ||
+                             selectionBox.x + selectionBox.width < elBounds.x ||
+                             elBounds.y + elBounds.height < selectionBox.y ||
+                             selectionBox.y + selectionBox.height < elBounds.y);
+        return intersects;
+      }).map((el: any) => el.id);
+      if (selectedIds.length > 0) {
+        selectElements(project.activePageId, selectedIds);
+      } else {
+        clearSelection(project.activePageId);
+      }
+    }
+    // Trigger fade-out of the selection box
+    setFadeSelectionBox(selectionBox);
+    setIsSelecting(false);
+    setSelectionBox(null);
+    window.setTimeout(() => setFadeSelectionBox(null), 200);
+    selectionStartRef.current = null;
+  };
+
   return (
     <div className="canvas">
       <div className="canvas-header">
@@ -314,9 +371,9 @@ const Canvas: React.FC = () => {
           style={{
             transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`
           }}
-          onMouseDown={(e) => e.preventDefault()}
-          onMouseMove={handleMouseMoveWrapper}
-          onMouseUp={handleMouseUp}
+          onMouseDown={(e) => { e.preventDefault(); handleCanvasMouseDown(e); }}
+          onMouseMove={(e) => { handleMouseMoveWrapper(e); handleCanvasMouseMove(e); }}
+          onMouseUp={(e) => { handleMouseUp(e); handleCanvasMouseUp(e as any); }}
           onClick={handleCanvasClick}
           onDragOver={handleCanvasDragOver}
           onDrop={handleCanvasDrop}
@@ -335,6 +392,31 @@ const Canvas: React.FC = () => {
             style={{ pointerEvents: 'auto' }}
           />
           
+          {/* Selection box overlay */}
+          {isSelecting && selectionBox && (
+            <rect
+              x={selectionBox.x}
+              y={selectionBox.y}
+              width={selectionBox.width}
+              height={selectionBox.height}
+              fill="rgba(0, 122, 204, 0.15)"
+              stroke="#007acc"
+              strokeDasharray="6,4"
+              strokeWidth={1}
+              pointerEvents="none"
+            />
+          )}
+          {fadeSelectionBox && (
+            <rect
+              x={fadeSelectionBox.x}
+              y={fadeSelectionBox.y}
+              width={fadeSelectionBox.width}
+              height={fadeSelectionBox.height}
+              className="selection-box-fade"
+              pointerEvents="none"
+            />
+          )}
+
           {/* Render Arcs (render first so they appear behind elements) */}
           {arcs.map((arc) => (
             (() => {

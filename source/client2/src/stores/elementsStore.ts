@@ -124,7 +124,7 @@ export const useElementsStore = create<ElementsState>()(
         },
 
         selectElement: (pageId: string, elementId: string, multiSelect = false) => {
-          const { selectedElementIds } = get();
+          const { selectedElementIds, elementsByPage } = get();
           const currentSelected = selectedElementIds[pageId] || [];
           
           let newSelected: string[];
@@ -138,7 +138,17 @@ export const useElementsStore = create<ElementsState>()(
             newSelected = [elementId];
           }
           
+          const pageElements = elementsByPage[pageId] || [];
+          const updatedElements = pageElements.map(el => ({
+            ...el,
+            isSelected: newSelected.includes(el.id)
+          })) as Element[];
+
           set({
+            elementsByPage: {
+              ...elementsByPage,
+              [pageId]: updatedElements
+            },
             selectedElementIds: {
               ...selectedElementIds,
               [pageId]: newSelected
@@ -147,8 +157,17 @@ export const useElementsStore = create<ElementsState>()(
         },
 
         selectElements: (pageId: string, elementIds: string[]) => {
-          const { selectedElementIds } = get();
+          const { selectedElementIds, elementsByPage } = get();
+          const pageElements = elementsByPage[pageId] || [];
+          const updatedElements = pageElements.map(el => ({
+            ...el,
+            isSelected: elementIds.includes(el.id)
+          })) as Element[];
           set({
+            elementsByPage: {
+              ...elementsByPage,
+              [pageId]: updatedElements
+            },
             selectedElementIds: {
               ...selectedElementIds,
               [pageId]: elementIds
@@ -157,10 +176,18 @@ export const useElementsStore = create<ElementsState>()(
         },
 
         clearSelection: (pageId: string) => {
-          const { selectedElementIds } = get();
-          const updated = { ...selectedElementIds };
-          delete updated[pageId];
-          set({ selectedElementIds: updated });
+          const { selectedElementIds, elementsByPage } = get();
+          const updatedSelected = { ...selectedElementIds };
+          delete updatedSelected[pageId];
+          const pageElements = elementsByPage[pageId] || [];
+          const updatedElements = pageElements.map(el => ({ ...el, isSelected: false })) as Element[];
+          set({
+            elementsByPage: {
+              ...elementsByPage,
+              [pageId]: updatedElements
+            },
+            selectedElementIds: updatedSelected
+          });
         },
 
         getSelectedElements: (pageId: string) => {

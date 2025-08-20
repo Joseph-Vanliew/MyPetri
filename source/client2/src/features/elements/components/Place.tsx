@@ -96,13 +96,15 @@ const Place: React.FC<PlaceProps> = ({
       
       {/* Selection indicator - bounding box */}
       {selected && (
-        <rect
-          x={-radius}
-          y={-radius}
-          width={2 * radius}
-          height={2 * radius}
-          className="place-bounding-box"
-        />
+        <g className="selection-indicators">
+          <rect x={-radius} y={-radius} width={2 * radius} height={2 * radius} className="place-bounding-box" />
+          <g className="resize-handles">
+            <circle cx={-radius} cy={-radius} r={4} className="place-resize-handle top-left" />
+            <circle cx={radius} cy={-radius} r={4} className="place-resize-handle top-right" />
+            <circle cx={-radius} cy={radius} r={4} className="place-resize-handle bottom-left" />
+            <circle cx={radius} cy={radius} r={4} className="place-resize-handle bottom-right" />
+          </g>
+        </g>
       )}
 
       {/* Arc target highlight */}

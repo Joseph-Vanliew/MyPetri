@@ -80,13 +80,21 @@ const Transition: React.FC<TransitionProps> = ({
       
       {/* Selection indicator - bounding box */}
       {selected && (
-        <rect
-          x={-width / 2}
-          y={-height / 2}
-          width={width}
-          height={height}
-          className="transition-bounding-box"
-        />
+        <g className="selection-indicators">
+          <rect
+            x={-width / 2}
+            y={-height / 2}
+            width={width}
+            height={height}
+            className="transition-bounding-box"
+          />
+          <g className="resize-handles">
+            <circle cx={-width / 2} cy={-height / 2} r={4} className="transition-resize-handle top-left" />
+            <circle cx={width / 2} cy={-height / 2} r={4} className="transition-resize-handle top-right" />
+            <circle cx={-width / 2} cy={height / 2} r={4} className="transition-resize-handle bottom-left" />
+            <circle cx={width / 2} cy={height / 2} r={4} className="transition-resize-handle bottom-right" />
+          </g>
+        </g>
       )}
 
       {/* Arc target highlight */}
