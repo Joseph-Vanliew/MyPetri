@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useCanvasStore } from '../../../stores/index.js';
 
+
 export const useZoomAndPan = () => {
   const { zoomLevel, panOffset, setZoomLevel, setPanOffset } = useCanvasStore();
   const canvasRef = useRef<SVGSVGElement>(null);
@@ -14,7 +15,7 @@ export const useZoomAndPan = () => {
     const isPanning = !isZooming;
     
     if (isZooming) {
-      // Zoom in/out
+      // Zoom in/out 
       const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
       const newZoom = Math.max(0.1, Math.min(5, zoomLevel * zoomFactor));
       setZoomLevel(newZoom);

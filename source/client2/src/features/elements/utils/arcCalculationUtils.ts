@@ -14,8 +14,13 @@ export const ARC_POSITIONING = {
   },
   // Inhibitor circle positioning
   INHIBITOR: {
-    RADIUS: 8,         // Radius of the inhibitor circle
+    RADIUS: 6,         // Radius of the inhibitor circle
     EDGE_PADDING: 2,   // Additional padding outside target border
+  },
+  // Weight label positioning
+  WEIGHT_LABEL: {
+    PERPENDICULAR_OFFSET: 12,  // Distance from the arc line
+    ALONG_OFFSET: 15,          // Distance along the arc from start point
   },
 } as const;
 
@@ -78,8 +83,14 @@ export function calculateArcEndpoints({
       x: endAnchor.x - (dx / len) * ARC_POSITIONING.NORMAL.END_OFFSET,
       y: endAnchor.y - (dy / len) * ARC_POSITIONING.NORMAL.END_OFFSET,
     };
+  } else if (arcType === 'inhibitor') {
+    // Inhibitor arc: offset end so arc stops at the edge of the inhibitor circle
+    const inhibitorOffset = ARC_POSITIONING.INHIBITOR.RADIUS + ARC_POSITIONING.INHIBITOR.EDGE_PADDING;
+    endAnchor = {
+      x: endAnchor.x - (dx / len) * inhibitorOffset,
+      y: endAnchor.y - (dy / len) * inhibitorOffset,
+    };
   }
-  // Inhibitor arcs don't need arrow offsets since they use circles instead
 
   return { startPoint: startAnchor, endPoint: endAnchor };
 }
@@ -98,11 +109,40 @@ export function calculateInhibitorCirclePosition(startPoint: { x: number; y: num
   const dx = endPoint.x - startPoint.x;
   const dy = endPoint.y - startPoint.y;
   const len = Math.hypot(dx, dy) || 1;
-  const offset = ARC_POSITIONING.INHIBITOR.RADIUS + ARC_POSITIONING.INHIBITOR.EDGE_PADDING;
   
   // Move back along the path so the circle sits outside the target border
-  const cx = endPoint.x - (dx / len) * offset;
-  const cy = endPoint.y - (dy / len) * offset;
+  const cx = endPoint.x - (dx / len);
+  const cy = endPoint.y - (dy / len);
   
   return { cx, cy, r: ARC_POSITIONING.INHIBITOR.RADIUS };
+}
+
+/**
+ * Calculate weight label position for arc
+ */
+export function calculateWeightLabelPosition(startPoint: { x: number; y: number }, endPoint: { x: number; y: number }): { x: number; y: number } {
+  const dx = endPoint.x - startPoint.x;
+  const dy = endPoint.y - startPoint.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  
+  // Normalize the direction vector
+  const dirX = dx / length;
+  const dirY = dy / length;
+  
+  // Calculate perpendicular vector
+  const perpX = -dirY;
+  const perpY = dirX;
+  
+  // Position the label offset from the start point
+  // Use perpendicular direction to avoid arrow overlap
+  const offset = ARC_POSITIONING.WEIGHT_LABEL.PERPENDICULAR_OFFSET;
+  const labelX = startPoint.x + (perpX * offset);
+  const labelY = startPoint.y + (perpY * offset);
+  
+  // Additional offset along the arc direction to move it further from the start point
+  const alongOffset = ARC_POSITIONING.WEIGHT_LABEL.ALONG_OFFSET;
+  const finalX = labelX + (dirX * alongOffset);
+  const finalY = labelY + (dirY * alongOffset);
+  
+  return { x: finalX, y: finalY };
 } 

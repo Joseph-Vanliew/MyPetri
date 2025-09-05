@@ -3,6 +3,8 @@ import type { Place as PlaceType } from '../../../types/domain.js';
 import '../elements.css';
 import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants.js';
 import { useGridStore } from '../../../stores/gridStore.js';
+import { usePlaceEditing } from '../hooks/usePlaceEditing.js';
+import { createPlaceHandlers } from '../handlers/placeHandlers.js';
 
 interface PlaceProps {
   place: PlaceType;
@@ -11,6 +13,7 @@ interface PlaceProps {
   onDragStart?: (place: PlaceType, event: React.MouseEvent) => void;
   onDrag?: (place: PlaceType, event: React.MouseEvent) => void;
   onDragEnd?: (place: PlaceType, event: React.MouseEvent) => void;
+  onUpdate?: (place: PlaceType, updates: Partial<PlaceType>) => void;
   // Arc targeting UX
   isArcTarget?: boolean;
   onMouseEnterElement?: (place: PlaceType, event: React.MouseEvent) => void;
@@ -24,6 +27,7 @@ const Place: React.FC<PlaceProps> = ({
   onDragStart, 
   onDrag: _onDrag, 
   onDragEnd: _onDragEnd,
+  onUpdate,
   isArcTarget,
   onMouseEnterElement,
   onMouseLeaveElement,
@@ -37,27 +41,23 @@ const Place: React.FC<PlaceProps> = ({
   const targetRadius = Math.max(majorGridWidth, majorGridHeight) / 2;
   const radius = placeRadius || targetRadius;
 
-  const handleClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (selected) {
-      onDeselect?.(place);
-    } else {
-      onSelect?.(place);
-    }
-  };
-
-  const handleMouseDown = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    onDragStart?.(place, event);
-  };
+  // Use custom hooks and handlers
+  const editingState = usePlaceEditing({ place, onUpdate });
+  const handlers = createPlaceHandlers({
+    place,
+    onSelect,
+    onDeselect,
+    onDragStart,
+    onMouseEnterElement,
+    onMouseLeaveElement,
+  });
 
   return (
     <g
-      onClick={handleClick}
-      onMouseDown={handleMouseDown}
-      onMouseEnter={(e) => onMouseEnterElement?.(place, e)}
-      onMouseLeave={(e) => onMouseLeaveElement?.(place, e)}
+      onClick={handlers.handleClick}
+      onMouseDown={handlers.handleMouseDown}
+      onMouseEnter={handlers.handleMouseEnter}
+      onMouseLeave={handlers.handleMouseLeave}
       className="place-element"
       transform={`translate(${x},${y})`}
     >
@@ -68,23 +68,58 @@ const Place: React.FC<PlaceProps> = ({
       />
       
       {/* Token count */}
-      <text
-        x="0"
-        y="0"
-        className="token-count"
-      >
-        {tokens}
-      </text>
+      {editingState.editingTokens ? (
+        <foreignObject x="-20" y="-10" width="40" height="20">
+          <input
+            type="number"
+            value={editingState.tempTokens}
+            onChange={editingState.handleTokenChange}
+            onBlur={editingState.handleTokenSubmit}
+            onKeyDown={editingState.handleTokenKeyDown}
+            className="token-input"
+            autoFocus
+            min="0"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </foreignObject>
+      ) : (
+        <text
+          x="0"
+          y="0"
+          className="token-count"
+          onDoubleClick={editingState.handleTokenDoubleClick}
+          style={{ cursor: 'pointer' }}
+        >
+          {tokens}
+        </text>
+      )}
       
       {/* Label */}
-      {label && (
-        <text
-          x={radius + 6}
-          y={-radius + 10}
-          className="place-label"
-        >
-          {label}
-        </text>
+      {editingState.editingLabel ? (
+        <foreignObject x={radius + 6} y={-radius} width="100" height="20">
+          <input
+            type="text"
+            value={editingState.tempLabel}
+            onChange={editingState.handleLabelChange}
+            onBlur={editingState.handleLabelSubmit}
+            onKeyDown={editingState.handleLabelKeyDown}
+            className="label-input"
+            autoFocus
+            onClick={(e) => e.stopPropagation()}
+          />
+        </foreignObject>
+      ) : (
+        (label || selected) && (
+          <text
+            x={radius + 6}
+            y={-radius + 10}
+            className="place-label"
+            onDoubleClick={editingState.handleLabelDoubleClick}
+            style={{ cursor: 'pointer' }}
+          >
+            {label}
+          </text>
+        )
       )}
       
       {/* Selection indicator - bounding box */}

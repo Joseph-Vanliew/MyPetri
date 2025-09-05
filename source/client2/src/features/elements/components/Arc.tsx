@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Arc as ArcType } from '../../../types/domain.js';
-import { calculateInhibitorCirclePosition } from '../utils/arcCalculationUtils.js';
+import { calculateInhibitorCirclePosition, calculateWeightLabelPosition } from '../utils/arcCalculationUtils.js';
 import '../elements.css';
 
 interface ArcProps {
@@ -83,14 +83,22 @@ const Arc: React.FC<ArcProps> = ({
         />
       )}
       
-      {/* Weight label - positioned at the middle of the path */}
-      {weight > 1 && (
-        <text
-          className="weight-label"
-        >
-          {weight}
-        </text>
-      )}
+      {/* Weight label */}
+      {startPoint && endPoint && arcType !== 'inhibitor' && (() => {
+        const { x, y } = calculateWeightLabelPosition(startPoint, endPoint);
+        
+        return (
+          <text
+            x={x}
+            y={y}
+            className="weight-label"
+            textAnchor="middle"
+            dominantBaseline="middle"
+          >
+            {weight}
+          </text>
+        );
+      })()}
     </g>
   );
 };

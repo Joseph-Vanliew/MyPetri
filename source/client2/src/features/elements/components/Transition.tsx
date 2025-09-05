@@ -2,6 +2,8 @@ import React from 'react';
 import type { Transition as TransitionType } from '../../../types/domain.js';
 import '../elements.css';
 import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants.js';
+import { useTransitionEditing } from '../hooks/useTransitionEditing.js';
+import { createTransitionHandlers } from '../handlers/transitionHandlers.js';
 
 interface TransitionProps {
   transition: TransitionType;
@@ -10,6 +12,7 @@ interface TransitionProps {
   onDragStart?: (transition: TransitionType, event: React.MouseEvent) => void;
   onDrag?: (transition: TransitionType, event: React.MouseEvent) => void;
   onDragEnd?: (transition: TransitionType, event: React.MouseEvent) => void;
+  onUpdate?: (transition: TransitionType, updates: Partial<TransitionType>) => void;
   // Arc targeting UX
   isArcTarget?: boolean;
   onMouseEnterElement?: (transition: TransitionType, event: React.MouseEvent) => void;
@@ -21,33 +24,30 @@ const Transition: React.FC<TransitionProps> = ({
   onSelect, 
   onDeselect, 
   onDragStart,
+  onUpdate,
   isArcTarget,
   onMouseEnterElement,
   onMouseLeaveElement,
 }) => {
   const { x, y, width, height, name: label, isSelected: selected, enabled } = transition;
 
-  const handleClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (selected) {
-      onDeselect?.(transition);
-    } else {
-      onSelect?.(transition);
-    }
-  };
-
-  const handleMouseDown = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    event.preventDefault();
-    onDragStart?.(transition, event);
-  };
+  // Use custom hooks and handlers
+  const editingState = useTransitionEditing({ transition, onUpdate });
+  const handlers = createTransitionHandlers({
+    transition,
+    onSelect,
+    onDeselect,
+    onDragStart,
+    onMouseEnterElement,
+    onMouseLeaveElement,
+  });
 
   return (
     <g
-      onClick={handleClick}
-      onMouseDown={handleMouseDown}
-      onMouseEnter={(e) => onMouseEnterElement?.(transition, e)}
-      onMouseLeave={(e) => onMouseLeaveElement?.(transition, e)}
+      onClick={handlers.handleClick}
+      onMouseDown={handlers.handleMouseDown}
+      onMouseEnter={handlers.handleMouseEnter}
+      onMouseLeave={handlers.handleMouseLeave}
       className="transition-element"
       transform={`translate(${x},${y})`}
     >
@@ -62,14 +62,32 @@ const Transition: React.FC<TransitionProps> = ({
       />
       
       {/* Label */}
-      {label && (
-        <text
-          x="0"
-          y="0"
-          className="transition-label"
-        >
-          {label}
-        </text>
+      {editingState.editingLabel ? (
+        <foreignObject x={-width / 2} y={-height / 2} width={width} height={height}>
+          <input
+            type="text"
+            value={editingState.tempLabel}
+            onChange={editingState.handleLabelChange}
+            onBlur={editingState.handleLabelSubmit}
+            onKeyDown={editingState.handleLabelKeyDown}
+            className="label-input"
+            autoFocus
+            onClick={(e) => e.stopPropagation()}
+            style={{ textAlign: 'center', width: '100%', height: '100%' }}
+          />
+        </foreignObject>
+      ) : (
+        (label || selected) && (
+          <text
+            x="0"
+            y="0"
+            className="transition-label"
+            onDoubleClick={editingState.handleLabelDoubleClick}
+            style={{ cursor: 'pointer' }}
+          >
+            {label}
+          </text>
+        )
       )}
       
       {/* Selection indicator - bounding box */}
