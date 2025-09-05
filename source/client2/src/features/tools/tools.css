@@ -80,7 +80,7 @@
 /* Drag state styles */
 .toolbar-sidebar .tool-button:active {
   transform: scale(0.95);
-  background-color: #505050;
+  background-color: var(--app-background-color);
 }
 
 .toolbar-sidebar .tool-preview {

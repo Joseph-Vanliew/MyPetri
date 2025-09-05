@@ -39,8 +39,8 @@
 .place-element .place-bounding-box {
   fill: none;
   stroke: #007bff;
-  stroke-dasharray: 8;
-  stroke-width: 2;
+  stroke-dasharray: 3;
+  stroke-width: 1;
 }
 
 /* removed outer selection ring for place */
@@ -48,7 +48,7 @@
 .resize-handle {
   fill: #007bff;
   stroke: #ffffff;
-  stroke-width: 1;
+  stroke-width: .5;
   vector-effect: non-scaling-stroke;
 }
 
@@ -103,8 +103,8 @@
 .transition-element .transition-bounding-box {
   fill: none;
   stroke: #007bff;
-  stroke-dasharray: 8;
-  stroke-width: 2;
+  stroke-dasharray: 3;
+  stroke-width: 1;
 }
 
 .transition-element .transition-arc-highlight {

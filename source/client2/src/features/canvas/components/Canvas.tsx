@@ -65,6 +65,11 @@ const Canvas: React.FC = () => {
       );
 
       if (event.key === 'Escape') {
+        // Always prevent default for Escape key to prevent fullscreen exit
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
         // Clear any selected elements
         if (project?.activePageId) {
           clearSelection(project.activePageId);
@@ -207,11 +212,24 @@ const Canvas: React.FC = () => {
       handleConnectableClick(element.id);
       return;
     }
+    
+    // Check if this element is already part of a multi-selection
+    if (project?.activePageId) {
+      const selectedElements = useElementsStore.getState().getSelectedElements(project.activePageId);
+      const isAlreadySelected = selectedElements.some((el: any) => el.id === element.id);
+      
+      if (isAlreadySelected && selectedElements.length > 1) {
+        // Element is already part of multi-selection, don't change selection
+        // drag the entire group
+        return;
+      }
+    }
+    
     selectElement(project?.activePageId || '', element.id);
   };
 
   const handleElementDeselect = (_element: any) => {
-    // For now, just clear selection - we can enhance this later
+    // For now, just clear selection
     clearSelection(project?.activePageId || '');
   };
 

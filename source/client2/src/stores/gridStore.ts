@@ -22,7 +22,7 @@ export interface GridStoreState {
 
 export const useGridStore = create<GridStoreState>((set, get) => ({
   // Initial state
-  gridSize: 20,
+  gridSize: 10,
   majorGridWidthMultiplier: 4,
   majorGridHeightMultiplier: 4,
   showGrid: true,

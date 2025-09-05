@@ -16,11 +16,11 @@ const Grid: React.FC<GridProps> = ({ viewBox }) => {
   
   if (!showGrid) return null;
 
-  // Calculate the major grid dimensions using store constants
+  // Calculating the major grid dimensions using store constants
   const majorGridWidth = gridSize * majorGridWidthMultiplier;
   const majorGridHeight = gridSize * majorGridHeightMultiplier;
   
-  // Calculate grid boundaries that align with major grid lines
+  // Calculating grid boundaries that align with major grid lines
   const startX = Math.floor(viewBox.x / majorGridWidth) * majorGridWidth;
   const startY = Math.floor(viewBox.y / majorGridHeight) * majorGridHeight;
   const endX = Math.floor((viewBox.x + viewBox.width) / majorGridWidth) * majorGridWidth;
@@ -74,13 +74,22 @@ const Grid: React.FC<GridProps> = ({ viewBox }) => {
           <path 
             d={`M 0 0 L ${gridSize} 0 L ${gridSize} ${gridSize} L 0 ${gridSize} Z`} 
             fill="none" 
-            stroke="rgba(255, 255, 255, 0.08)" 
-            strokeWidth="1"
+            stroke="rgba(255, 255, 255, 0.15)" 
+            strokeWidth=".35"
           />
         </pattern>
       </defs>
       
       {/* Grid background - aligned with major grid boundaries */}
+      <rect 
+        x={startX}
+        y={startY}
+        width={gridWidth} 
+        height={gridHeight} 
+        fill="var(--grid-background-color)"
+      />
+      
+      {/* Grid pattern overlay */}
       <rect 
         x={startX}
         y={startY}

@@ -24,7 +24,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: #2a2a2a;
+  background-color: var(--app-background-color);
   border: 1px solid #404040;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -101,7 +101,7 @@
 }
 
 .submenu-content {
-  background-color: #333333;
+  background-color: var(--app-background-color);
   border-top: 1px solid #404040;
 }
 
