@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Frontend development service
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: frontend-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount source code for hot reloading
+      - ./source/client2/src:/app/frontend/src
+      - ./source/client2/public:/app/frontend/public
+      - ./source/client2/index.html:/app/frontend/index.html
+      - ./source/client2/vite.config.ts:/app/frontend/vite.config.ts
+      - ./source/client2/tsconfig.json:/app/frontend/tsconfig.json
+      - ./source/client2/tsconfig.app.json:/app/frontend/tsconfig.app.json
+      - ./source/client2/tsconfig.node.json:/app/frontend/tsconfig.node.json
+      # Preserve node_modules
+      - /app/frontend/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - pats-dev-network
+
+  # Backend development service
+  backend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: backend-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount source code for hot reloading
+      - ./source/server/src:/app/src
+      - ./source/server/build.gradle:/app/build.gradle
+      - ./source/server/settings.gradle:/app/settings.gradle
+      # Preserve Gradle cache
+      - gradle-cache:/root/.gradle
+    environment:
+      - SPRING_PROFILES_ACTIVE=development
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+    networks:
+      - pats-dev-network
+    depends_on:
+      - frontend-dev
+
+networks:
+  pats-dev-network:
+    driver: bridge
+
+volumes:
+  gradle-cache:

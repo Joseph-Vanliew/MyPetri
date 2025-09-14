@@ -43,11 +43,6 @@ const DragPreview: React.FC = () => {
     };
   }, [isDraggingFromToolbar, handleDragOver]);
 
-  // Note: Preview is now always visible during drag operations
-  // This provides a consistent experience whether over canvas or other areas
-
-  // Always show preview, scaled to zoom, so size matches final render
-
   // Determine element size in SVG units based on current tool options
   const { elementWidthSvg, elementHeightSvg, elementTypeKey } = useMemo(() => {
     if (!draggedElementType) {

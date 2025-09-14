@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  pats-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    volumes:
+      # Mount logs directory for persistence
+      - ./source/server/logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - pats-network
+
+networks:
+  pats-network:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local

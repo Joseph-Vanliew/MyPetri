@@ -133,19 +133,63 @@ npm run dev
 - If using the start script: Press `Ctrl+C` in the terminal where the script is running
 - If running manually: Press `Ctrl+C` in each terminal window
 
-## Docker Deployment
+## Docker Development Environment
 
-### Building the Docker Image
+### Development Mode (Recommended for Local Development)
 ```bash
-docker build -t pats-app .
+# Start development environment with hot reloading
+docker compose -f docker-compose.dev.yml up --build
+
+# Start in detached mode (background)
+docker compose -f docker-compose.dev.yml up -d --build
+
+# Stop the development environment
+docker compose -f docker-compose.dev.yml down
+
+# View logs
+docker compose -f docker-compose.dev.yml logs -f
+
+# View frontend logs only
+docker compose -f docker-compose.dev.yml logs -f frontend-dev
+
+# View backend logs only
+docker compose -f docker-compose.dev.yml logs -f backend-dev
 ```
 
-### Running the Docker Container
+The development environment will be available at:
+- Frontend: http://localhost:5173 (with hot reloading)
+- Backend: http://localhost:8080 (with auto-restart on changes)
+
+**Features:**
+- ✅ Hot reloading for frontend changes
+- ✅ Auto-restart for backend changes
+- ✅ Volume mounting for instant file updates
+- ✅ Separate containers for frontend and backend
+
+## Docker Production Build
+
+### Using Docker Compose
 ```bash
+# Build and start the production application
+docker compose up --build
+
+# Start in detached mode (background)
+docker compose up -d --build
+
+# Stop the application
+docker compose down
+```
+
+### Using Docker directly
+```bash
+# Build the Docker image
+docker build -t pats-app .
+
+# Run the Docker container
 docker run -p 8080:8080 pats-app
 ```
 
-The application will be available at http://localhost:8080
+The production application will be available at http://localhost:8080
 
 ### Cloud Deployment
 The project includes Google Cloud Build configuration for automated deployment to Cloud Run.

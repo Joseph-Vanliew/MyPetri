@@ -40,7 +40,7 @@ const Toolbar: React.FC = () => {
       return;
     }
 
-    // If we have an active page, place the element at viewport center
+    // for the active page, place the element at viewport center
     if (project?.activePageId) {
       // Determine placement position: use last placed position + offset, else center
       const center = getViewportCenter();
@@ -84,7 +84,6 @@ const Toolbar: React.FC = () => {
         case 'ARC':
         case 'ARC_INHIBITOR':
         case 'ARC_BIDIRECTIONAL':
-          // Arcs need to be created between two elements, so we'll just select the tool
           setSelectedTool(tool as any);
           return;
       }

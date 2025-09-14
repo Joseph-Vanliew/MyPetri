@@ -73,7 +73,7 @@
   - [ ] Persist tool/UI settings as needed
 
 - [✅] Keyboard shortcuts
-  - [ ] Copy/Paste/Undo/Delete/Esc, guarded when typing
+  - [✅] Copy/Paste/Undo/Delete/Esc, guarded when typing
 
 - [ ] Testing
   - [ ] Unit tests for stores and canvas utilities

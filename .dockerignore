@@ -1,11 +1,70 @@
+# Git
 .git
-.gradle
-build
-source/client/node_modules
-source/client/dist
-.idea
-.vscode
-logs
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+screenshots/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
 *.log
-*.iml
-.DS_Store 
+logs/
+source/server/logs/
+
+# Build artifacts
+source/client/node_modules/
+source/client/dist/
+source/client/build/
+source/server/build/
+source/server/.gradle/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+
+# Docker files (to avoid recursive builds)
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Test coverage reports
+coverage/
+*.lcov
+
+# Package manager files
+package-lock.json
+yarn.lock
+
+# Development scripts
+start_mypetri.sh
+
+# Development Docker files (exclude from production builds)
+Dockerfile.dev
+docker-compose.dev.yml
+
+# Cloud build files
+cloudbuild.yaml

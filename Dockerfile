@@ -11,11 +11,11 @@ WORKDIR /app
 COPY . .
 
 # Build frontend with explicit output to the dist directory
-RUN cd source/client && npm install && npm run build
+RUN cd source/client2 && npm install && npm run build
 
 # Copying frontend build to main java location
 RUN mkdir -p source/server/src/main/resources/static
-RUN if [ -d "source/client/dist" ]; then cp -r source/client/dist/* source/server/src/main/resources/static/; fi
+RUN if [ -d "source/client2/dist" ]; then cp -r source/client2/dist/* source/server/src/main/resources/static/; fi
 
 # Build backend
 RUN cd source/server && ./gradlew build -x test
