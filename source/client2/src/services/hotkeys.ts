@@ -1,9 +1,9 @@
 // Global hotkey service for handling keyboard shortcuts
 // Separated from stores to reduce coupling
 
-import { useHistoryStore } from '../stores/historyStore.js';
-import { useClipboardStore } from '../stores/clipboardStore.js';
-import { useProjectStore } from '../stores/projectStore.js';
+import { useHistoryStore } from '../stores/historyStore';
+import { useClipboardStore } from '../stores/clipboardStore';
+import { useProjectStore } from '../stores/projectStore';
 
 type HotkeyHandler = (e: KeyboardEvent) => void;
 type HotkeyCleanup = () => void;
@@ -80,7 +80,6 @@ export const ensureClipboardHotkeysInstalled = () => {
   if (clipboardHotkeysInstalled || typeof window === 'undefined') return;
   
   let lastTs = 0;
-  let lastActionAt = 0;
   
   const handler: HotkeyHandler = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
@@ -91,8 +90,6 @@ export const ensureClipboardHotkeysInstalled = () => {
     
     if (e.repeat) return; // ignore OS key repeat
     if (e.timeStamp && e.timeStamp === lastTs) return; // dedupe same event
-    const nowTs = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (nowTs - lastActionAt < 150) return; // throttle quick duplicates
     if (!mod) return;
     
     if (key === 'c') {
@@ -104,7 +101,6 @@ export const ensureClipboardHotkeysInstalled = () => {
       // @ts-ignore
       if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
       lastTs = e.timeStamp as number;
-      lastActionAt = nowTs;
       useClipboardStore.getState().copyFromSelection(project.activePageId);
       console.log('[Hotkeys] Copy');
     } else if (key === 'v') {
@@ -115,7 +111,6 @@ export const ensureClipboardHotkeysInstalled = () => {
       // @ts-ignore
       if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
       lastTs = e.timeStamp as number;
-      lastActionAt = nowTs;
       useClipboardStore.getState().pasteToPage(project.activePageId);
       console.log('[Hotkeys] Paste');
     }

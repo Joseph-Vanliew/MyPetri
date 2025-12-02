@@ -1,20 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { screenToSVGCoordinates } from '../../canvas/utils/coordinateUtils.js';
-import { useInteractionStore } from '../../../stores/interactionStore.js';
-import { useHistoryStore } from '../../../stores/historyStore.js';
+import { screenToSVGCoordinates } from '../../canvas/utils/coordinateUtils';
+import { useInteractionStore } from '../../../stores/interactionStore';
+import { useHistoryStore } from '../../../stores/historyStore';
 import type { ToolType } from '../../../types/common';
 
 interface DragState {
   isDragging: boolean;
   dragElement: any | null;
   dragStartPos: { x: number; y: number };
-}
-
-export interface DragBoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
 interface UseElementDragProps {
@@ -43,6 +36,7 @@ export const useElementDrag = ({
   
   const dragStartElementPos = useRef({ x: 0, y: 0 });
   const dragStartPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+  const pendingUpdatesRef = useRef<Map<string, { x: number; y: number }>>(new Map());
   const dragElementsDataRef = useRef<Map<string, any>>(new Map()); // Store full element data
   const [draggingIds, setDraggingIds] = useState<string[]>([]); // State to trigger re-renders when IDs change
   const dragElementRef = useRef<any | null>(null);
@@ -82,6 +76,7 @@ export const useElementDrag = ({
     // Prepare group drag positions and calculate initial bounding box from element data
     dragStartPositionsRef.current.clear();
     dragElementsDataRef.current.clear();
+    pendingUpdatesRef.current.clear();
     let elementsToDrag: any[] = [element];
     
     if (projectActivePageId && typeof getSelectedElements === 'function') {
@@ -128,16 +123,13 @@ export const useElementDrag = ({
     const snappedDeltaY = anchorNewY - dragStartElementPos.current.y;
 
     if (projectActivePageId) {
-      // Move all dragging ids using their own start positions plus snapped delta
-    const idsToMove = draggingIds.length > 0 ? Array.from(new Set(draggingIds)) : [element.id];
+      const idsToMove = draggingIds.length > 0 ? Array.from(new Set(draggingIds)) : [element.id];
       idsToMove.forEach((id) => {
         const start = dragStartPositionsRef.current.get(id) || dragStartElementPos.current;
         const nx = start.x + snappedDeltaX;
         const ny = start.y + snappedDeltaY;
-        onUpdateElement(projectActivePageId, id, { x: nx, y: ny });
+        pendingUpdatesRef.current.set(id, { x: nx, y: ny });
       });
-      
-      // Note: Bounding boxes are now rendered by individual elements during drag
     }
   }, [dragState, selectedTool, snapToGrid, gridSize, projectActivePageId, onUpdateElement, draggingIds]);
 
@@ -153,6 +145,12 @@ export const useElementDrag = ({
       dragStartPos: { x: 0, y: 0 }
     });
     dragElementsDataRef.current.clear();
+    if (projectActivePageId) {
+      pendingUpdatesRef.current.forEach((pos, id) => {
+        onUpdateElement(projectActivePageId, id, pos);
+      });
+    }
+    pendingUpdatesRef.current.clear();
     setDraggingIds([]); // Clear dragging IDs
     // End history batch after drag completes
     useHistoryStore.getState().endBatch();

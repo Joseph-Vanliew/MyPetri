@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useCanvasStore } from '../../../stores/index.js';
+import { useCanvasStore } from '../../../stores/index';
 
 
 export const useZoomAndPan = () => {

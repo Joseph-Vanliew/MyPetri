@@ -1,5 +1,5 @@
-import { screenToSVGCoordinates, snapToGrid as snapToGridUtil } from '../utils/coordinateUtils.js';
-import { calculateArcEndpoints } from '../../elements/utils/arcCalculationUtils.js';
+import { screenToSVGCoordinates, snapToGrid as snapToGridUtil } from '../utils/coordinateUtils';
+import { calculateArcEndpoints } from '../../elements/utils/arcCalculationUtils';
 
 interface CanvasHandlersProps {
   // Canvas state

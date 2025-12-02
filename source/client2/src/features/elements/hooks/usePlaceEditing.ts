@@ -3,7 +3,7 @@ import type { Place } from '../../../types/domain';
 
 interface UsePlaceEditingProps {
   place: Place;
-  onUpdate?: (place: Place, updates: Partial<Place>) => void;
+  onUpdate?: (updates: Partial<Place>) => void;
 }
 
 export const usePlaceEditing = ({ place, onUpdate }: UsePlaceEditingProps) => {
@@ -30,9 +30,7 @@ export const usePlaceEditing = ({ place, onUpdate }: UsePlaceEditingProps) => {
   };
 
   const handleLabelSubmit = () => {
-    if (onUpdate) {
-      onUpdate(place, { name: tempLabel });
-    }
+    onUpdate?.({ name: tempLabel });
     setEditingLabel(false);
   };
 
@@ -58,8 +56,8 @@ export const usePlaceEditing = ({ place, onUpdate }: UsePlaceEditingProps) => {
 
   const handleTokenSubmit = () => {
     const newTokens = parseInt(tempTokens, 10);
-    if (!isNaN(newTokens) && newTokens >= 0 && onUpdate) {
-      onUpdate(place, { tokens: newTokens });
+    if (!isNaN(newTokens) && newTokens >= 0) {
+      onUpdate?.({ tokens: newTokens });
     }
     setEditingTokens(false);
   };

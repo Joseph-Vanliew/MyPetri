@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ToolType } from '../types/ToolTypes';
-import { useToolbarStore } from '../../../stores/index.js';
+import { useToolbarStore } from '../../../stores/index';
 
 interface ToolButtonProps {
   toolType: ToolType;

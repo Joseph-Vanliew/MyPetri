@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useHistoryStore } from '../../../stores/index.js';
+import { useHistoryStore } from '../../../stores/index';
 import './EditMenu.css';
 
 interface SubMenuProps {

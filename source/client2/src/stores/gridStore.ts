@@ -58,12 +58,4 @@ export const useGridStore = create<GridStoreState>((set, get) => ({
     const { showAllTiles } = get();
     set({ showAllTiles: !showAllTiles });
   },
-})); 
-
-// Expose for non-hook access in rare cases (e.g., preview sizing without re-renders)
-// This is safe in client code; ignored on SSR builds.
-// @ts-ignore
-if (typeof window !== 'undefined') {
-  // @ts-ignore
-  (window as any).__gridStore__ = { getState: () => useGridStore.getState() };
-}
+}));

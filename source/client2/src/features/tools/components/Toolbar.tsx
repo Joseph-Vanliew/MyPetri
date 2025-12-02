@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
-import { useToolbarStore, useElementsStore, useProjectStore, useCanvasStore } from '../../../stores/index.js';
-import { useInteractionStore } from '../../../stores/interactionStore.js';
-import ToolButton from './ToolButton.js';
-import ToolSection from './ToolSection.js';
+import { useToolbarStore, useElementsStore, useProjectStore, useCanvasStore } from '../../../stores/index';
+import { useInteractionStore } from '../../../stores/interactionStore';
+import ToolButton from './ToolButton';
+import ToolSection from './ToolSection';
 import { 
   PlaceIcon, 
   TransitionIcon, 
@@ -12,7 +12,7 @@ import {
   TextIcon, 
   ShapeIcon,
   DEFAULT_ICON_SIZE
-} from '../icons/index.js';
+} from '../icons/index';
 import type { ToolType } from '../types/ToolTypes';
 
 const Toolbar: React.FC = () => {

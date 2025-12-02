@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { useElementsStore, useProjectStore, useToolbarStore } from '../../../stores/index.js';
+import { useElementsStore, useProjectStore, useToolbarStore } from '../../../stores/index';
 
 interface UseCanvasInteractionsProps {
   selectedTool: string;

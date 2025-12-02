@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import { useLayoutStore } from '../stores/index.js';
+import { useLayoutStore } from '../stores/index';
 import TitleSection from './TitleSection.tsx';
 import Ribbon from './Ribbon.tsx';
-import { Toolbar } from '../features/tools/ToolsIndex.js';
+import { Toolbar } from '../features/tools/ToolsIndex';
 import MainContent from './MainContent.tsx';
 import StatusBar from './StatusBar.tsx';
-import DragPreview from '../features/tools/components/DragPreview.js';
+import DragPreview from '../features/tools/components/DragPreview';
 import './layout.css';
 const AppLayout: React.FC = () => {
   const { leftSidebarWidth, rightSidebarWidth, leftSidebarCollapsed, rightSidebarCollapsed } = useLayoutStore();

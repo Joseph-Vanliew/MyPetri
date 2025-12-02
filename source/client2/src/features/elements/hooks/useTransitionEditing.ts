@@ -3,7 +3,7 @@ import type { Transition } from '../../../types/domain';
 
 interface UseTransitionEditingProps {
   transition: Transition;
-  onUpdate?: (transition: Transition, updates: Partial<Transition>) => void;
+  onUpdate?: (updates: Partial<Transition>) => void;
 }
 
 export const useTransitionEditing = ({ transition, onUpdate }: UseTransitionEditingProps) => {
@@ -27,9 +27,7 @@ export const useTransitionEditing = ({ transition, onUpdate }: UseTransitionEdit
   };
 
   const handleLabelSubmit = () => {
-    if (onUpdate) {
-      onUpdate(transition, { name: tempLabel });
-    }
+    onUpdate?.({ name: tempLabel });
     setEditingLabel(false);
   };
 

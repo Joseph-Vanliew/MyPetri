@@ -1,37 +1,85 @@
 import React, { useCallback, useEffect } from 'react';
-import { useCanvasStore, useElementsStore, useProjectStore, useToolbarStore } from '../../../stores/index.js';
-import { useGridStore } from '../../../stores/gridStore.js';
-import { useZoomAndPan } from '../hooks/useZoomAndPan.js';
-import { useElementDrag } from '../hooks/useElementDrag.js';
-import { useCanvasInteractions } from '../hooks/useCanvasInteractions.js';
-import { useGridTileExtension } from '../hooks/useGridTileExtension.js';
-import { createCanvasHandlers } from '../handlers/canvasHandlers.js';
-import Grid from './Grid.js';
-import MarkerDefinitions from '../../elements/components/MarkerDefinitions.js';
-import Place from '../../elements/components/Place.js';
-import Transition from '../../elements/components/Transition.js';
-import Arc from '../../elements/components/Arc.js';
-import ArcPreview from '../../elements/components/ArcPreview.js';
+import { useShallow } from 'zustand/react/shallow';
+import { useCanvasStore } from '../../../stores/canvasStore';
+import { useElementsStore } from '../../../stores/elementsStore';
+import { useProjectStore } from '../../../stores/projectStore';
+import { useToolbarStore } from '../../../stores/toolbarStore';
+import { useGridStore } from '../../../stores/gridStore';
+import { useZoomAndPan } from '../hooks/useZoomAndPan';
+import { useElementDrag } from '../hooks/useElementDrag';
+import { useCanvasInteractions } from '../hooks/useCanvasInteractions';
+import { useGridTileExtension } from '../hooks/useGridTileExtension';
+import { createCanvasHandlers } from '../handlers/canvasHandlers';
+import Grid from './Grid';
+import MarkerDefinitions from '../../elements/components/MarkerDefinitions';
+import Place from '../../elements/components/Place';
+import Transition from '../../elements/components/Transition';
+import Arc from '../../elements/components/Arc';
+import ArcPreview from '../../elements/components/ArcPreview';
 import '../canvas.css';
-import { screenToSVGCoordinates } from '../utils/coordinateUtils.js';
+import { screenToSVGCoordinates } from '../utils/coordinateUtils';
 
 const Canvas: React.FC = () => {
+  const project = useProjectStore((state) => state.project);
+  const activePageId = project?.activePageId;
+
   const {
     zoomLevel,
     panOffset,
     viewBox,
     setActivePage
-  } = useCanvasStore();
-  
-  const { selectElements, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
-  const { project } = useProjectStore();
-  const { getGridTiles } = useCanvasStore();
+  } = useCanvasStore(
+    useShallow((state) => ({
+      zoomLevel: state.zoomLevel,
+      panOffset: state.panOffset,
+      viewBox: state.viewBox,
+      setActivePage: state.setActivePage,
+    }))
+  );
+
+  const selectionState = useCanvasStore(
+    useShallow((state) => ({
+      selectionBox: state.selectionBox,
+      setSelectionBox: state.setSelectionBox,
+      isSelecting: state.isSelecting,
+      setIsSelecting: state.setIsSelecting,
+    }))
+  );
+
+  const getGridTiles = useCanvasStore((state) => state.getGridTiles);
+
+  const elementActions = useElementsStore(
+    useShallow((state) => ({
+      selectElements: state.selectElements,
+      clearSelection: state.clearSelection,
+      createPlace: state.createPlace,
+      createTransition: state.createTransition,
+      createTextElement: state.createTextElement,
+      createShapeElement: state.createShapeElement,
+      updateElement: state.updateElement,
+      createArc: state.createArc,
+    }))
+  );
+
+  const currentPageElements = useElementsStore(
+    useShallow((state) => (activePageId ? state.elementsByPage[activePageId] || [] : []))
+  );
+
   useEffect(() => {
-    if (project?.activePageId) {
-      setActivePage(project.activePageId);
+    if (activePageId) {
+      setActivePage(activePageId);
     }
-  }, [project?.activePageId, setActivePage]);
-  const { selectedTool, toolOptions, arcDrawingStartId, setArcDrawingStartId, setSelectedTool } = useToolbarStore();
+  }, [activePageId, setActivePage]);
+
+  const { selectedTool, toolOptions, arcDrawingStartId, setArcDrawingStartId, setSelectedTool } = useToolbarStore(
+    useShallow((state) => ({
+      selectedTool: state.selectedTool,
+      toolOptions: state.toolOptions,
+      arcDrawingStartId: state.arcDrawingStartId,
+      setArcDrawingStartId: state.setArcDrawingStartId,
+      setSelectedTool: state.setSelectedTool,
+    }))
+  );
   const { canvasRef } = useZoomAndPan();
   
 
@@ -41,15 +89,17 @@ const Canvas: React.FC = () => {
     snapToGrid,
     toggleGrid,
     toggleSnapToGrid
-  } = useGridStore();
+  } = useGridStore(
+    useShallow((state) => ({
+      gridSize: state.gridSize,
+      showGrid: state.showGrid,
+      snapToGrid: state.snapToGrid,
+      toggleGrid: state.toggleGrid,
+      toggleSnapToGrid: state.toggleSnapToGrid,
+    }))
+  );
 
-  // Selection box state (uses canvas store for UI; elements store for selection)
-  const { selectionBox, setSelectionBox, isSelecting, setIsSelecting } = useCanvasStore();
-
-  // Get elements for the current page
-  const currentPageElements = project?.activePageId 
-    ? getElements(project.activePageId)
-    : [];
+  const { selectionBox, setSelectionBox, isSelecting, setIsSelecting } = selectionState;
 
   // Arc mode check
   const isArcMode = selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL';
@@ -67,7 +117,7 @@ const Canvas: React.FC = () => {
 
   // Create canvas handlers
   const handlers = createCanvasHandlers({
-    projectActivePageId: project?.activePageId,
+    projectActivePageId: activePageId,
     selectedTool,
     toolOptions,
     gridSize,
@@ -84,13 +134,13 @@ const Canvas: React.FC = () => {
     setSelectionBox,
     setIsSelecting,
     setFadeSelectionBox: interactions.setFadeSelectionBox,
-    createPlace,
-    createTransition,
-    createTextElement,
-    createShapeElement,
-    createArc,
-    selectElements,
-    clearSelection,
+    createPlace: elementActions.createPlace,
+    createTransition: elementActions.createTransition,
+    createTextElement: elementActions.createTextElement,
+    createShapeElement: elementActions.createShapeElement,
+    createArc: elementActions.createArc,
+    selectElements: elementActions.selectElements,
+    clearSelection: elementActions.clearSelection,
     clearArcState: interactions.clearArcState,
     setSelectedTool,
   });
@@ -105,8 +155,8 @@ const Canvas: React.FC = () => {
     selectedTool,
     snapToGrid,
     gridSize,
-    onUpdateElement: updateElement,
-    projectActivePageId: project?.activePageId,
+    onUpdateElement: elementActions.updateElement,
+    projectActivePageId: activePageId,
     getSelectedElements: (pageId: string) => useElementsStore.getState().getSelectedElements(pageId)
   });
 
@@ -182,7 +232,7 @@ const Canvas: React.FC = () => {
           {/* Canvas background - covers all pre-rendered grid tiles */}
           {(() => {
             // Get all tiles (pre-rendered grid covers a large area)
-            const allTiles = project?.activePageId ? getGridTiles(project.activePageId) : [];
+            const allTiles = activePageId ? getGridTiles(activePageId) : [];
             
             if (allTiles.length === 0) {
               // Fallback to viewBox if no tiles exist

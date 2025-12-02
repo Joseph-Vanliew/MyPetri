@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGridStore } from '../../../stores/gridStore.js';
+import { useGridStore } from '../../../stores/gridStore';
 
 interface GridTileProps {
   x: number; // Top-left corner X in SVG coordinates

@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { useProjectStore, useLayoutStore } from './stores/index.js';
-import AppLayout from './layout/AppLayout.js';
-import { useHistoryStore, initializeHistorySubscription } from './stores/index.js';
-import { initializeAllHotkeys } from './services/hotkeys.js';
+import { useProjectStore } from './stores/projectStore';
+import { useLayoutStore } from './stores/layoutStore';
+import AppLayout from './layout/AppLayout';
+import { useHistoryStore, initializeHistorySubscription } from './stores/historyStore';
+import { initializeAllHotkeys } from './services/hotkeys';
 import './App.css';
 
 const App: React.FC = () => {

@@ -1,4 +1,4 @@
-import type { Element } from '../../../types/domain.js';
+import type { Element } from '../../../types/domain';
 
 export function getElementCenter(element: Element): { x: number; y: number } {
   // Elements are rendered centered at (x, y) in SVG (see Place/Transition components)

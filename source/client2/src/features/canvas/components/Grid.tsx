@@ -1,8 +1,8 @@
 import React from 'react';
-import { useGridStore } from '../../../stores/gridStore.js';
-import { useCanvasStore, type GridTile } from '../../../stores/canvasStore.js';
-import { useProjectStore, useElementsStore } from '../../../stores/index.js';
-import GridTileComponent from './GridTile.js';
+import { useGridStore } from '../../../stores/gridStore';
+import { useCanvasStore, type GridTile } from '../../../stores/canvasStore';
+import { useProjectStore, useElementsStore } from '../../../stores/index';
+import GridTileComponent from './GridTile';
 
 interface GridProps {
   viewBox: { x: number; y: number; width: number; height: number };

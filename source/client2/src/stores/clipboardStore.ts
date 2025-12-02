@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
-import { useElementsStore } from './elementsStore.js';
-import { useHistoryStore } from './historyStore.js';
-import type { Element, Arc } from '../types/domain.js';
+import { useElementsStore } from './elementsStore';
+import { useHistoryStore } from './historyStore';
+import type { Element, Arc } from '../types/domain';
 
 interface ClipboardState {
   lastCopied: Element[] | null;

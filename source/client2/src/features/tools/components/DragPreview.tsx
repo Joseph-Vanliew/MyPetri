@@ -1,16 +1,36 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { useToolbarStore } from '../../../stores/index.js';
-import { useGridStore } from '../../../stores/gridStore.js';
-import { ELEMENT_DEFAULT_SIZES } from '../../elements/registry/ElementTypes.js';
-import { screenToSVGCoordinates, svgToScreenCoordinates } from '../../canvas/utils/coordinateUtils.js';
+import { useShallow } from 'zustand/react/shallow';
+import { useToolbarStore } from '../../../stores/toolbarStore';
+import { useGridStore } from '../../../stores/gridStore';
+import { ELEMENT_DEFAULT_SIZES } from '../../elements/registry/ElementTypes';
+import { screenToSVGCoordinates, svgToScreenCoordinates } from '../../canvas/utils/coordinateUtils';
 import '../tools.css';
 
 // Fixed scale for drag preview when NOT over canvas (static size)
 const DEFAULT_DRAG_PREVIEW_SCALE = 1.0; // Fixed pixel scale for toolbar/preview area
 
 const DragPreview: React.FC = () => {
-  const { isDraggingFromToolbar, draggedElementType, dragPreviewPosition, updateDragPreviewPosition, toolOptions } = useToolbarStore();
-  const { gridSize, snapToGrid } = useGridStore();
+  const {
+    isDraggingFromToolbar,
+    draggedElementType,
+    dragPreviewPosition,
+    updateDragPreviewPosition,
+    toolOptions,
+  } = useToolbarStore(
+    useShallow((state) => ({
+      isDraggingFromToolbar: state.isDraggingFromToolbar,
+      draggedElementType: state.draggedElementType,
+      dragPreviewPosition: state.dragPreviewPosition,
+      updateDragPreviewPosition: state.updateDragPreviewPosition,
+      toolOptions: state.toolOptions,
+    }))
+  );
+  const { gridSize, snapToGrid } = useGridStore(
+    useShallow((state) => ({
+      gridSize: state.gridSize,
+      snapToGrid: state.snapToGrid,
+    }))
+  );
 
 
 

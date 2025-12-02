@@ -1,4 +1,4 @@
-import type { ElementType } from '../../../types/common.js';
+import type { ElementType } from '../../../types/common';
 
 // Element type constants
 export const ELEMENT_TYPES = {

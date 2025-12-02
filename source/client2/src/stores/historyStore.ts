@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { useElementsStore } from './elementsStore.js';
-import type { ElementsState } from './elementsStore.js';
+import { useElementsStore } from './elementsStore';
+import type { ElementsState } from './elementsStore';
 
 export interface HistorySnapshot {
   elementsByPage: ElementsState['elementsByPage'];
@@ -147,10 +147,22 @@ export const useHistoryStore = create<HistoryState>()(
 // rather than elementsStore calling historyStore
 let historySubscriptionActive = false;
 
+const getStructuralElementsSignature = (elementsByPage: ElementsState['elementsByPage']) => {
+  const sanitized: Record<string, unknown> = {};
+  Object.entries(elementsByPage).forEach(([pageId, elements]) => {
+    sanitized[pageId] = elements.map((element: any) => {
+      const { isSelected, ...rest } = element;
+      return rest;
+    });
+  });
+  return JSON.stringify(sanitized);
+};
+
 export const initializeHistorySubscription = () => {
   if (historySubscriptionActive || typeof window === 'undefined') return;
   
-  let previousSnapshot: HistorySnapshot | null = null;
+  let baselineSnapshot: HistorySnapshot | null = null;
+  let baselineSignature: string | null = null;
   
   const unsubscribe = useElementsStore.subscribe(
     (state) => {
@@ -158,22 +170,32 @@ export const initializeHistorySubscription = () => {
         elementsByPage: state.elementsByPage,
         selectedElementIds: state.selectedElementIds,
       };
+      const currentSignature = getStructuralElementsSignature(state.elementsByPage);
       
       // Only record if not applying history and state actually changed
       const historyStore = useHistoryStore.getState();
+      if (historyStore._isBatching) {
+        baselineSnapshot = structuredClone(currentSnapshot);
+        baselineSignature = currentSignature;
+        return;
+      }
       if (historyStore._isApplyingHistory) {
-        // Update previous snapshot but don't record
-        previousSnapshot = structuredClone(currentSnapshot);
+        baselineSnapshot = structuredClone(currentSnapshot);
+        baselineSignature = currentSignature;
         return;
       }
       
-      // Record the previous state as a snapshot (skip first call)
-      if (previousSnapshot !== null) {
-        historyStore._pushSnapshot(previousSnapshot);
+      if (baselineSnapshot === null || baselineSignature === null) {
+        baselineSnapshot = structuredClone(currentSnapshot);
+        baselineSignature = currentSignature;
+        return;
       }
       
-      // Update for next change
-      previousSnapshot = structuredClone(currentSnapshot);
+      if (baselineSignature !== currentSignature) {
+        historyStore._pushSnapshot(baselineSnapshot);
+        baselineSnapshot = structuredClone(currentSnapshot);
+        baselineSignature = currentSignature;
+      }
     }
   );
   
@@ -183,6 +205,7 @@ export const initializeHistorySubscription = () => {
   return () => {
     unsubscribe();
     historySubscriptionActive = false;
-    previousSnapshot = null;
+    baselineSnapshot = null;
+    baselineSignature = null;
   };
 };

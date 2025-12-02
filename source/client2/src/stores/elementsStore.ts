@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import type { Element, Place, Transition, Arc, TextElement, ShapeElement } from '../types/domain';
-import { ELEMENT_TYPES, ELEMENT_DEFAULT_SIZES } from '../features/elements/registry/ElementTypes.js';
+import { ELEMENT_TYPES, ELEMENT_DEFAULT_SIZES } from '../features/elements/registry/ElementTypes';
 
 export interface ElementsState {
   // Element data by page
@@ -16,6 +16,7 @@ export interface ElementsState {
   updateElement: (pageId: string, elementId: string, updates: Partial<Element>) => void;
   removeElement: (pageId: string, elementId: string) => void;
   removeElements: (pageId: string, elementIds: string[]) => void;
+  loadElements: (elementsByPage: Record<string, Element[]>) => void;
   
   // Element queries
   getElements: (pageId: string) => Element[];
@@ -103,6 +104,23 @@ export const useElementsStore = create<ElementsState>()(
               ...elementsByPage,
               [pageId]: updatedElements
             }
+          });
+        },
+
+        loadElements: (elementsByPage: Record<string, Element[]>) => {
+          const clonedElements = Object.entries(elementsByPage).reduce<Record<string, Element[]>>((acc, [pageId, elements]) => {
+            acc[pageId] = elements.map(element => ({ ...element }));
+            return acc;
+          }, {});
+
+          const clearedSelection = Object.keys(clonedElements).reduce<Record<string, string[]>>((acc, pageId) => {
+            acc[pageId] = [];
+            return acc;
+          }, {});
+
+          set({
+            elementsByPage: clonedElements,
+            selectedElementIds: clearedSelection,
           });
         },
 

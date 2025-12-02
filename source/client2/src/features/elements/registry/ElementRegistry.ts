@@ -1,4 +1,4 @@
-import type { ElementType, ElementBase } from '../../../types/common.js';
+import type { ElementType, ElementBase } from '../../../types/common';
 
 // Element behavior interface
 export interface ElementBehavior {

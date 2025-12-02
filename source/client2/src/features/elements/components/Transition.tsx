@@ -1,10 +1,13 @@
 import React from 'react';
-import type { Transition as TransitionType } from '../../../types/domain.js';
+import { useShallow } from 'zustand/react/shallow';
+import type { Transition as TransitionType } from '../../../types/domain';
 import '../elements.css';
-import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants.js';
-import { useElementsStore, useProjectStore, useToolbarStore } from '../../../stores/index.js';
-import { useTransitionEditing } from '../hooks/useTransitionEditing.js';
-import { createTransitionHandlers } from '../handlers/transitionHandlers.js';
+import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants';
+import { useElementsStore } from '../../../stores/elementsStore';
+import { useProjectStore } from '../../../stores/projectStore';
+import { useToolbarStore } from '../../../stores/toolbarStore';
+import { useTransitionEditing } from '../hooks/useTransitionEditing';
+import { createTransitionHandlers } from '../handlers/transitionHandlers';
 
 interface TransitionProps {
   transition: TransitionType;
@@ -27,10 +30,15 @@ const Transition: React.FC<TransitionProps> = ({
 }) => {
   const { x, y, width, height, name: label, isSelected: selected, enabled } = transition;
 
-  // Read from stores instead of props
-  const { selectElement, clearSelection, updateElement } = useElementsStore();
-  const { project } = useProjectStore();
-  const { selectedTool } = useToolbarStore();
+  const { selectElement, clearSelection, updateElement } = useElementsStore(
+    useShallow((state) => ({
+      selectElement: state.selectElement,
+      clearSelection: state.clearSelection,
+      updateElement: state.updateElement,
+    }))
+  );
+  const activePageId = useProjectStore((state) => state.project?.activePageId);
+  const selectedTool = useToolbarStore((state) => state.selectedTool);
   
   // Compute derived state
   const isArcMode = selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL';
@@ -43,25 +51,25 @@ const Transition: React.FC<TransitionProps> = ({
       onArcConnect(transition.id);
       return;
     }
-    if (project?.activePageId) {
-      selectElement(project.activePageId, transition.id);
+    if (activePageId) {
+      selectElement(activePageId, transition.id);
     }
-  }, [project?.activePageId, selectElement, transition.id, isArcMode, onArcConnect]);
+  }, [activePageId, selectElement, transition.id, isArcMode, onArcConnect]);
 
   const handleDeselect = React.useCallback(() => {
     // Don't deselect when in arc mode
     if (isArcMode) return;
-    if (project?.activePageId) {
-      clearSelection(project.activePageId);
+    if (activePageId) {
+      clearSelection(activePageId);
     }
-  }, [project?.activePageId, clearSelection, isArcMode]);
+  }, [activePageId, clearSelection, isArcMode]);
 
   // Use custom hooks and handlers
   const editingState = useTransitionEditing({ 
     transition, 
     onUpdate: (updates) => {
-      if (project?.activePageId) {
-        updateElement(project.activePageId, transition.id, updates);
+      if (activePageId) {
+        updateElement(activePageId, transition.id, updates);
       }
     }
   });

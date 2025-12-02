@@ -1,11 +1,14 @@
 import React from 'react';
-import type { Place as PlaceType } from '../../../types/domain.js';
+import { useShallow } from 'zustand/react/shallow';
+import type { Place as PlaceType } from '../../../types/domain';
 import '../elements.css';
-import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants.js';
-import { useGridStore } from '../../../stores/gridStore.js';
-import { useElementsStore, useProjectStore, useToolbarStore } from '../../../stores/index.js';
-import { usePlaceEditing } from '../hooks/usePlaceEditing.js';
-import { createPlaceHandlers } from '../handlers/placeHandlers.js';
+import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants';
+import { useGridStore } from '../../../stores/gridStore';
+import { useElementsStore } from '../../../stores/elementsStore';
+import { useProjectStore } from '../../../stores/projectStore';
+import { useToolbarStore } from '../../../stores/toolbarStore';
+import { usePlaceEditing } from '../hooks/usePlaceEditing';
+import { createPlaceHandlers } from '../handlers/placeHandlers';
 
 interface PlaceProps {
   place: PlaceType;
@@ -27,12 +30,23 @@ const Place: React.FC<PlaceProps> = ({
   isDragging = false,
 }) => {
   const { x, y, tokens, name: label, isSelected: selected, bounded, radius: placeRadius } = place;
-  const { gridSize, majorGridWidthMultiplier, majorGridHeightMultiplier } = useGridStore();
+  const { gridSize, majorGridWidthMultiplier, majorGridHeightMultiplier } = useGridStore(
+    useShallow((state) => ({
+      gridSize: state.gridSize,
+      majorGridWidthMultiplier: state.majorGridWidthMultiplier,
+      majorGridHeightMultiplier: state.majorGridHeightMultiplier,
+    }))
+  );
   
-  // Read from stores instead of props
-  const { selectElement, clearSelection, updateElement } = useElementsStore();
-  const { project } = useProjectStore();
-  const { selectedTool } = useToolbarStore();
+  const { selectElement, clearSelection, updateElement } = useElementsStore(
+    useShallow((state) => ({
+      selectElement: state.selectElement,
+      clearSelection: state.clearSelection,
+      updateElement: state.updateElement,
+    }))
+  );
+  const activePageId = useProjectStore((state) => state.project?.activePageId);
+  const selectedTool = useToolbarStore((state) => state.selectedTool);
   
   // Compute derived state
   const isArcMode = selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL';
@@ -51,25 +65,25 @@ const Place: React.FC<PlaceProps> = ({
       onArcConnect(place.id);
       return;
     }
-    if (project?.activePageId) {
-      selectElement(project.activePageId, place.id);
+    if (activePageId) {
+      selectElement(activePageId, place.id);
     }
-  }, [project?.activePageId, selectElement, place.id, isArcMode, onArcConnect]);
+  }, [activePageId, selectElement, place.id, isArcMode, onArcConnect]);
 
   const handleDeselect = React.useCallback(() => {
     // Don't deselect when in arc mode
     if (isArcMode) return;
-    if (project?.activePageId) {
-      clearSelection(project.activePageId);
+    if (activePageId) {
+      clearSelection(activePageId);
     }
-  }, [project?.activePageId, clearSelection, isArcMode]);
+  }, [activePageId, clearSelection, isArcMode]);
 
   // Use custom hooks and handlers
   const editingState = usePlaceEditing({ 
     place, 
     onUpdate: (updates) => {
-      if (project?.activePageId) {
-        updateElement(project.activePageId, place.id, updates);
+      if (activePageId) {
+        updateElement(activePageId, place.id, updates);
       }
     }
   });

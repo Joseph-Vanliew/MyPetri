@@ -3,6 +3,10 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { ProjectData, PageData } from '../types/common';
+import { useElementsStore } from './elementsStore';
+import { useHistoryStore } from './historyStore';
+import { buildProjectSnapshot, splitProjectSnapshot, type ProjectSnapshot } from '../services/projectSnapshot';
+import { readTextFromFile, downloadTextFile } from '../services/projectIO';
 
 interface ProjectState {
   // Project data
@@ -40,7 +44,23 @@ const initialProject: ProjectData = {
 export const useProjectStore = create<ProjectState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set, get) => {
+        const applySnapshotToStores = (snapshot: ProjectSnapshot) => {
+          const { project: projectWithoutElements, elementsByPage } = splitProjectSnapshot(snapshot);
+          set({ project: projectWithoutElements });
+          useElementsStore.getState().loadElements(elementsByPage);
+          useHistoryStore.getState().clear();
+        };
+
+        const resetStoresForNewProject = (pageId: string) => {
+          useElementsStore.getState().loadElements({ [pageId]: [] });
+          useHistoryStore.getState().clear();
+        };
+
+        const getSnapshotForProject = (project: ProjectData) =>
+          buildProjectSnapshot(project, useElementsStore.getState().elementsByPage);
+
+        return {
         project: null,
 
         createProject: (name: string) => {
@@ -61,6 +81,7 @@ export const useProjectStore = create<ProjectState>()(
             activePageId: pageId,
           };
           set({ project: newProject });
+          resetStoresForNewProject(pageId);
         },
 
         createNewProject: (name: string) => {
@@ -81,25 +102,29 @@ export const useProjectStore = create<ProjectState>()(
             activePageId: pageId,
           };
           set({ project: newProject });
+          resetStoresForNewProject(pageId);
         },
 
         loadProject: (projectData: ProjectData | File) => {
+          const handleSnapshot = (snapshot: ProjectSnapshot) => {
+            try {
+              applySnapshotToStores(snapshot);
+            } catch (error) {
+              console.error('Error applying project snapshot:', error);
+            }
+          };
+
           if (projectData instanceof File) {
-            // Handle file upload
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              try {
-                const data = JSON.parse(e.target?.result as string);
-                set({ project: data });
-              } catch (error) {
+            readTextFromFile(projectData)
+              .then((text) => {
+                const data = JSON.parse(text) as ProjectSnapshot;
+                handleSnapshot(data);
+              })
+              .catch((error) => {
                 console.error('Error loading project file:', error);
-              }
-            };
-            reader.readAsText(projectData);
+              });
           } else {
-            // Handle direct project data
-            set({ project: projectData });
-            // Grid tiles will be initialized when setActivePage is called in Canvas.tsx
+            handleSnapshot(projectData as ProjectSnapshot);
           }
         },
 
@@ -111,18 +136,11 @@ export const useProjectStore = create<ProjectState>()(
               updatedAt: Date.now(),
             };
             set({ project: updatedProject });
+
+            const snapshot = getSnapshotForProject(updatedProject);
             
-            // TODO: Implement actual file save dialog
             if (forceSaveAs) {
-              // Trigger save as dialog
-              const dataStr = JSON.stringify(updatedProject, null, 2);
-              const dataBlob = new Blob([dataStr], { type: 'application/json' });
-              const url = URL.createObjectURL(dataBlob);
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = `${project.name}.pats`;
-              link.click();
-              URL.revokeObjectURL(url);
+              downloadTextFile(`${project.name}.pats`, JSON.stringify(snapshot, null, 2), 'application/json');
             }
             
             return updatedProject;
@@ -224,33 +242,23 @@ export const useProjectStore = create<ProjectState>()(
 
         clearProject: () => {
           set({ project: null });
+          useElementsStore.getState().loadElements({});
+          useHistoryStore.getState().clear();
         },
 
         exportProject: (format: 'json' | 'pats' | 'png' | 'svg' | 'pdf') => {
           const { project } = get();
           if (!project) return;
+
+          const snapshot = getSnapshotForProject(project);
           
           switch (format) {
             case 'json':
-              const jsonData = JSON.stringify(project, null, 2);
-              const jsonBlob = new Blob([jsonData], { type: 'application/json' });
-              const jsonUrl = URL.createObjectURL(jsonBlob);
-              const jsonLink = document.createElement('a');
-              jsonLink.href = jsonUrl;
-              jsonLink.download = `${project.name}.json`;
-              jsonLink.click();
-              URL.revokeObjectURL(jsonUrl);
+              downloadTextFile(`${project.name}.json`, JSON.stringify(snapshot, null, 2), 'application/json');
               break;
               
             case 'pats':
-              const patsData = JSON.stringify(project, null, 2);
-              const patsBlob = new Blob([patsData], { type: 'application/json' });
-              const patsUrl = URL.createObjectURL(patsBlob);
-              const patsLink = document.createElement('a');
-              patsLink.href = patsUrl;
-              patsLink.download = `${project.name}.pats`;
-              patsLink.click();
-              URL.revokeObjectURL(patsUrl);
+              downloadTextFile(`${project.name}.pats`, JSON.stringify(snapshot, null, 2), 'application/json');
               break;
               
             case 'png':
@@ -275,30 +283,31 @@ export const useProjectStore = create<ProjectState>()(
 
         importProject: (data: string, format: 'json' | 'pats') => {
           try {
-            let projectData: ProjectData;
+            let snapshotData: ProjectSnapshot;
             
             switch (format) {
               case 'json':
-                projectData = JSON.parse(data);
+                snapshotData = JSON.parse(data) as ProjectSnapshot;
                 break;
               case 'pats':
                 // TODO: Implement PATS format import
-                projectData = JSON.parse(data);
+                snapshotData = JSON.parse(data) as ProjectSnapshot;
                 break;
               default:
-                projectData = JSON.parse(data);
+                snapshotData = JSON.parse(data) as ProjectSnapshot;
             }
             
-            set({ project: projectData });
+            applySnapshotToStores(snapshotData);
           } catch (error) {
             console.error('Failed to import project:', error);
             throw new Error('Invalid project file format');
           }
         },
-      }),
+        };
+      },
       {
         name: 'project-store',
-        partialize: (state) => ({ project: state.project }),
+        partialize: (state: ProjectState) => ({ project: state.project }),
       }
     ),
     {

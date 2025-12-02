@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { elementRegistry } from '../registry/ElementRegistry.js';
-import { elementBehaviors } from '../registry/ElementBehaviors.js';
+import { elementRegistry } from '../registry/ElementRegistry';
+import { elementBehaviors } from '../registry/ElementBehaviors';
 import { 
   ELEMENT_TYPE_ARRAY, 
   ELEMENT_DISPLAY_NAMES, 
@@ -10,8 +10,8 @@ import {
   ELEMENT_MAX_SIZES,
   getElementsByCategory,
   getElementCategory
-} from '../registry/ElementTypes.js';
-import type { ElementType, ElementBase } from '../../../types/common.js';
+} from '../registry/ElementTypes';
+import type { ElementType, ElementBase } from '../../../types/common';
 
 // Initialize the registry with all behaviors
 const initializeRegistry = () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSimulationStore } from '../stores/index.js';
+import { useSimulationStore } from '../stores/index';
 
 const StatusBar: React.FC = () => {
   const { isRunning, currentStep, speed, startSimulation, stopSimulation, setSpeed } = useSimulationStore();

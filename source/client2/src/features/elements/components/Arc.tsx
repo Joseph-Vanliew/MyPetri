@@ -1,7 +1,9 @@
 import React from 'react';
-import type { Arc as ArcType } from '../../../types/domain.js';
-import { calculateInhibitorCirclePosition, calculateWeightLabelPosition } from '../utils/arcCalculationUtils.js';
-import { useElementsStore, useProjectStore } from '../../../stores/index.js';
+import { useShallow } from 'zustand/react/shallow';
+import type { Arc as ArcType } from '../../../types/domain';
+import { calculateInhibitorCirclePosition, calculateWeightLabelPosition } from '../utils/arcCalculationUtils';
+import { useElementsStore } from '../../../stores/elementsStore';
+import { useProjectStore } from '../../../stores/projectStore';
 import '../elements.css';
 
 interface ArcProps {
@@ -25,11 +27,12 @@ const Arc: React.FC<ArcProps> = ({
 }) => {
   const { weight, arcType } = arc;
   
-  // Compute isSelected from store (UI-only state)
-  const { selectedElementIds } = useElementsStore();
-  const { project } = useProjectStore();
-  const selected = project?.activePageId 
-    ? (selectedElementIds[project.activePageId] || []).includes(arc.id)
+  const selectedElementIds = useElementsStore(
+    useShallow((state) => state.selectedElementIds)
+  );
+  const activePageId = useProjectStore((state) => state.project?.activePageId);
+  const selected = activePageId 
+    ? (selectedElementIds[activePageId] || []).includes(arc.id)
     : false;
 
   const handleClick = (event: React.MouseEvent) => {

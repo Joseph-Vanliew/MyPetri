@@ -3,6 +3,14 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type { SimulationState, TokenAnimation } from '../types/domain';
+import { 
+  clampSimulationSpeed, 
+  clampSimulationMaxSteps, 
+  getNextSimulationStep, 
+  getStoppedSimulationPatch, 
+  resolveTransitionConflictState, 
+  clearTransitionConflictsState 
+} from '../services/simulationState';
 
 interface SimulationStoreState extends SimulationState {
   // Actions
@@ -46,29 +54,20 @@ export const useSimulationStore = create<SimulationStoreState>()(
       },
 
       stopSimulation: () => {
-        set({ 
-          isRunning: false, 
-          isPaused: false, 
-          currentStep: 0,
-          firedTransitions: [],
-          conflictingTransitions: [],
-          conflictResolutionMode: false
-        });
+        set(getStoppedSimulationPatch());
       },
 
       stepSimulation: () => {
         const { currentStep, maxSteps } = get();
-        if (currentStep < maxSteps) {
-          set({ currentStep: currentStep + 1 });
-        }
+        set({ currentStep: getNextSimulationStep(currentStep, maxSteps) });
       },
 
       setSpeed: (speed: number) => {
-        set({ speed: Math.max(0.1, Math.min(5, speed)) });
+        set({ speed: clampSimulationSpeed(speed) });
       },
 
       setMaxSteps: (maxSteps: number) => {
-        set({ maxSteps: Math.max(1, Math.min(10000, maxSteps)) });
+        set({ maxSteps: clampSimulationMaxSteps(maxSteps) });
       },
 
       addAnimation: (animation: TokenAnimation) => {
@@ -87,17 +86,11 @@ export const useSimulationStore = create<SimulationStoreState>()(
 
       resolveConflict: (transitionId: string) => {
         const { conflictingTransitions } = get();
-        set({ 
-          conflictingTransitions: conflictingTransitions.filter(id => id !== transitionId),
-          conflictResolutionMode: conflictingTransitions.length > 1
-        });
+        set(resolveTransitionConflictState(conflictingTransitions, transitionId));
       },
 
       clearConflicts: () => {
-        set({ 
-          conflictingTransitions: [],
-          conflictResolutionMode: false
-        });
+        set(clearTransitionConflictsState());
       },
     }),
     {

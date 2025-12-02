@@ -1,6 +1,6 @@
 import React from 'react';
-import { calculateArcEndpoints, generateArcPath, calculateInhibitorCirclePosition } from '../utils/arcCalculationUtils.js';
-import type { Element } from '../../../types/domain.js';
+import { calculateArcEndpoints, generateArcPath, calculateInhibitorCirclePosition } from '../utils/arcCalculationUtils';
+import type { Element } from '../../../types/domain';
 
 interface ArcPreviewProps {
   isArcMode: boolean;

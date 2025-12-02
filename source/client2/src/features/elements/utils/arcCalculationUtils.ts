@@ -1,5 +1,5 @@
-import { getAnchorPointForElement, getElementCenter } from '../../canvas/utils/anchorPointUtils.js';
-import type { Element } from '../../../types/domain.js';
+import { getAnchorPointForElement, getElementCenter } from '../../canvas/utils/anchorPointUtils';
+import type { Element } from '../../../types/domain';
 
 
 export const ARC_POSITIONING = {

@@ -1,4 +1,4 @@
-import type { Element } from '../../../types/domain.js';
+import type { Element } from '../../../types/domain';
 
 /**
  * Get bounding box for an element, accounting for element-specific geometry

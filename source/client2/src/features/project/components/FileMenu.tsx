@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useProjectStore } from '../../../stores/index.js';
+import { useProjectStore } from '../../../stores/index';
 import './FileMenu.css';
 
 interface SubMenuProps {

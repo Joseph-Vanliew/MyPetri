@@ -1,8 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { useElementsStore } from '../../../stores/elementsStore.js';
-import { useCanvasStore } from '../../../stores/canvasStore.js';
-import { useProjectStore } from '../../../stores/index.js';
-import { getElementBounds } from '../utils/elementBoundsUtils.js';
+import { useEffect } from 'react';
+import { useCanvasStore } from '../../../stores/canvasStore';
+import { useProjectStore } from '../../../stores/index';
 
 /**
  * Hook that ensures grid tiles are initialized for a page

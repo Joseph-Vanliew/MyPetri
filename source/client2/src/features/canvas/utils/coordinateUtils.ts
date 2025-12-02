@@ -1,4 +1,4 @@
-import { useGridStore } from '../../../stores/index.js';
+import { useGridStore } from '../../../stores/index';
 
 // Convert screen coordinates to SVG coordinates with improved accuracy
 export const screenToSVGCoordinates = (

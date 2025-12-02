@@ -1,6 +1,6 @@
 import React from 'react';
-import FileMenu from '../features/project/components/FileMenu.js';
-import EditMenu from '../features/project/components/EditMenu.js';
+import FileMenu from '../features/project/components/FileMenu';
+import EditMenu from '../features/project/components/EditMenu';
 
 const Ribbon: React.FC = () => {
   return (

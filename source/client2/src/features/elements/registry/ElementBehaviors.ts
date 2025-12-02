@@ -1,13 +1,13 @@
 import React from 'react';
-import type { ElementBase } from '../../../types/common.js';
-import type { Place, Transition, Arc, TextElement, ShapeElement } from '../../../types/domain.js';
-import type { ElementBehavior } from './ElementRegistry.js';
+import type { ElementBase } from '../../../types/common';
+import type { Place, Transition, Arc, TextElement, ShapeElement } from '../../../types/domain';
+import type { ElementBehavior } from './ElementRegistry';
 import { 
   ELEMENT_TYPES, 
   ELEMENT_DEFAULT_SIZES, 
   ELEMENT_MIN_SIZES, 
   ELEMENT_MAX_SIZES 
-} from './ElementTypes.js';
+} from './ElementTypes';
 
 // Place behavior
 export const placeBehavior: ElementBehavior = {
