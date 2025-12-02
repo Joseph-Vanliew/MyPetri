@@ -1,20 +1,15 @@
 // Elements store for managing all element data across pages
+// NOTE: This store is independent - history is managed separately via subscription
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
-import { useHistoryStore } from './historyStore.js';
 import type { Element, Place, Transition, Arc, TextElement, ShapeElement } from '../types/domain';
 import { ELEMENT_TYPES, ELEMENT_DEFAULT_SIZES } from '../features/elements/registry/ElementTypes.js';
 
-
-interface ElementsState {
+export interface ElementsState {
   // Element data by page
   elementsByPage: Record<string, Element[]>;
-  
-  // History transaction control
-  beginHistoryTransaction: () => void;
-  endHistoryTransaction: () => void;
 
   // Actions
   addElement: (pageId: string, element: Element) => void;
@@ -52,48 +47,11 @@ export const useElementsStore = create<ElementsState>()(
       (set, get) => ({
         elementsByPage: {},
         selectedElementIds: {},
-        _historyTxnDepth: 0 as number,
-        _historySnapshot: null as null | { elementsByPage: Record<string, Element[]>; selectedElementIds: Record<string, string[]> },
-
-        beginHistoryTransaction: () => {
-          const state: any = get();
-          if (state._historyTxnDepth === 0) {
-            state._historySnapshot = {
-              elementsByPage: structuredClone(state.elementsByPage),
-              selectedElementIds: structuredClone(state.selectedElementIds),
-            };
-          }
-          state._historyTxnDepth += 1;
-          set({ _historyTxnDepth: state._historyTxnDepth, _historySnapshot: state._historySnapshot } as any);
-        },
-
-        endHistoryTransaction: () => {
-          const state: any = get();
-          if (state._historyTxnDepth > 0) {
-            state._historyTxnDepth -= 1;
-            if (state._historyTxnDepth === 0 && state._historySnapshot) {
-              // Push the snapshot and clear reference to avoid reuse across drags
-              useHistoryStore.getState().push(state._historySnapshot);
-              state._historySnapshot = null;
-            }
-            set({ _historyTxnDepth: state._historyTxnDepth, _historySnapshot: state._historySnapshot } as any);
-          }
-        },
 
         addElement: (pageId: string, element: Element) => {
           const { elementsByPage } = get();
           const pageElements = elementsByPage[pageId] || [];
           
-          // Push history snapshot if not within transaction
-          const st: any = get();
-          if (st._historyTxnDepth <= 0) {
-            const snap = {
-              elementsByPage: structuredClone(elementsByPage),
-              selectedElementIds: structuredClone(get().selectedElementIds),
-            };
-            useHistoryStore.getState().push(snap);
-          }
-
           set({
             elementsByPage: {
               ...elementsByPage,
@@ -105,15 +63,6 @@ export const useElementsStore = create<ElementsState>()(
         updateElement: (pageId: string, elementId: string, updates: Partial<Element>) => {
           const { elementsByPage } = get();
           const pageElements = elementsByPage[pageId] || [];
-          
-          const st: any = get();
-          if (st._historyTxnDepth <= 0) {
-            const snap = {
-              elementsByPage: structuredClone(elementsByPage),
-              selectedElementIds: structuredClone(get().selectedElementIds),
-            };
-            useHistoryStore.getState().push(snap);
-          }
 
           const updatedElements = pageElements.map(element =>
             element.id === elementId
@@ -132,15 +81,6 @@ export const useElementsStore = create<ElementsState>()(
         removeElement: (pageId: string, elementId: string) => {
           const { elementsByPage } = get();
           const pageElements = elementsByPage[pageId] || [];
-          
-          const st: any = get();
-          if (st._historyTxnDepth <= 0) {
-            const snap = {
-              elementsByPage: structuredClone(elementsByPage),
-              selectedElementIds: structuredClone(get().selectedElementIds),
-            };
-            useHistoryStore.getState().push(snap);
-          }
 
           const updatedElements = pageElements.filter(element => element.id !== elementId);
           
@@ -155,15 +95,6 @@ export const useElementsStore = create<ElementsState>()(
         removeElements: (pageId: string, elementIds: string[]) => {
           const { elementsByPage } = get();
           const pageElements = elementsByPage[pageId] || [];
-          
-          const st: any = get();
-          if (st._historyTxnDepth <= 0) {
-            const snap = {
-              elementsByPage: structuredClone(elementsByPage),
-              selectedElementIds: structuredClone(get().selectedElementIds),
-            };
-            useHistoryStore.getState().push(snap);
-          }
 
           const updatedElements = pageElements.filter(element => !elementIds.includes(element.id));
           

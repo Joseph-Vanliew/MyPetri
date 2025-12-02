@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Arc as ArcType } from '../../../types/domain.js';
 import { calculateInhibitorCirclePosition, calculateWeightLabelPosition } from '../utils/arcCalculationUtils.js';
+import { useElementsStore, useProjectStore } from '../../../stores/index.js';
 import '../elements.css';
 
 interface ArcProps {
@@ -11,8 +12,7 @@ interface ArcProps {
   onSelect?: (arc: ArcType) => void;
   onDeselect?: (arc: ArcType) => void;
   onDragStart?: (arc: ArcType, event: React.MouseEvent) => void;
-  onDrag?: (arc: ArcType, event: React.MouseEvent) => void;
-  onDragEnd?: (arc: ArcType, event: React.MouseEvent) => void;
+  // Note: onDrag and onDragEnd are handled at SVG level, not per-element
 }
 
 const Arc: React.FC<ArcProps> = ({ 
@@ -21,18 +21,21 @@ const Arc: React.FC<ArcProps> = ({
   startPoint,
   endPoint,
   onSelect, 
-  onDeselect, 
-  onDragStart, 
-  onDrag: _onDrag, 
-  onDragEnd: _onDragEnd 
+  onDragStart
 }) => {
-  const { weight, arcType, isSelected: selected } = arc;
+  const { weight, arcType } = arc;
+  
+  // Compute isSelected from store (UI-only state)
+  const { selectedElementIds } = useElementsStore();
+  const { project } = useProjectStore();
+  const selected = project?.activePageId 
+    ? (selectedElementIds[project.activePageId] || []).includes(arc.id)
+    : false;
 
   const handleClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    if (selected) {
-      onDeselect?.(arc);
-    } else {
+    // Always select - don't toggle if already selected
+    if (!selected) {
       onSelect?.(arc);
     }
   };

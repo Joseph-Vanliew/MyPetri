@@ -36,6 +36,9 @@ interface CanvasHandlersProps {
   
   // Clear arc state function
   clearArcState: () => void;
+  
+  // Tool selection
+  setSelectedTool: (tool: any) => void;
 }
 
 export const createCanvasHandlers = ({
@@ -64,6 +67,7 @@ export const createCanvasHandlers = ({
   selectElements,
   clearSelection,
   clearArcState,
+  setSelectedTool,
 }: CanvasHandlersProps) => {
   // Handle canvas click for element placement
   const handleCanvasClick = (event: React.MouseEvent) => {
@@ -93,7 +97,12 @@ export const createCanvasHandlers = ({
       case 'ARC':
       case 'ARC_INHIBITOR':
       case 'ARC_BIDIRECTIONAL':
-        // Click on empty canvas does nothing for arc tools
+        // Click on empty canvas deselects the arc tool
+        // Check if click was on empty canvas (not on an element)
+        // Element clicks will stop propagation, so if we get here on an arc tool,
+        // it means we clicked on empty canvas
+        clearArcState();
+        setSelectedTool('NONE');
         break;
     }
   };

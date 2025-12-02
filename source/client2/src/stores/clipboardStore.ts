@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { useElementsStore } from './elementsStore.js';
-import { useProjectStore } from './projectStore.js';
+import { useHistoryStore } from './historyStore.js';
 import type { Element, Arc } from '../types/domain.js';
 
 interface ClipboardState {
@@ -46,14 +46,15 @@ export const useClipboardStore = create<ClipboardState>()(
         const { lastCopied } = get();
         if (!lastCopied || lastCopied.length === 0) return;
         const elementsStore = useElementsStore.getState();
-        const { beginHistoryTransaction, endHistoryTransaction, addElement, selectElements } = elementsStore as any;
+        const { addElement, selectElements } = elementsStore;
+        const historyStore = useHistoryStore.getState();
 
         // Build ID remap
         const idRemap = new Map<string, string>();
         const nodes = lastCopied.filter((e) => e.type !== 'arc');
         nodes.forEach((e) => idRemap.set(e.id, uuidv4()));
         // Paste nodes
-        beginHistoryTransaction();
+        historyStore.beginBatch();
         const newIds: string[] = [];
         nodes.forEach((e: any) => {
           const newId = idRemap.get(e.id)!;
@@ -90,69 +91,12 @@ export const useClipboardStore = create<ClipboardState>()(
         const pasted = elementsStore.getElements(pageId).filter((e: any) => newIds.includes(e.id));
         set({ lastCopied: JSON.parse(JSON.stringify(pasted)) });
 
-        endHistoryTransaction();
+        historyStore.endBatch();
       },
     }),
     { name: 'clipboard-store' }
   )
 );
 
-// Global hotkeys for copy/paste (idempotent)
-let clipboardHotkeysInstalled = false;
-let clipboardHotkeysCleanup: (() => void) | null = null;
-
-export const ensureClipboardHotkeysInstalled = () => {
-  if (clipboardHotkeysInstalled || typeof window === 'undefined') return;
-  let lastTs = 0;
-  let lastActionAt = 0;
-  const handler = (e: KeyboardEvent) => {
-    const target = e.target as HTMLElement | null;
-    const isTyping = !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
-    const isMac = navigator.platform.toUpperCase().includes('MAC');
-    const mod = isMac ? e.metaKey : e.ctrlKey;
-    const key = (e.key || '').toLowerCase();
-    if (e.repeat) return; // ignore OS key repeat
-    if (e.timeStamp && e.timeStamp === lastTs) return; // dedupe same event in multiple phases
-    const nowTs = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (nowTs - lastActionAt < 150) return; // throttle quick duplicates
-    if (!mod) return;
-    if (key === 'c') {
-      // Copy current selection
-      const project = useProjectStore.getState().project;
-      if (!project?.activePageId || isTyping) return;
-      e.preventDefault();
-      e.stopPropagation();
-      // @ts-ignore
-      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-      lastTs = e.timeStamp as number;
-      lastActionAt = nowTs;
-      useClipboardStore.getState().copyFromSelection(project.activePageId);
-      console.log('[Clipboard] Copied selection');
-    } else if (key === 'v') {
-      const project = useProjectStore.getState().project;
-      if (!project?.activePageId || isTyping) return;
-      e.preventDefault();
-      e.stopPropagation();
-      // @ts-ignore
-      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-      lastTs = e.timeStamp as number;
-      lastActionAt = nowTs;
-      useClipboardStore.getState().pasteToPage(project.activePageId);
-      console.log('[Clipboard] Pasted selection');
-    }
-  };
-  window.addEventListener('keydown', handler, true);
-  clipboardHotkeysCleanup = () => {
-    window.removeEventListener('keydown', handler, true);
-    document.removeEventListener('keydown', handler, false);
-  };
-  clipboardHotkeysInstalled = true;
-};
-
-export const removeClipboardHotkeys = () => {
-  if (clipboardHotkeysCleanup) {
-    clipboardHotkeysCleanup();
-    clipboardHotkeysCleanup = null;
-    clipboardHotkeysInstalled = false;
-  }
-};
+// Note: Global hotkeys have been moved to src/services/hotkeys.ts
+// to reduce coupling between stores

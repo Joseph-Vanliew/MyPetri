@@ -89,6 +89,13 @@ export const useCanvasInteractions = ({
     }
   }, [selectedTool, clearArcState]);
 
+  // Clear selection when an arc tool is selected
+  useEffect(() => {
+    if ((selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL') && project?.activePageId) {
+      clearSelection(project.activePageId);
+    }
+  }, [selectedTool, project?.activePageId, clearSelection]);
+
   // Element selection handlers
   const handleElementSelect = (element: { id: string }) => {
     if (selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL') {
@@ -122,7 +129,13 @@ export const useCanvasInteractions = ({
     if (!(selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL')) return;
 
     if (!arcDrawingStartId) {
+      // Initialize arc drawing - set start element and initial preview position
       setArcDrawingStartId(elementId);
+      // Find the start element and set initial preview position to its center
+      const startEl = currentPageElements.find(el => el.id === elementId);
+      if (startEl && 'x' in startEl && 'y' in startEl) {
+        setArcPreviewPos({ x: startEl.x, y: startEl.y });
+      }
       return;
     }
 

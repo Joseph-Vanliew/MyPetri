@@ -44,39 +44,41 @@ export const useProjectStore = create<ProjectState>()(
         project: null,
 
         createProject: (name: string) => {
+          const pageId = `page_${Date.now()}`;
           const newProject: ProjectData = {
             ...initialProject,
             id: `project_${Date.now()}`,
             name,
             pages: [
               {
-                id: `page_${Date.now()}`,
+                id: pageId,
                 name: 'Page 1',
                 elements: [],
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
               }
             ],
-            activePageId: `page_${Date.now()}`,
+            activePageId: pageId,
           };
           set({ project: newProject });
         },
 
         createNewProject: (name: string) => {
+          const pageId = `page_${Date.now()}`;
           const newProject: ProjectData = {
             ...initialProject,
             id: `project_${Date.now()}`,
             name,
             pages: [
               {
-                id: `page_${Date.now()}`,
+                id: pageId,
                 name: 'Page 1',
                 elements: [],
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
               }
             ],
-            activePageId: `page_${Date.now()}`,
+            activePageId: pageId,
           };
           set({ project: newProject });
         },
@@ -97,6 +99,7 @@ export const useProjectStore = create<ProjectState>()(
           } else {
             // Handle direct project data
             set({ project: projectData });
+            // Grid tiles will be initialized when setActivePage is called in Canvas.tsx
           }
         },
 

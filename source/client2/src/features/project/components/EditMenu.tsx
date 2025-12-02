@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useHistoryStore } from '../../../stores/index.js';
 import './EditMenu.css';
 
 interface SubMenuProps {
@@ -28,6 +29,7 @@ const EditMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openSubMenus, setOpenSubMenus] = useState<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
+  const { undo, redo, canUndo, canRedo } = useHistoryStore();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -58,15 +60,13 @@ const EditMenu: React.FC = () => {
   };
 
   const handleUndo = () => {
-    // TODO: Implement undo functionality
-    console.log('Undo action');
+    undo();
     setIsOpen(false);
     setOpenSubMenus(new Set());
   };
 
   const handleRedo = () => {
-    // TODO: Implement redo functionality
-    console.log('Redo action');
+    redo();
     setIsOpen(false);
     setOpenSubMenus(new Set());
   };
@@ -122,14 +122,14 @@ const EditMenu: React.FC = () => {
             <button 
               className="menu-item"
               onClick={handleUndo}
-              disabled={false} // TODO: Check if undo is available
+              disabled={!canUndo()}
             >
               Undo
             </button>
             <button 
               className="menu-item"
               onClick={handleRedo}
-              disabled={false} // TODO: Check if redo is available
+              disabled={!canRedo()}
             >
               Redo
             </button>

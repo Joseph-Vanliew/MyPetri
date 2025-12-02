@@ -1,13 +1,15 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { useToolbarStore, useCanvasStore } from '../../../stores/index.js';
+import { useToolbarStore } from '../../../stores/index.js';
 import { useGridStore } from '../../../stores/gridStore.js';
 import { ELEMENT_DEFAULT_SIZES } from '../../elements/registry/ElementTypes.js';
 import { screenToSVGCoordinates, svgToScreenCoordinates } from '../../canvas/utils/coordinateUtils.js';
 import '../tools.css';
 
+// Fixed scale for drag preview when NOT over canvas (static size)
+const DEFAULT_DRAG_PREVIEW_SCALE = 1.0; // Fixed pixel scale for toolbar/preview area
+
 const DragPreview: React.FC = () => {
   const { isDraggingFromToolbar, draggedElementType, dragPreviewPosition, updateDragPreviewPosition, toolOptions } = useToolbarStore();
-  const { zoomLevel } = useCanvasStore();
   const { gridSize, snapToGrid } = useGridStore();
 
 
@@ -76,11 +78,11 @@ const DragPreview: React.FC = () => {
     return { elementWidthSvg: 60, elementHeightSvg: 40, elementTypeKey: 'generic' as const };
   }, [draggedElementType, toolOptions]);
 
-  // Simple cursor tracking for immediate response
+  // Simple cursor tracking for immediate response (uses fixed scale, not zoom-dependent)
   const cursorPosition = useMemo(() => ({
-    left: dragPreviewPosition ? dragPreviewPosition.x - (elementWidthSvg * zoomLevel) / 2 : 0,
-    top: dragPreviewPosition ? dragPreviewPosition.y - (elementHeightSvg * zoomLevel) / 2 : 0
-  }), [dragPreviewPosition, elementWidthSvg, elementHeightSvg, zoomLevel]);
+    left: dragPreviewPosition ? dragPreviewPosition.x - (elementWidthSvg * DEFAULT_DRAG_PREVIEW_SCALE) / 2 : 0,
+    top: dragPreviewPosition ? dragPreviewPosition.y - (elementHeightSvg * DEFAULT_DRAG_PREVIEW_SCALE) / 2 : 0
+  }), [dragPreviewPosition, elementWidthSvg, elementHeightSvg]);
 
   // Expensive canvas calculations with debouncing
   const { left, top, isOverCanvas, pxPerUnitX, pxPerUnitY, paddingUnits } = useMemo((): {
@@ -93,19 +95,26 @@ const DragPreview: React.FC = () => {
   } => {
     if (!dragPreviewPosition) return { left: 0, top: 0, isOverCanvas: false, paddingUnits: 3 };
     
-    // Check if cursor is over the canvas
+    // Check if cursor is over the canvas content area (not just SVG element)
+    // Use .canvas-content to get the actual interactable area, excluding header
+    const canvasContent = document.querySelector('.canvas-content') as HTMLElement | null;
     const canvasEl = document.querySelector('.canvas-svg') as SVGSVGElement | null;
-    if (canvasEl) {
-      const rect = canvasEl.getBoundingClientRect();
-      const pxPerUnitXLocal = rect.width / canvasEl.viewBox.baseVal.width;
-      const pxPerUnitYLocal = rect.height / canvasEl.viewBox.baseVal.height;
-      const paddingUnitsLocal = 3; // extra viewBox padding to prevent stroke clipping
-      const isOver = dragPreviewPosition.x >= rect.left && 
-                     dragPreviewPosition.x <= rect.right && 
-                     dragPreviewPosition.y >= rect.top && 
-                     dragPreviewPosition.y <= rect.bottom;
+    
+    if (canvasContent && canvasEl) {
+      // Check against the canvas-content bounds (excludes header/toolbar)
+      const contentRect = canvasContent.getBoundingClientRect();
+      const isOverContent = dragPreviewPosition.x >= contentRect.left && 
+                            dragPreviewPosition.x <= contentRect.right && 
+                            dragPreviewPosition.y >= contentRect.top && 
+                            dragPreviewPosition.y <= contentRect.bottom;
       
-      if (isOver) {
+      if (isOverContent) {
+        // Get SVG rect for coordinate calculations
+        const svgRect = canvasEl.getBoundingClientRect();
+        const pxPerUnitXLocal = svgRect.width / canvasEl.viewBox.baseVal.width;
+        const pxPerUnitYLocal = svgRect.height / canvasEl.viewBox.baseVal.height;
+        const paddingUnitsLocal = 3; // extra viewBox padding to prevent stroke clipping
+        
         // Convert screen coordinates to SVG viewBox coordinates
         const svgPoint = screenToSVGCoordinates(dragPreviewPosition.x, dragPreviewPosition.y, canvasEl);
         const svgX = svgPoint.x;
@@ -131,16 +140,16 @@ const DragPreview: React.FC = () => {
       }
     }
     
-    // Default positioning for non-canvas areas
+    // Default positioning for non-canvas areas (uses fixed static scale)
     return {
-      left: dragPreviewPosition.x - ((elementWidthSvg + 6) * zoomLevel) / 2,
-      top: dragPreviewPosition.y - ((elementHeightSvg + 6) * zoomLevel) / 2,
+      left: dragPreviewPosition.x - ((elementWidthSvg + 6) * DEFAULT_DRAG_PREVIEW_SCALE) / 2,
+      top: dragPreviewPosition.y - ((elementHeightSvg + 6) * DEFAULT_DRAG_PREVIEW_SCALE) / 2,
       isOverCanvas: false,
       pxPerUnitX: undefined,
       pxPerUnitY: undefined,
       paddingUnits: 3
     };
-  }, [dragPreviewPosition, gridSize, snapToGrid, elementWidthSvg, elementHeightSvg, zoomLevel]);
+  }, [dragPreviewPosition, gridSize, snapToGrid, elementWidthSvg, elementHeightSvg]);
 
   // Don't render if not dragging (moved after all hooks)
   if (!isDraggingFromToolbar || !draggedElementType || !dragPreviewPosition) {
@@ -151,8 +160,9 @@ const DragPreview: React.FC = () => {
   const renderOverlayPreview = () => {
     if (elementTypeKey === 'place') {
       const rSvg = elementWidthSvg / 2;
-      const scaleX = isOverCanvas && pxPerUnitX ? pxPerUnitX : zoomLevel;
-      const scaleY = isOverCanvas && pxPerUnitY ? pxPerUnitY : zoomLevel;
+      // Use canvas zoom scale only when over canvas, otherwise use fixed static scale
+      const scaleX = isOverCanvas && pxPerUnitX ? pxPerUnitX : DEFAULT_DRAG_PREVIEW_SCALE;
+      const scaleY = isOverCanvas && pxPerUnitY ? pxPerUnitY : DEFAULT_DRAG_PREVIEW_SCALE;
       const widthPx = (elementWidthSvg + 2 * paddingUnits) * scaleX;
       const heightPx = (elementHeightSvg + 2 * paddingUnits) * scaleY;
       return (
@@ -165,8 +175,9 @@ const DragPreview: React.FC = () => {
       );
     }
     if (elementTypeKey === 'transition') {
-      const scaleX = isOverCanvas && pxPerUnitX ? pxPerUnitX : zoomLevel;
-      const scaleY = isOverCanvas && pxPerUnitY ? pxPerUnitY : zoomLevel;
+      // Use canvas zoom scale only when over canvas, otherwise use fixed static scale
+      const scaleX = isOverCanvas && pxPerUnitX ? pxPerUnitX : DEFAULT_DRAG_PREVIEW_SCALE;
+      const scaleY = isOverCanvas && pxPerUnitY ? pxPerUnitY : DEFAULT_DRAG_PREVIEW_SCALE;
       const widthPx = (elementWidthSvg + 2 * paddingUnits) * scaleX;
       const heightPx = (elementHeightSvg + 2 * paddingUnits) * scaleY;
       return (

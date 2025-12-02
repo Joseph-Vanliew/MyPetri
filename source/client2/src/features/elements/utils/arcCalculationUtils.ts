@@ -5,8 +5,8 @@ import type { Element } from '../../../types/domain.js';
 export const ARC_POSITIONING = {
   // Bidirectional arc offsets
   BIDIRECTIONAL: {
-    START_OFFSET: 24,  // Distance start arrow sits outside source border
-    END_OFFSET: 4,     // Distance end arrow sits outside target border
+    START_OFFSET: 20,  // Distance start arrow sits outside source border
+    END_OFFSET: 6,     // Distance end arrow sits outside target border
   },
   // Normal arc offsets  
   NORMAL: {
@@ -65,32 +65,32 @@ export function calculateArcEndpoints({
   const dx = endAnchor.x - startAnchor.x;
   const dy = endAnchor.y - startAnchor.y;
   const len = Math.hypot(dx, dy) || 1;
+  const dirX = dx / len;
+  const dirY = dy / len;
+  
+  // Determine offsets based on arc type
+  let startOffset = 0;
+  let endOffset = 0;
   
   if (arcType === 'bidirectional') {
-    // Bidirectional: offset both start and end so arrows sit outside borders
-    startAnchor = {
-      x: startAnchor.x + (dx / len) * ARC_POSITIONING.BIDIRECTIONAL.START_OFFSET,
-      y: startAnchor.y + (dy / len) * ARC_POSITIONING.BIDIRECTIONAL.START_OFFSET,
-    };
-
-    endAnchor = {
-      x: endAnchor.x - (dx / len) * ARC_POSITIONING.BIDIRECTIONAL.END_OFFSET,
-      y: endAnchor.y - (dy / len) * ARC_POSITIONING.BIDIRECTIONAL.END_OFFSET,
-    };
+    startOffset = ARC_POSITIONING.BIDIRECTIONAL.START_OFFSET;
+    endOffset = isPreview ? 0 : ARC_POSITIONING.BIDIRECTIONAL.END_OFFSET;
   } else if (arcType === 'normal') {
-    // Normal arc: only offset end so arrow sits outside target border
-    endAnchor = {
-      x: endAnchor.x - (dx / len) * ARC_POSITIONING.NORMAL.END_OFFSET,
-      y: endAnchor.y - (dy / len) * ARC_POSITIONING.NORMAL.END_OFFSET,
-    };
+    endOffset = isPreview ? 0 : ARC_POSITIONING.NORMAL.END_OFFSET;
   } else if (arcType === 'inhibitor') {
-    // Inhibitor arc: offset end so arc stops at the edge of the inhibitor circle
-    const inhibitorOffset = ARC_POSITIONING.INHIBITOR.RADIUS + ARC_POSITIONING.INHIBITOR.EDGE_PADDING;
-    endAnchor = {
-      x: endAnchor.x - (dx / len) * inhibitorOffset,
-      y: endAnchor.y - (dy / len) * inhibitorOffset,
-    };
+    endOffset = isPreview ? 0 : ARC_POSITIONING.INHIBITOR.RADIUS + ARC_POSITIONING.INHIBITOR.EDGE_PADDING;
   }
+  
+  // Apply offsets
+  startAnchor = {
+    x: startAnchor.x + dirX * startOffset,
+    y: startAnchor.y + dirY * startOffset,
+  };
+  
+  endAnchor = {
+    x: endAnchor.x - dirX * endOffset,
+    y: endAnchor.y - dirY * endOffset,
+  };
 
   return { startPoint: startAnchor, endPoint: endAnchor };
 }

@@ -16,8 +16,11 @@ export const useZoomAndPan = () => {
     
     if (isZooming) {
       // Zoom in/out 
+      // Minimum zoom prevents zooming out beyond grid bounds
+      // Calculate minimum zoom: initial view width / grid total width
+      const MIN_ZOOM = 3900 / 53300; // INITIAL_VIEW_WIDTH / GRID_TOTAL_WIDTH ≈ 0.073
       const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      const newZoom = Math.max(0.1, Math.min(5, zoomLevel * zoomFactor));
+      const newZoom = Math.max(MIN_ZOOM, Math.min(5, zoomLevel * zoomFactor));
       setZoomLevel(newZoom);
     } else if (isPanning) {
       // Pan with mouse wheel - reduced sensitivity
@@ -57,7 +60,9 @@ export const useZoomAndPan = () => {
           break;
         case '-':
           e.preventDefault();
-          setZoomLevel(Math.max(0.1, zoomLevel * 0.9));
+          // Minimum zoom prevents zooming out beyond grid bounds
+          const MIN_ZOOM = 3900 / 53300; // INITIAL_VIEW_WIDTH / GRID_TOTAL_WIDTH ≈ 0.073
+          setZoomLevel(Math.max(MIN_ZOOM, zoomLevel * 0.9));
           break;
         case '0':
           e.preventDefault();

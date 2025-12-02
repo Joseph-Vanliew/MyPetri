@@ -3,37 +3,40 @@ import type { Place as PlaceType } from '../../../types/domain.js';
 import '../elements.css';
 import { RESIZE_HANDLE_RADIUS } from '../../elements/registry/ElementUIConstants.js';
 import { useGridStore } from '../../../stores/gridStore.js';
+import { useElementsStore, useProjectStore, useToolbarStore } from '../../../stores/index.js';
 import { usePlaceEditing } from '../hooks/usePlaceEditing.js';
 import { createPlaceHandlers } from '../handlers/placeHandlers.js';
 
 interface PlaceProps {
   place: PlaceType;
-  onSelect?: (place: PlaceType) => void;
-  onDeselect?: (place: PlaceType) => void;
+  // Only essential props that can't come from stores
   onDragStart?: (place: PlaceType, event: React.MouseEvent) => void;
-  onDrag?: (place: PlaceType, event: React.MouseEvent) => void;
-  onDragEnd?: (place: PlaceType, event: React.MouseEvent) => void;
-  onUpdate?: (place: PlaceType, updates: Partial<PlaceType>) => void;
-  // Arc targeting UX
-  isArcTarget?: boolean;
   onMouseEnterElement?: (place: PlaceType, event: React.MouseEvent) => void;
   onMouseLeaveElement?: (place: PlaceType, event: React.MouseEvent) => void;
+  onArcConnect?: (elementId: string) => void;
+  // Drag state - computed from draggingIds in Canvas (could move to store)
+  isDragging?: boolean;
 }
 
 const Place: React.FC<PlaceProps> = ({ 
   place, 
-  onSelect, 
-  onDeselect, 
   onDragStart, 
-  onDrag: _onDrag, 
-  onDragEnd: _onDragEnd,
-  onUpdate,
-  isArcTarget,
   onMouseEnterElement,
   onMouseLeaveElement,
+  onArcConnect,
+  isDragging = false,
 }) => {
   const { x, y, tokens, name: label, isSelected: selected, bounded, radius: placeRadius } = place;
   const { gridSize, majorGridWidthMultiplier, majorGridHeightMultiplier } = useGridStore();
+  
+  // Read from stores instead of props
+  const { selectElement, clearSelection, updateElement } = useElementsStore();
+  const { project } = useProjectStore();
+  const { selectedTool } = useToolbarStore();
+  
+  // Compute derived state
+  const isArcMode = selectedTool === 'ARC' || selectedTool === 'ARC_INHIBITOR' || selectedTool === 'ARC_BIDIRECTIONAL';
+  const isArcTarget = isArcMode && selectedTool !== 'ARC_INHIBITOR';
   
   // Match place radius to the larger major grid dimension
   const majorGridWidth = gridSize * majorGridWidthMultiplier;
@@ -41,12 +44,40 @@ const Place: React.FC<PlaceProps> = ({
   const targetRadius = Math.max(majorGridWidth, majorGridHeight) / 2;
   const radius = placeRadius || targetRadius;
 
+  // Handlers that use stores
+  const handleSelect = React.useCallback(() => {
+    // If in arc mode, use arc connection handler instead of selecting
+    if (isArcMode && onArcConnect) {
+      onArcConnect(place.id);
+      return;
+    }
+    if (project?.activePageId) {
+      selectElement(project.activePageId, place.id);
+    }
+  }, [project?.activePageId, selectElement, place.id, isArcMode, onArcConnect]);
+
+  const handleDeselect = React.useCallback(() => {
+    // Don't deselect when in arc mode
+    if (isArcMode) return;
+    if (project?.activePageId) {
+      clearSelection(project.activePageId);
+    }
+  }, [project?.activePageId, clearSelection, isArcMode]);
+
   // Use custom hooks and handlers
-  const editingState = usePlaceEditing({ place, onUpdate });
+  const editingState = usePlaceEditing({ 
+    place, 
+    onUpdate: (updates) => {
+      if (project?.activePageId) {
+        updateElement(project.activePageId, place.id, updates);
+      }
+    }
+  });
+  
   const handlers = createPlaceHandlers({
     place,
-    onSelect,
-    onDeselect,
+    onSelect: handleSelect,
+    onDeselect: handleDeselect,
     onDragStart,
     onMouseEnterElement,
     onMouseLeaveElement,
@@ -59,6 +90,7 @@ const Place: React.FC<PlaceProps> = ({
       onMouseEnter={handlers.handleMouseEnter}
       onMouseLeave={handlers.handleMouseLeave}
       className="place-element"
+      style={{ cursor: isArcMode ? 'pointer' : 'move' }}
       transform={`translate(${x},${y})`}
     >
       {/* Main circle */}
@@ -133,6 +165,21 @@ const Place: React.FC<PlaceProps> = ({
             <circle cx={radius} cy={radius} r={RESIZE_HANDLE_RADIUS} className="resize-handle bottom-right" />
           </g>
         </g>
+      )}
+      
+      {/* Drag bounding box - independent of selection */}
+      {isDragging && !selected && (
+        <rect 
+          x={-radius} 
+          y={-radius} 
+          width={2 * radius} 
+          height={2 * radius} 
+          className="place-bounding-box drag-bounding-box"
+          fill="rgba(0, 122, 204, 0.15)"
+          stroke="#007acc"
+          strokeDasharray="6,4"
+          strokeWidth={1}
+        />
       )}
 
       {/* Arc target highlight */}

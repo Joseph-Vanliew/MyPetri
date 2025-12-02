@@ -4,6 +4,7 @@ import { useGridStore } from '../../../stores/gridStore.js';
 import { useZoomAndPan } from '../hooks/useZoomAndPan.js';
 import { useElementDrag } from '../hooks/useElementDrag.js';
 import { useCanvasInteractions } from '../hooks/useCanvasInteractions.js';
+import { useGridTileExtension } from '../hooks/useGridTileExtension.js';
 import { createCanvasHandlers } from '../handlers/canvasHandlers.js';
 import Grid from './Grid.js';
 import MarkerDefinitions from '../../elements/components/MarkerDefinitions.js';
@@ -24,13 +25,15 @@ const Canvas: React.FC = () => {
   
   const { selectElements, clearSelection, getElements, createPlace, createTransition, createTextElement, createShapeElement, updateElement, createArc } = useElementsStore();
   const { project } = useProjectStore();
+  const { getGridTiles } = useCanvasStore();
   useEffect(() => {
     if (project?.activePageId) {
       setActivePage(project.activePageId);
     }
   }, [project?.activePageId, setActivePage]);
-  const { selectedTool, toolOptions, arcDrawingStartId, setArcDrawingStartId } = useToolbarStore();
+  const { selectedTool, toolOptions, arcDrawingStartId, setArcDrawingStartId, setSelectedTool } = useToolbarStore();
   const { canvasRef } = useZoomAndPan();
+  
 
   const {
     gridSize,
@@ -58,6 +61,9 @@ const Canvas: React.FC = () => {
     arcDrawingStartId,
     currentPageElements,
   });
+  
+  // Monitor elements and extend grid tiles when needed
+  useGridTileExtension();
 
   // Create canvas handlers
   const handlers = createCanvasHandlers({
@@ -86,13 +92,13 @@ const Canvas: React.FC = () => {
     selectElements,
     clearSelection,
     clearArcState: interactions.clearArcState,
+    setSelectedTool,
   });
 
   // Use the element drag hook
   const {
+    draggingIds,
     handleElementDragStart,
-    handleElementDrag,
-    handleElementDragEnd,
     handleMouseMove,
     handleMouseUp
   } = useElementDrag({
@@ -109,14 +115,11 @@ const Canvas: React.FC = () => {
   const transitions = currentPageElements.filter((el: any) => el.type === 'transition');
   const arcs = currentPageElements.filter((el: any) => el.type === 'arc');
 
-  // Wrapper functions to pass canvasRef to the drag handlers
+  // Wrapper function to pass canvasRef to drag start handler
+  // Note: onDrag and onDragEnd are handled at SVG level via handleMouseMove/handleMouseUp
   const handleElementDragStartWrapper = useCallback((element: any, event: React.MouseEvent) => {
     handleElementDragStart(element, event, canvasRef);
   }, [handleElementDragStart, canvasRef]);
-
-  const handleElementDragWrapper = useCallback((element: any, event: React.MouseEvent) => {
-    handleElementDrag(element, event, canvasRef);
-  }, [handleElementDrag, canvasRef]);
 
   const handleMouseMoveWrapper = useCallback((event: React.MouseEvent) => {
     handleMouseMove(event, canvasRef);
@@ -132,7 +135,7 @@ const Canvas: React.FC = () => {
       <div className="canvas-header">
         <h3>Canvas</h3>
         <div className="canvas-controls">
-          <span>Zoom: {(zoomLevel * 100).toFixed(0)}%</span>
+          <span>Zoom: {((zoomLevel / 3) * 100).toFixed(0)}%</span>
           <span>Pan: ({panOffset.x.toFixed(0)}, {panOffset.y.toFixed(0)})</span>
           
                     {/* Grid Controls */}
@@ -176,13 +179,41 @@ const Canvas: React.FC = () => {
           {/* Grid */}
           <Grid viewBox={viewBox} />
           
-          {/* Canvas background - transparent to let grid show through */}
-          <rect 
-            width="100%" 
-            height="100%" 
-            fill="transparent" 
-            style={{ pointerEvents: 'auto' }}
-          />
+          {/* Canvas background - covers all pre-rendered grid tiles */}
+          {(() => {
+            // Get all tiles (pre-rendered grid covers a large area)
+            const allTiles = project?.activePageId ? getGridTiles(project.activePageId) : [];
+            
+            if (allTiles.length === 0) {
+              // Fallback to viewBox if no tiles exist
+              return (
+                <rect 
+                  width="100%" 
+                  height="100%" 
+                  fill="transparent" 
+                  style={{ pointerEvents: 'auto' }}
+                />
+              );
+            }
+            
+            // Calculate bounds of all pre-rendered tiles
+            const minX = Math.min(...allTiles.map(t => t.x));
+            const minY = Math.min(...allTiles.map(t => t.y));
+            const maxX = Math.max(...allTiles.map(t => t.x + t.width));
+            const maxY = Math.max(...allTiles.map(t => t.y + t.height));
+            
+            // Create a rect that covers all pre-rendered tiles
+            return (
+              <rect 
+                x={minX}
+                y={minY}
+                width={maxX - minX}
+                height={maxY - minY}
+                fill="transparent" 
+                style={{ pointerEvents: 'auto' }}
+              />
+            );
+          })()}
           
           {/* Selection box overlay */}
           {isSelecting && selectionBox && (
@@ -208,6 +239,7 @@ const Canvas: React.FC = () => {
               pointerEvents="none"
             />
           )}
+          
 
           {/* Render Arcs (render first so they appear behind elements) */}
           {arcs.map((arc) => (
@@ -223,8 +255,6 @@ const Canvas: React.FC = () => {
                   onSelect={interactions.handleElementSelect}
                   onDeselect={interactions.handleElementDeselect}
                   onDragStart={handleElementDragStartWrapper}
-                  onDrag={handleElementDragWrapper}
-                  onDragEnd={handleElementDragEnd}
                 />
               );
             })()
@@ -240,22 +270,16 @@ const Canvas: React.FC = () => {
             selectedTool={selectedTool}
           />
 
-
-          
           {/* Render Places */}
           {places.map((place) => (
             <Place
               key={place.id}
               place={place as any}
-              onSelect={interactions.handleElementSelect}
-              onDeselect={interactions.handleElementDeselect}
               onDragStart={handleElementDragStartWrapper}
-              onDrag={handleElementDragWrapper}
-              onDragEnd={handleElementDragEnd}
-              onUpdate={(place, updates) => updateElement(project?.activePageId || '', place.id, updates)}
-              isArcTarget={isArcMode && selectedTool !== 'ARC_INHIBITOR'}
               onMouseEnterElement={interactions.handleElementMouseEnter}
               onMouseLeaveElement={interactions.handleElementMouseLeave}
+              onArcConnect={interactions.handleConnectableClick}
+              isDragging={draggingIds.includes(place.id)}
             />
           ))}
           
@@ -264,43 +288,39 @@ const Canvas: React.FC = () => {
             <Transition
               key={transition.id}
               transition={transition as any}
-              onSelect={interactions.handleElementSelect}
-              onDeselect={interactions.handleElementDeselect}
               onDragStart={handleElementDragStartWrapper}
-              onDrag={handleElementDragWrapper}
-              onDragEnd={handleElementDragEnd}
-              onUpdate={(transition, updates) => updateElement(project?.activePageId || '', transition.id, updates)}
-              isArcTarget={isArcMode}
               onMouseEnterElement={interactions.handleElementMouseEnter}
               onMouseLeaveElement={interactions.handleElementMouseLeave}
+              onArcConnect={interactions.handleConnectableClick}
+              isDragging={draggingIds.includes(transition.id)}
             />
           ))}
           
           {/* Instructions (only show if no elements) */}
           {currentPageElements.length === 0 && (
             <>
-              <text x="50%" y="25%" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
+              <text x="0" y="-150" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
                 Select a tool from the toolbar above
               </text>
-              <text x="50%" y="30%" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
+              <text x="0" y="-100" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
                 Click on the canvas to place elements
               </text>
-              <text x="50%" y="35%" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
+              <text x="0" y="-50" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
                 Use Ctrl/Cmd + Mouse Wheel to zoom
               </text>
-              <text x="50%" y="40%" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
+              <text x="0" y="0" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
                 Use Mouse Wheel to pan up/down
               </text>
-              <text x="50%" y="45%" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
+              <text x="0" y="50" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
                 Use Shift + Mouse Wheel to pan left/right
               </text>
-              <text x="50%" y="50%" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
+              <text x="0" y="100" textAnchor="middle" fill="rgba(255,255,255,0.5)" fontSize="16">
                 Use Middle Mouse Button to pan freely
               </text>
-              <text x="50%" y="60%" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="14">
+              <text x="0" y="200" textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="14">
                 Grid: {showGrid ? 'ON' : 'OFF'} | Snap: {snapToGrid ? 'ON' : 'OFF'} | Size: {gridSize}px
               </text>
-              <text x="50%" y="75%" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="24">
+              <text x="0" y="350" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="24">
                 Canvas Area - Click to place elements
               </text>
             </>

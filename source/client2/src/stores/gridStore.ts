@@ -11,6 +11,7 @@ export interface GridStoreState {
   // Grid visibility and behavior
   showGrid: boolean;
   snapToGrid: boolean;
+  showAllTiles: boolean; // Show all pre-rendered tiles (for debugging/visualization)
   
   // Actions
   setGridSize: (size: number) => void;
@@ -18,6 +19,7 @@ export interface GridStoreState {
   setMajorGridHeightMultiplier: (multiplier: number) => void;
   toggleGrid: () => void;
   toggleSnapToGrid: () => void;
+  toggleShowAllTiles: () => void;
 }
 
 export const useGridStore = create<GridStoreState>((set, get) => ({
@@ -27,6 +29,7 @@ export const useGridStore = create<GridStoreState>((set, get) => ({
   majorGridHeightMultiplier: 4,
   showGrid: true,
   snapToGrid: true,
+  showAllTiles: false, // Default to false (only show tiles with elements)
   
   // Actions
   setGridSize: (size: number) => {
@@ -49,6 +52,11 @@ export const useGridStore = create<GridStoreState>((set, get) => ({
   toggleSnapToGrid: () => {
     const { snapToGrid } = get();
     set({ snapToGrid: !snapToGrid });
+  },
+  
+  toggleShowAllTiles: () => {
+    const { showAllTiles } = get();
+    set({ showAllTiles: !showAllTiles });
   },
 })); 
 

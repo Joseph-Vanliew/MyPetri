@@ -8,7 +8,7 @@
 .place-element .place-circle {
   fill: #0f0f0f;
   stroke: #ffffff;
-  stroke-width: 1; /* thinner stroke for place nodes */
+  stroke-width: 2; /* thinner stroke for place nodes */
 }
 
 .place-element .place-circle.bounded {
@@ -48,7 +48,7 @@
 .resize-handle {
   fill: #007bff;
   stroke: #ffffff;
-  stroke-width: .5;
+  stroke-width: .4;
   vector-effect: non-scaling-stroke;
 }
 
@@ -83,7 +83,7 @@
 .transition-element .transition-rectangle {
   fill: #0f0f0f;
   stroke: #ffffff;
-  stroke-width: 1;
+  stroke-width: 2;
 }
 
 .transition-element.enabled .transition-rectangle {
@@ -143,7 +143,7 @@
   text-anchor: middle;
   dominant-baseline: middle;
   fill: #fff;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: bold;
   pointer-events: none;
 }

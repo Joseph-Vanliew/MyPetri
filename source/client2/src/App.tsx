@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useProjectStore, useLayoutStore } from './stores/index.js';
 import AppLayout from './layout/AppLayout.js';
-import { useHistoryStore } from './stores/index.js';
+import { useHistoryStore, initializeHistorySubscription } from './stores/index.js';
+import { initializeAllHotkeys } from './services/hotkeys.js';
 import './App.css';
 
 const App: React.FC = () => {
@@ -20,6 +21,12 @@ const App: React.FC = () => {
     setDefaultLayout();
     // Clear history on app init/new project
     clear();
+    
+    // Initialize history subscription (one-time setup)
+    initializeHistorySubscription();
+    
+    // Initialize global hotkeys
+    initializeAllHotkeys();
   }, [project, createProject, setDefaultLayout, clear]);
 
   // Show loading state while initializing

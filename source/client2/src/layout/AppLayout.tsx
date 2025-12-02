@@ -7,17 +7,8 @@ import MainContent from './MainContent.tsx';
 import StatusBar from './StatusBar.tsx';
 import DragPreview from '../features/tools/components/DragPreview.js';
 import './layout.css';
-import { ensureHistoryHotkeysInstalled } from '../stores/historyStore.js';
-import { ensureClipboardHotkeysInstalled } from '../stores/clipboardStore.js';
-
 const AppLayout: React.FC = () => {
   const { leftSidebarWidth, rightSidebarWidth, leftSidebarCollapsed, rightSidebarCollapsed } = useLayoutStore();
-
-  // Ensure a single, centralized hotkey handler is installed
-  useEffect(() => {
-    ensureHistoryHotkeysInstalled();
-    ensureClipboardHotkeysInstalled();
-  }, []);
 
   return (
     <div className="app-layout">

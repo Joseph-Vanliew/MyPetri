@@ -1,16 +1,28 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { useElementsStore } from './elementsStore.js';
+import type { ElementsState } from './elementsStore.js';
 
 export interface HistorySnapshot {
-  elementsByPage: ReturnType<typeof useElementsStore.getState>['elementsByPage'];
-  selectedElementIds: ReturnType<typeof useElementsStore.getState>['selectedElementIds'];
+  elementsByPage: ElementsState['elementsByPage'];
+  selectedElementIds: ElementsState['selectedElementIds'];
 }
 
 interface HistoryState {
   past: HistorySnapshot[];
   future: HistorySnapshot[];
-  push: (snapshot: HistorySnapshot) => void;
+  _isApplyingHistory: boolean; // Flag to prevent history recording during undo/redo
+  _isBatching: boolean; // Flag to batch multiple changes into one history entry
+  _batchedSnapshot: HistorySnapshot | null; // Snapshot at start of batch
+  
+  // Internal: push snapshot (called by history subscription)
+  _pushSnapshot: (snapshot: HistorySnapshot) => void;
+  
+  // Batching API for operations that should be grouped (e.g., drag operations)
+  beginBatch: () => void;
+  endBatch: () => void;
+  
+  // Public API
   canUndo: () => boolean;
   canRedo: () => boolean;
   undo: () => void;
@@ -23,9 +35,40 @@ export const useHistoryStore = create<HistoryState>()(
     (set, get) => ({
       past: [],
       future: [],
+      _isApplyingHistory: false,
+      _isBatching: false,
+      _batchedSnapshot: null,
 
-      push: (snapshot: HistorySnapshot) => {
+      _pushSnapshot: (snapshot: HistorySnapshot) => {
+        // Don't record history while applying history (undo/redo)
+        if (get()._isApplyingHistory) return;
+        
+        // If batching, save the first snapshot but don't push yet
+        if (get()._isBatching) {
+          if (!get()._batchedSnapshot) {
+            set({ _batchedSnapshot: snapshot });
+          }
+          return;
+        }
+        
         set({ past: [...get().past, snapshot], future: [] });
+      },
+
+      beginBatch: () => {
+        const elementsStore = useElementsStore.getState();
+        const snapshot: HistorySnapshot = {
+          elementsByPage: structuredClone(elementsStore.elementsByPage),
+          selectedElementIds: structuredClone(elementsStore.selectedElementIds),
+        };
+        set({ _isBatching: true, _batchedSnapshot: snapshot });
+      },
+
+      endBatch: () => {
+        const { _batchedSnapshot, _isBatching } = get();
+        if (_isBatching && _batchedSnapshot) {
+          set({ past: [...get().past, _batchedSnapshot], future: [] });
+        }
+        set({ _isBatching: false, _batchedSnapshot: null });
       },
 
       canUndo: () => get().past.length > 0,
@@ -34,35 +77,63 @@ export const useHistoryStore = create<HistoryState>()(
       undo: () => {
         const { past, future } = get();
         if (past.length === 0) return;
+        
         const prev = past[past.length - 1];
-        const now = useElementsStore.getState();
+        const elementsStore = useElementsStore.getState();
+        
+        // Get current state for redo
         const currentSnapshot: HistorySnapshot = {
-          elementsByPage: structuredClone(now.elementsByPage),
-          selectedElementIds: structuredClone(now.selectedElementIds),
+          elementsByPage: structuredClone(elementsStore.elementsByPage),
+          selectedElementIds: structuredClone(elementsStore.selectedElementIds),
         };
-        // Apply previous
+        
+        // Set flag to prevent recording this change
+        set({ _isApplyingHistory: true });
+        
+        // Apply previous state using elementsStore's update methods
+        // We need to restore the entire state, so we'll use setState for this special case
+        // but only during undo/redo operations
         useElementsStore.setState({
           elementsByPage: structuredClone(prev.elementsByPage),
           selectedElementIds: structuredClone(prev.selectedElementIds),
         });
-        set({ past: past.slice(0, -1), future: [currentSnapshot, ...future] });
+        
+        // Reset flag
+        set({ 
+          _isApplyingHistory: false,
+          past: past.slice(0, -1), 
+          future: [currentSnapshot, ...future] 
+        });
       },
 
       redo: () => {
         const { past, future } = get();
         if (future.length === 0) return;
+        
         const next = future[0];
-        const now = useElementsStore.getState();
+        const elementsStore = useElementsStore.getState();
+        
+        // Get current state for undo
         const currentSnapshot: HistorySnapshot = {
-          elementsByPage: structuredClone(now.elementsByPage),
-          selectedElementIds: structuredClone(now.selectedElementIds),
+          elementsByPage: structuredClone(elementsStore.elementsByPage),
+          selectedElementIds: structuredClone(elementsStore.selectedElementIds),
         };
-        // Apply next
+        
+        // Set flag to prevent recording this change
+        set({ _isApplyingHistory: true });
+        
+        // Apply next state
         useElementsStore.setState({
           elementsByPage: structuredClone(next.elementsByPage),
           selectedElementIds: structuredClone(next.selectedElementIds),
         });
-        set({ past: [...past, currentSnapshot], future: future.slice(1) });
+        
+        // Reset flag
+        set({ 
+          _isApplyingHistory: false,
+          past: [...past, currentSnapshot], 
+          future: future.slice(1) 
+        });
       },
 
       clear: () => set({ past: [], future: [] }),
@@ -71,63 +142,47 @@ export const useHistoryStore = create<HistoryState>()(
   )
 );
 
-// Global, centralized hotkey installation (idempotent)
-let historyHotkeysInstalled = false;
-let historyHotkeysCleanup: (() => void) | null = null;
+// History subscription: automatically record changes to elementsStore
+// This breaks the circular dependency by making historyStore observe elementsStore,
+// rather than elementsStore calling historyStore
+let historySubscriptionActive = false;
 
-export const ensureHistoryHotkeysInstalled = () => {
-  if (historyHotkeysInstalled) return;
-  if (typeof window === 'undefined') return;
-  const handler = (e: KeyboardEvent) => {
-    // Ignore when typing in inputs/textareas/contenteditable
-    const target = e.target as HTMLElement | null;
-    const isTyping = !!target && (
-      target.tagName === 'INPUT' ||
-      target.tagName === 'TEXTAREA' ||
-      target.isContentEditable
-    );
-    if (isTyping) return;
-    const isMac = navigator.platform.toUpperCase().includes('MAC');
-    const mod = isMac ? e.metaKey : e.ctrlKey;
-    const key = (e.key || '').toLowerCase();
-    const isZ = key === 'z' || e.code === 'KeyZ';
-    const isY = key === 'y' || e.code === 'KeyY';
-    const alt = e.altKey;
-    // Primary: Cmd/Ctrl+Z (Undo), Cmd/Ctrl+Shift+Z (Redo)
-    // Fallback: Cmd/Ctrl+Alt+Z (Undo), Cmd/Ctrl+Alt+Shift+Z (Redo) for browsers that reserve primary
-    const undoCombo = (mod && isZ && !e.shiftKey) || (mod && isZ && alt && !e.shiftKey);
-    const redoCombo = (mod && isZ && e.shiftKey) || (!isMac && mod && isY) || (mod && isZ && alt && e.shiftKey);
-    if (undoCombo) {
-      e.preventDefault();
-      e.stopPropagation();
-      // @ts-ignore
-      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-      // Debug: log that we captured undo hotkey
-      // Remove or guard behind an env flag when shipping
-      console.log('[History] Undo hotkey captured');
-      useHistoryStore.getState().undo();
-    } else if (redoCombo) {
-      e.preventDefault();
-      e.stopPropagation();
-      // @ts-ignore
-      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-      console.log('[History] Redo hotkey captured');
-      useHistoryStore.getState().redo();
+export const initializeHistorySubscription = () => {
+  if (historySubscriptionActive || typeof window === 'undefined') return;
+  
+  let previousSnapshot: HistorySnapshot | null = null;
+  
+  const unsubscribe = useElementsStore.subscribe(
+    (state) => {
+      const currentSnapshot: HistorySnapshot = {
+        elementsByPage: state.elementsByPage,
+        selectedElementIds: state.selectedElementIds,
+      };
+      
+      // Only record if not applying history and state actually changed
+      const historyStore = useHistoryStore.getState();
+      if (historyStore._isApplyingHistory) {
+        // Update previous snapshot but don't record
+        previousSnapshot = structuredClone(currentSnapshot);
+        return;
+      }
+      
+      // Record the previous state as a snapshot (skip first call)
+      if (previousSnapshot !== null) {
+        historyStore._pushSnapshot(previousSnapshot);
+      }
+      
+      // Update for next change
+      previousSnapshot = structuredClone(currentSnapshot);
     }
+  );
+  
+  historySubscriptionActive = true;
+  
+  // Return cleanup function
+  return () => {
+    unsubscribe();
+    historySubscriptionActive = false;
+    previousSnapshot = null;
   };
-  window.addEventListener('keydown', handler, true);
-  document.addEventListener('keydown', handler, false);
-  historyHotkeysCleanup = () => {
-    window.removeEventListener('keydown', handler, true);
-    document.removeEventListener('keydown', handler, false);
-  };
-  historyHotkeysInstalled = true;
-};
-
-export const removeHistoryHotkeys = () => {
-  if (historyHotkeysCleanup) {
-    historyHotkeysCleanup();
-    historyHotkeysCleanup = null;
-    historyHotkeysInstalled = false;
-  }
 };
